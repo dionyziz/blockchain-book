@@ -1,0 +1,55 @@
+# Exclude compiled output file
+blockchain-foundations.pdf
+
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+*.swp
+*.swo
+
+## Intermediate documents:
+*.dvi
+*.xdv
+*.ps
+*.eps
+
+## Generated if empty string is given at "Please type another file name for output:"
+.pdf
+
+## Bibliography auxiliary files (bibtex/biblatex/biber):
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+
+## Build tool directories for auxiliary files
+# latexrun
+latex.out/
+
+# makeidx
+*.idx
+*.ilg
+*.ind
+*.ist
+
+# makeglossary
+*.sls
+*.slo
+*.slg
+*.glsdefs
+*.gls
+*.glg
+*.glo
+
+# macOS files
+.DS_Store

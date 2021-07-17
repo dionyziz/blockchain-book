@@ -1,0 +1,45 @@
+\ProvidesPackage{preamble/preamble}
+
+% Files
+\usepackage{import}
+
+\usepackage[lmargin=142pt,rmargin=95pt,tmargin=127pt,bmargin=123pt]{geometry}
+\raggedbottom
+
+% Formatting
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{colortbl}
+\usepackage{xcolor}
+\definecolor{lightgray}{rgb}{0.83, 0.83, 0.83}
+
+% Footnotes
+\makeatletter
+\newcommand\footnoteref[1]{\protected@xdef\@thefnmark{\ref{#1}}\@footnotemark}
+\makeatother
+
+% Graphics
+\usepackage{graphicx}
+
+% Math packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{thm-restate}
+
+% Algorithmic packages
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% Bibliography, index, appendix and sectioning
+\usepackage[nottoc]{tocbibind}
+\usepackage{makeidx}
+\usepackage[symbols,nogroupskip,docdef=true]{glossaries-extra}
+\usepackage[titletoc]{appendix}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+
+\import{./}{macros.tex}

@@ -1,0 +1,17 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.game} The form of a challenger for a game-based security definition.}
+    \begin{algorithmic}[1]
+        \Function{\textsf{my-game}$_{\Pi,\mathcal{A}}$}{$\kappa$}
+            \CommentLine{Invoke the honest party with poly $\kappa$ time and more arguments}
+            \State$\cdots \Pi(1^\kappa\cdots)$
+            \CommentLine{Invoke the adversary with poly $\kappa$ time and more arguments}
+            \Let{\textsf{result}}{\mathcal{A}(1^\kappa\cdots)}
+            \CommentLine{Evaluate whether the adversary has been successful}
+            \If{\textsf{result} indicates adversarial success}
+              \State\Return{\textsf{true}}
+            \Else
+              \State\Return{\textsf{false}}
+            \EndIf
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
