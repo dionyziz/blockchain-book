@@ -9,6 +9,7 @@ blockchain-foundations.pdf: $(SOURCES)
 	xelatex --halt-on-error blockchain-foundations.tex
 	bibtex blockchain-foundations
 	xelatex --halt-on-error blockchain-foundations.tex
+	xelatex --halt-on-error blockchain-foundations.tex
 
 clean:
 	rm -f *.aux *.log *.out *.cfg *.glo *.idx *.toc *.ilg *.ind *.lof *.lot *.bbl *.blg *.gls *.cut *.hd *.dvi *.ps *.thm *.rpi *.d *.fls *.pyc *.fdb_latexmk *.sls *.slo *.slg *.glsdefs *.gls *.glg *.glo *.ist
