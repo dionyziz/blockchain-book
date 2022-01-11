@@ -1,4 +1,4 @@
-\chapter{A Big, Bad World}
+\chapter{A Big, Bad World}\label{chapter.untrusty-world}
 
 \section{The Nature of Money}
 
@@ -56,7 +56,7 @@ property of money.
 Secondly, that this money rightfully belongs to the party who is about to
 spend it, and has not been spent before, to protect against \emph{double spending},
 the property of \emph{ownership}. Consensus pertains to ensuring both scarcity
-and ownership. 
+and ownership.
 
 The problem of consensus is solved differently in different monetary systems. Gold
 coins had stamps whose veracity could be checked, while paper bills have watermarking
@@ -174,6 +174,8 @@ of independence as a stand-alone country. For a court to shut down a decentraliz
 cannot order its servers to shut down, because there are no servers. Instead, it must target
 each of its participants, a much more difficult task.
 
+\subsection*{The Cryptographic Model}
+
 Following the cryptographic tradition, and highlighting our computer science methodology,
 our protocols are structured upon three pillars~\cite{katz}:
 
@@ -194,7 +196,7 @@ our protocols are structured upon three pillars~\cite{katz}:
         employing computational reductions, and they assert that the protocols
         are secure \emph{for all} adversaries.
 \end{enumerate}
- 
+
 We will model the adversary as a Turing Machine interacting
 with the honest parties, each of which will also be modelled as a Turing Machine. For the
 time being, the Turing Machine formalism is unimportant: Intuitively, we will simply imagine
@@ -217,6 +219,8 @@ programs (in, say, Python, C++ or JavaScript) in which we have access to a rando
 generator, which we assume produces fresh, uniform and completely fair randomness every time
 it is called.
 
+\subsection*{Negligibility}
+
 Our security is analyzed with a \emph{security parameter}\index{Security parameter} in
 its foundations: The parameter
 $\kappa$. This parameter denotes what probability of failure we are willing to accept
@@ -227,7 +231,12 @@ earth catastrophy is caused by an asteroid hitting it \emph{during the second yo
 read this particular sentence} than a probability $2^{-256}$ occurring. Simply put,
 these events never occur.
 
-However, we will keep the $\kappa$ parameter free throughout our analysis, but we will
+When calling the adversary and allowing her to perform an attack, we will hand her
+some information, including the particular value $\kappa$ that we are interested in.
+The adversarial source code must be the same for all values of $\kappa$ (we say that we are
+interested in \emph{uniform} adversaries).
+
+We will keep the $\kappa$ parameter free throughout our analysis, but we will
 demand that the probability of failure drops close to \emph{exponentially}, or more precisely
 \emph{superpolynomially} as $\kappa$ increases linearly. Let us make this definition
 precise. If a function $f(\kappa)$ denotes the probability of failure, we want $f$ to be
@@ -297,7 +306,7 @@ has been successful in breaking the protocol.
 
 You can imagine the game as a piece of code that evaluates the success of an adversary.
 The game will be specific to the protocol and property we wish to describe, and be given
-a relevant name. The game is also known as the \emph{challenge}.
+a relevant name. The game is also known as the \emph{challenger} or \emph{experiment}.
 To use one of the games, first,
 we decide which adversary we want to evaluate, and fix the source code that defines this adversary.
 We call this adversary $\mathcal{A}$, denoting a particular computer program.
@@ -320,7 +329,7 @@ $\kappa$. When we say that the adversary $\mathcal{A}$ is \emph{polynomial}, we 
 adversary runs in polynomial time with respect to its input. More specifically, there exists
 a polynomial $p(\kappa)$ such that, given any input of size $\kappa$, the adversary runs for
 at most $p(\kappa)$ steps. If we want to give the
-adversary the option to run in polynomial time with respect to the parameter $\kappa$, we must 
+adversary the option to run in polynomial time with respect to the parameter $\kappa$, we must
 issue the call to the adversary with an input of size $\kappa$. We denote this by writing
 $\mathcal{A}(1^\kappa)$, meaning that we call the adversary with an input of a string consisting
 of just the character $1$ repeated $\kappa$ times. Because $|1^\kappa| = \kappa$, the length of
@@ -363,6 +372,8 @@ is illustrated diagramatically in Figure~\ref{fig.game}.
 \end{figure}
 
 \import{./}{algorithms/alg.game.tex}
+
+\subsection*{Definitions of Security}
 
 As designers, the ideal goal for us would be to design a protocol for which \emph{no adversary}
 succeeds in breaking the game, no matter what code she is running. If we can achieve this, it
@@ -418,6 +429,8 @@ $\mathcal{A}$ is a function of $\kappa$. What we are saying here is that this fu
 counts the probability must be below some negligible function. Said differently, that probability
 must \emph{eventually} (for sufficiently large $\kappa$) become smaller than all inverse polynomials.
 
+\subsection*{Breaking by Guessing}
+
 What happens if an adversary attempts to perform multiple guesses for the secret key?
 Each of these guesses has a probability of success amounting to $\frac{1}{2^\kappa}$.
 Since the adversary has polynomial time $p(\kappa)$, the number of guesses she can
@@ -452,6 +465,8 @@ which remains negligible, because $\textsf{poly} \cdot \textsf{negl} = \textsf{n
 This reinforces our reason for adopting the class of
 negligible functions as our acceptable probability of failure.
 
+\subsection*{The Honest/Adversarial Gap}
+
 Note here how great the requirements of security that cryptography mandates are:
 In a \emph{secure} protocol, the honest party can act within polynomial time,
 but an adversary needs superpolynomial time to break it. The successful honest party
@@ -476,6 +491,8 @@ but a successful adversary will require superpolynomial time to successfully bre
     \label{fig.p-vs-np}
 \end{figure}
 
+\subsection*{Proofs of Security}
+
 When the time comes to prove a protocol secure, we will sometimes make an assumption
 that an existing, underlying protocol is secure. Our new protocol will be built
 \emph{on top of} the existing protocol. In the blockchain world, we will take many
@@ -490,9 +507,11 @@ protocol, except with negligible probability.
 The proofs of these theorems will take the form of a \emph{computational reduction},
 and they will look roughly as follows, when we are designing a new protocol $\Pi^*$:
 
+\noindent
 \textbf{Claim. } If protocol $\Pi^*$ is secure, then protocol $\Pi$, built on top of $\Pi^*$,
 is also secure.
 
+\noindent
 \textbf{Proof. } Suppose, towards a contradiction, that protocol $\Pi$ is \emph{insecure}.
 Then, by the game-based security definition, there must exist a PPT adversary $\mathcal{A}$
 that breaks $\Pi$ with non-negligible probability (but we don't know the exact inner workings
@@ -516,7 +535,7 @@ number of times, therefore $\mathcal{A}^*$ is also a PPT. We can now evaluate th
 probability of success of $\mathcal{A}^*$ and relate it to the probability of success
 of $\mathcal{A}$, arguing that \emph{if} the probability of success of $\mathcal{A}$
 is non-negligible, then so is the probability of success of $\mathcal{A}^*$. However,
-this contradicts the assumption that $\Pi^*$ was secure, completing the proof.
+this contradicts the assumption that $\Pi^*$ was secure, completing the proof. $\lozenge$
 
 \begin{figure}[h]
     \centering
@@ -532,14 +551,15 @@ direction} without resorting to a contradiction. This gives a shorter proof, and
 will prefer this style in our writing, following the example of Katz and
 Lindell~\cite{katz}. These proofs look like this:
 
-\textbf{Proof. } Consider an arbitrary PPT adversary $\mathcal{A}$ attempting to break 
+\noindent
+\textbf{Proof. } Consider an arbitrary PPT adversary $\mathcal{A}$ attempting to break
 the protocol $\Pi$. We construct an adversary $\mathcal{A}^*$ against the protocol
 $\Pi^*$ by making use of $\mathcal{A}$ as before. For the same reasons as before,
 $\mathcal{A}^*$ is also PPT, and their probabilities of success are related. By the
 security assumption on $\Pi^*$, we know that the probability of success of $\mathcal{A}^*$
 against its challenger is negligible. From the relationship between the probabilities
 of success of $\mathcal{A}$ and $\mathcal{A}^*$, we also deduce that the probability
-of success of $\mathcal{A}$ is negligible, completing the proof.
+of success of $\mathcal{A}$ is negligible, completing the proof. $\lozenge$
 
 The two proofs are identical, with the exception that the second one is a little more
 straightforward. Of course, these are rough proof outlines provided to give a sketch
@@ -564,9 +584,11 @@ as clients and as servers of requests.
     The honest nodes are shown in blue, while the adversarial nodes are shown in black.}
 \end{figure}
 
+\subsection*{The Non-Eclipsing Assumption}
+
 In this network, not everyone is connected to everyone else, but messages can reach from
 one side of the network to the other by travelling through intermediaries. This is achieved
-through the \emph{gossiping} protocol: When a node receives a message it hasn't seen before,
+through the \emph{gossiping}\index{Gossip} protocol: When a node receives a message it hasn't seen before,
 it forwards it to its peers. That way, everyone eventually learns about the message. In order
 to avoid denial-of-service attacks, messages may be validated in a basic manner before they
 are gossiped. For example, syntactically invalid messages will not be gossiped.
@@ -595,6 +617,8 @@ in an eclipsed world. To see why, imagine two completely isolated civilizations,
 their own separate currency. These civilizations, given a lack of communication between them, cannot
 hope to be able to deduce who owns how much money in their respective counterpart world.
 
+\subsection*{The Sybil Attack}
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.5 \columnwidth,keepaspectratio]{figures/sybil-attack.pdf}
@@ -617,6 +641,8 @@ It is possible that the adversary controls all the connections of an honest part
 one connection to an honest party, which is necessary to maintain the non-eclipsing assumption.
 \emph{Every honest party will certainly be connected to at least one other honest party.}
 
+\subsection*{Peer Discovery}
+
 Ensuring that the non-eclipsing assumption is maintained is a practical engineering problem and
 there are many heuristics employed in achieving this. The process of connecting to other nodes,
 attempting to ensure at least one honest connection, is termed \emph{peer discovery}\index{Peer Discovery}.
@@ -633,3 +659,42 @@ peers asking for peer discovery. The policy for reporting discovered peers may v
 some nodes may not share all of their known peers. In case the bootstrapping phase fails, the user
 is given the option to manually connect to a peer by entering its address. This allows the software
 to survive cases of censorship, or of broad compromise of all the hard-coded peer addresses.
+
+\section*{Problems}
+
+\begin{enumerate}
+  \item Use induction to prove the \emph{Union Bound} theorem.
+  \item Let $f$ and $g$ be negligible functions. Show that $h(\kappa) = \max\{f(\kappa), g(\kappa)\}$
+        is negligible.
+  \item Prove that
+    \begin{enumerate}
+      \item $\textsf{negl} \cdot \textsf{negl} = \textsf{negl}$
+      \item $\textsf{const} \cdot \textsf{negl} = \textsf{negl}$
+      \item $\textsf{poly} \cdot \textsf{negl} = \textsf{negl}$
+      \item $\forall k \in \mathbb{N}: \textsf{negl}^k = \textsf{negl}$
+    \end{enumerate}
+\end{enumerate}
+
+\section*{Further Reading}
+
+Blockchain science is founded on cryptography. For a great introduction to modern cryptography,
+consult \emph{Introduction to Modern Cryptography} by Katz and Lindell~\cite{katz}. It is a beautifully
+written book. It explores how to build many of the primitives we will make use throughout this book,
+including hash functions and signature schemes. More importantly, it is a good way to learn about the
+adversarial mindset and to look into complexity reduction-based security proofs. The book is filled with
+theorems and proofs that show that, for all PPT adversaries, the protocol is secure, except with negligible
+probability. In \emph{Further Reading} paragraphs at the end of the next chapters, you will find
+some references in chapters of \emph{Modern Cryptography} (2nd edition).
+Another good book on cryptography is \emph{Foundations of Cryptography}~\cite{foundations}.
+An easier and pleasant to read textbook is Smart's \emph{Cryptography Made Simple}~\cite{smart}.
+
+For a more in-depth treatment of Turing Machines and our computational model, consult Sipser's
+\emph{Introduction to the Theory of Computation}~\cite{sipser}. It is a very well written book,
+with great examples and proofs that are written to be educational. It's an easier book than
+\emph{Modern Cryptography}, and a good way to learn computational reductions.
+
+Throughout this book, we use many elements of discrete mathematics and probability theory. For
+discrete mathematics, you can use Liu's \emph{Elements of Discrete Mathematics}~\cite{liu}.
+For probability theory, you can use Ross's
+\emph{A First Course on Probability Theory}~\cite{ross}. You can read both cover-to-cover, but
+they also function well as a reference in case you want to look something up.
