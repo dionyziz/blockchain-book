@@ -1,0 +1,19 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.commit-game} The games for the binding and hiding properties
+             of commitment schemes.}
+    \begin{algorithmic}[1]
+        \Function{\sf binding-game$_{\textsf{Commit},\textsf{Check},\mathcal{A}}$}{$\kappa$}
+            \Let{h, v_1, r_1, v_2, r_2}{\mathcal{A}(1^\kappa)}
+            \State\Return$v_1 \neq v_2 \land \textsf{Check}(h, v_1, r_1) \land \textsf{Check}(h, v_2, r_2)$
+        \EndFunction
+        \vskip8pt
+        \Function{\sf hiding-game$_{\textsf{Commit},\textsf{Check},\mathcal{A}}$}{$\kappa$}
+            \Let{v_1, v_2}{\mathcal{A}(\text{`ask'}, 1^\kappa)}
+            \State{$b \getsrandomly \{0, 1\}$}
+            \Let{h, r}{\textsf{Commit}(v_b)}
+            \Let{b^*}{\mathcal{A}(\text{`guess'}, h)}
+            \State\Return$b = b^*$
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}

@@ -1,0 +1,15 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.hash-commit} A commitment scheme using a hash function $H$.}
+    \begin{algorithmic}[1]
+        \Function{\sf Commit$_H$}{$v$}
+            \State{$r \getsrandomly \{0,1\}^\kappa$}
+            \Let{h}{H_\kappa(r \conc v)}
+            \State\Return{$(h, r)$}
+        \EndFunction
+        \vskip8pt
+        \Function{\sf Check$_H$}{$h, v, r$}
+            \State\Return$|r| = \kappa \land H_\kappa(r \conc v) = h$
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}

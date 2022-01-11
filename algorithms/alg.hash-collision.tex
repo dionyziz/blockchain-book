@@ -1,0 +1,15 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.hash-collision} An exponential search for a collision in a hash function
+    that \emph{certainly} finds a collision.}
+    \begin{algorithmic}[1]
+        \Function{\textsf{collision-search}$_H$}{$\kappa$}
+            \For{$i \gets 0 \text{ to } 2^\kappa$}
+                \For{$j \gets i+1 \text{ to } 2^\kappa$}
+                    \If{$i \neq j \land H(i) = H(j)$}
+                        \State\Return{(i, j)}
+                    \EndIf
+                \EndFor
+            \EndFor
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}

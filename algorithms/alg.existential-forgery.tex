@@ -1,0 +1,17 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.existential-forgery} The existential forgery
+             game for a signature scheme $(Gen, Sig, Ver)$.}
+    \begin{algorithmic}[1]
+        \Function{\sf existential-forgery-game$_{Gen, Sig, Ver,\mathcal{A}}$}{$\kappa$}
+            \Let{(pk, sk)}{\textsf{Gen}(1^\kappa)}
+            \Let{M}{\emptyset}
+            \Function{$\mathcal{O}$}{m}
+                \Let{M}{M \cup \{m\}}
+                \State\Return$\textsf{Sig}(sk, m)$
+            \EndFunction
+            \Let{m, \sigma}{\mathcal{A}^\mathcal{O}(pk)}
+            \State\Return$\textsf{Ver}(pk, \sigma, m) \land m \not\in M$
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}

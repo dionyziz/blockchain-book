@@ -1,0 +1,17 @@
+\begin{figure}[t]
+\begin{algorithm}[H]
+    \caption{\label{alg.preimage-game} The preimage-finding
+             game for a hash function $H$.}
+    \begin{algorithmic}[1]
+        \Function{\sf preimage-game$_{H,\mathcal{A}}$}{$\kappa$}
+            \State{$x \getsrandomly \{0, 1\}^\kappa$}
+            \Let{x'}{\mathcal{A}(H_\kappa(x))}
+            \If{$H_\kappa(x) = H_\kappa(x')$}
+                \State\Return{true}
+            \EndIf
+            \State\Return{false}
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}
+\end{figure}

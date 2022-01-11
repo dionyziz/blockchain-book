@@ -1,8 +1,990 @@
-\chapter{The Application Layer: UTXO}
+\chapter{The UTXO Application Layer}
+
+\section{Hash Functions}\index{Hash Function}
+
+We already discussed the \emph{gossip protocol} that allows peer-to-peer nodes to exchange
+objects on the network. Before exchanging an object, it is useful that the nodes can talk
+\emph{about} these objects and ask each other whether they have a particular object. To
+do this, it will be useful to give each object a unique identifier. We cannot use
+increasing integers as identifiers, as these objects may be created in different parts of
+the network and there is no global shared counter. We also cannot use a simple random
+number as the identifier, as we want the identifier to be unfakeable: Given an identifier
+we want to be able to check that the object really does correspond to the identifier.
+
+For this, we will use \emph{cryptographically secure hash functions}\index{Hash function}. The hash function
+is a function $H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$, where $\kappa$ is the
+security parameter. As you can see, the hash function accepts \emph{any} string as input,
+but \emph{always} returns a $\kappa$ bits long string. This makes it useful as a
+\emph{compression} mechanism, as these identifiers are short ($\kappa$ will be $256$
+bits in practice) and can be exchanged on the network prior to the actual objects.
+
+\subsection*{Collision Resistance}
+
+\import{./}{algorithms/alg.hash-collision}
+
+Ideally, we would like each different object to correspond to exactly one hash
+output:
+
+\[
+  \forall x_1, x_2: x_1 \neq x_2 \Rightarrow H(x_1) \neq H(x_1)
+\]
+
+However, this ideal goal is unattainable.
+Because the hash function has \emph{unlimited} inputs and \emph{limited} outputs,
+there will necessarily exist some \emph{collision} in which multiple inputs correspond
+to the same output. To find a collision, we can start enumerating all the possible
+inputs to the hash function starting at $0$ and going up to $2^\kappa$. If we have
+not found a collision when we reach $2^\kappa - 1$, then this means that we have taken
+up all of the possible $2^\kappa$ outputs. When we then evaluate the hash function on
+the input $2^\kappa$, we will certainly find a collision. This process is shown in
+Algorithm~\ref{alg.hash-collision}. Of course, as this function has to run through
+$2^{2\kappa}$ combinations, its running time is exponential. The result that hash
+functions must \emph{necessarily} have collisions stems from the Pigeonhole
+Principle~\cite{liu}:
+
+\begin{theorem}[Pigeonhole]
+  Consider a function $f: A \longrightarrow B$. If $|A| > |B|$, then there must
+  exist $x_1$ and $x_2$ such that $f(x_1) = f(x_2)$.
+\end{theorem}
+
+Instead, we will require that \emph{finding} such collisions is \emph{computationally}
+difficult. We can define this in the form of the collision finding cryptographic game,
+illustrated in Algorithm~\ref{alg.collision-game}.\index{Collision Resistance}
+
+\import{./}{algorithms/alg.collision-game}
+
+In this game, we ask the adversary to produce two different inputs $x_1$ and $x_2$
+that have the same hash. Note that the hash function $H$ is different
+for every value of $\kappa$ (while the code that produces the hash output for every
+$\kappa$ is the same, it must take $\kappa$ into account when running), so we
+denote it $H_\kappa$. It gives $\kappa$ bits of output. The adversary can have some
+hard-coded collisions in her source code, but, if our hash function is secure, these won't work for
+sufficiently large values of $\kappa$.
+
+Collision resistance ensures that, if we are given a hash of something, we cannot
+later be given something else that hashes to the same value. This makes hashes suitable
+for use as identifiers of objects as we exchange them on the network. When gossiping
+about objects, instead of sending a whole object to each of our peers, we can optimize
+the process by advertising the ownership of an object through its hash. The hash of
+an object used in this manner is called the \emph{objectid}. If the peer already knows
+about this object, they can ignore our advertisement. If the peer has not seen the
+object before, they can request the object through its objectid. At this point, we can
+send the full object to the peer. Upon receiving the object, the peer can verify that
+it is indeed the requested object by hashing it and comparing it to the stored objectid.
+Towards this purpose, each node must maintain a set of known objectids for quick lookup.
+
+\subsection*{Preimage resistance}
+
+Hashes are also useful for allowing a party to \emph{commit} to a value. The party
+reveals that hash, but not the object itself. Anyone who has the hash can verify that
+the object is correct once the full object has been received, but it is useful that
+this is not possible when seeing only the hash: It should be difficult to find the
+\emph{preimage} of a hash given its image. Of course, the preimage of a hash can
+be found by performing an exhaustive search in a similar fashion to
+Algorithm~\ref{alg.hash-collision}, but this will take exponential time.
+Naturally, we can define the property of \emph{preimage resistance} using a
+cryptographic game.\index{Preimage Resistance}
+
+\import{./}{algorithms/alg.preimage-game}
+
+In this game, the challenger chooses a random $\kappa$-bit value as the input. This is denoted by
+the $x \getsrandomly S$ symbol that indicates that an element $x$ is chosen uniformly at random
+from the set $S$. Note here that to do this, the challenger, too, has access to randomness,
+and so any probabilities are also taken with respect to this randomness.
+The adversary is given $H(x)$ and would like to find $x$.
+As there are other inputs that produce the same $H(x)$,
+we ask her to produce some $x'$ (equal or different from $x$) that has the same hash value
+as $x$.
+
+\subsection*{Hash Security}
+
+We can now define what it means for a hash function to be \emph{cryptographically secure}
+or simply \emph{secure}.
+
+\begin{definition}[Secure Hash Function]
+  A hash function $H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$ is \emph{secure}
+  if there is a negligible function \emph{negl} such that
+
+  \begin{gather*}
+    \forall PPT \mathcal{A}:\\
+      \Pr[\textsf{collision-game}_{H,\mathcal{A}}(\kappa)] = 1] < \textsf{negl}
+      \\\land\\
+      \Pr[\textsf{preimage-game}_{H,\mathcal{A}}(\kappa)] = 1] < \textsf{negl}
+  \end{gather*}
+\end{definition}
+
+\subsection*{Commitment Schemes}
+
+Using hash functions, we can build secure \emph{commitment schemes}\index{Commitment Scheme}.
+A commitment scheme involves a \emph{sender} and a \emph{receiver}. The sender initially
+\emph{commits} to a value and sends the commitment to the receiver. At a later time, the
+sender reveals the original value, and the receiver can check this. The commitment scheme
+is secure if the receiver cannot ascertain the value before the revelation, and the sender
+cannot change the value after the commitment. Let us make these requirements a bit more
+formal through the use of cryptographic games.
+The commitment scheme consists of one algorithm called \textsf{Commit} (ran by the sender)
+and one algorithm called \textsf{Check} (ran by the receiver).
+The \textsf{Commit} function accepts a value $v$ and returns a commitment $h$ and a randomness
+$r$ which can be used at a later time. The sender initially invokes the \textsf{Commit}
+function with the value $v$ and obtains $h$ and $r$. He then sends $h$ to the receiver.
+When the sender is ready to reveal the value, he sends both $v$ and $r$ to the receiver.
+The receiver uses the \textsf{Check} function to check the consistency of the reveal.
+The \textsf{Check} function accepts a commitment $h$, a value $v$,
+and the randomness $r$ and returns \textsf{true} if the reveal is consistent with the
+commitment, or \textsf{false} otherwise.
+
+We need our commitment
+scheme to be \emph{correct}: If \emph{both} the verifier and prover are honest, the \emph{Verify}
+function should output \emph{true}. This is captured in the following definition:
+
+\begin{definition}[Commitment Correctness]
+  A commitment scheme $(\textsf{Commit}, \textsf{Check})$ is \emph{correct} if
+  for all $v$:
+  $(h, r) \gets \textsf{Commit}(v); \textsf{Check}(h, v, r) = \true$.
+\end{definition}
+
+For the \emph{correctness} part, we are not speaking of negligibility or probabilities
+or adversaries at all. The scheme must \emph{always} work between honest parties.
+
+Let us now state our goals for
+a secure commitment scheme in the form of a game.
+We want the commitment scheme to be
+\emph{binding} and \emph{hiding}. The \emph{binding} property means that the sender
+cannot change his mind at a later time. Once a commitment is sent to the receiver,
+only one value can be later revealed and correctly verified by the receiver. The
+binding property protects the honest receiver from a malicious sender. On the
+other hand, the \emph{hiding} property means that the receiver cannot deduce
+any information about the sender's value prior to the time of the reveal phase.
+The hiding property protects the honest sender from a malicious sender.
+
+\import{./}{algorithms/alg.commit-game}
+
+The games describing these security properties of the commitment scheme are
+illustrated in Algorithm~\ref{alg.commit-game}. Let us look at these games a bit
+more closely. In the \emph{binding-game}, we have the adversary output \emph{one}
+commitment $h$, but multiple reveals $v_1$ and $v_2$ with potentially different
+randomnesses $r_1$ and $r_2$. The two reveals $v_1$ and $v_2$ must be different.
+The challenger then checks that both the values $v_1$ and $v_2$ verify with
+the commitment $h$ using their respective randomnesses $r_1$ and $r_2$. If both
+do, then the adversary was successful in breaking the binding property. Note here
+that the adversary didn't have to use the honest \emph{Commit} method at all.
+She was allowed to generate the values in any way she pleased. Since the \emph{binding}
+property is about protecting the honest \emph{receiver}, the challenger game only uses
+the honest \emph{Check} method.
+
+On the other hand, the \emph{hiding-game} invokes the adversary twice. In the first
+invocation, the adversary is asked to output two values $v_1$ and $v_2$ (for the
+adversary's sake, these better be different). The challenger then flips a coin $b$
+to decide between one of these two values $v_1$ or $v_2$. He then uses \emph{Commit}
+to commit to the chosen value, and asks the adversary, through a second invocation,
+whether she can guess which value he committed to. If the adversary can guess between
+the two, she was successful in breaking the \emph{hiding} property. Again, the adversary
+can use any method she pleases and is not required to invoke the \emph{Check} function
+at all. In this game, since we are protecting the honest \emph{sender}, the challenger
+game only uses the honest \emph{Commit} method. Additionally, observe how much power
+we give to the adversary: She is completely free to choose $v_1$ and $v_2$ and they
+are not chosen randomly. In case she is able to distinguish between \emph{any} such
+commitments of her choice, the hiding property breaks. Our scheme will be quite
+secure if we can achieve this property!
+
+Given these properties, the security definition for commitment schemes is straightforward:
+
+\begin{definition}[Secure Commitment Scheme]
+  A commitment scheme (\emph{Commit}, \emph{Check}) is secure if there exists a
+  negligible function \emph{negl} such that:
+
+  \begin{gather*}
+    \forall PPT \mathcal{A}:\\
+    \textsf{binding-game}_{\emph{Commit},\emph{Check},\mathcal{A}}(\kappa) < \textsf{negl}(\kappa)\\
+    \land\\
+    \textsf{hiding-game}_{\emph{Commit},\emph{Check},\mathcal{A}}(\kappa) < \frac{1}{2} + \textsf{negl}(\kappa)\\
+  \end{gather*}
+\end{definition}
+
+Notice here how we require that the adversary wins with only negligible probability in the \emph{binding game},
+but with probability bounded by $\frac{1}{2} + \textsf{negl}$ in the \emph{hiding game}. In the hiding game,
+the adversary can always succeed with probability $\frac{1}{2}$ by taking a simple random guess. This is fine.
+What the security definition is saying is that the adversary cannot take any \emph{educated} guesses.
+
+\subsection*{Commitment through Hashing}
+
+It should now be pretty clear that we can use hash functions to create a commitment scheme. See if you can
+sketch down the construction yourself before you read further. It is illustrated in Algorithm~\ref{alg.hash-commit}.
+For committing, the construction generates a fresh new randomness and then applies the hash function
+on the randomness and the value to be committed concatenated. This randomness is known as a \emph{salt}\index{Salt}
+and is necessary for the security of the scheme (see Problem~\ref{prob.commit-salt}). The \emph{Check} function
+simply applies the same hash function again to ensure that the commitment took place correctly.
+
+\import{./}{algorithms/alg.hash-commit}
+
+The fact that this construction is \emph{correct} should be obvious because the \emph{Commit} and
+\emph{Check} algorithms both use the hash function identically.
+Let us prove that this construction has the \emph{binding} property.
+
+\import{./}{algorithms/alg.commit-security}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.35 \columnwidth,keepaspectratio]{figures/hash-commitment-reduction.pdf}
+    \caption{The adversary $\mathcal{A}^*$ contains the code of $\mathcal{A}$ inside her. The outside
+             adversary invokes the inside adversary to obtain the data that she later uses in her own
+             response to her own challenger.}
+    \label{fig.hash-commitment-reduction}
+\end{figure}
+
+\begin{theorem}[Commitment Security]
+  The commitment scheme of Algorithm~\ref{alg.hash-commit} constructed using a \emph{secure
+  hash function} $H$ is \emph{binding}.
+\end{theorem}
+\begin{proof}
+  Consider any \emph{arbitrary}
+  PPT adversary $\mathcal{A}$ that attempts to break the \emph{binding} property of the commitment scheme.
+  We will prove that this adversary has only a negligible probability of success.
+  We will construct a different adversary, $\mathcal{A}^*$, that attempts to break the \emph{collision resistance}
+  property of $H$.
+
+  The adversary $\mathcal{A}^*$ is depicted in \ref{alg.commit-security} and illustrated in
+  Figure~\ref{fig.hash-commitment-reduction}. Let us observe some facts about these adversaries. First,
+  the adversary $\mathcal{A}^*$ can make use of the adversary $\mathcal{A}$, because $\mathcal{A}^*$
+  can simply have the code of $\mathcal{A}$ copy/pasted inside her own algorithm. Secondly,
+  the adversary $\mathcal{A}^*$ is polynomial as long as $\mathcal{A}$ is polynomial, because
+  $\mathcal{A}^*$ only executes a constant number of extra instructions in addition to invoking
+  $\mathcal{A}$. Therefore, $\mathcal{A}^*$ is also a PPT algorithm. Lastly, these two adversaries
+  will have different challengers: $\mathcal{A}$ is designed to succeed in the \emph{collision-game}
+  challenger, while $\mathcal{A}^*$ is designed to succeed in the \emph{binding-game} challenger.
+  One more thing to note is that we made this reduction without knowing anything about the
+  nature of $\mathcal{A}$ beyond the fact that it is a PPT. Its code could be anything.
+
+  Now for the probabilities of success, it is possible that $\mathcal{A}$ succeeds or fails.
+  If $\mathcal{A}$ fails, we have no expectations of $\mathcal{A}^*$. But if $\mathcal{A}$ succeeds,
+  then $\mathcal{A}^*$ always succeeds, too. The reason is the check performed by the \emph{binding-game}
+  ensure that $\textsf{Verify}(h, v_1, r_1)$ and $\textsf{Verify}(h, v_2, r_2)$, but $v_1 \neq v_2$.
+  But this means that $H(r_1 \conc v_1) = h$ and $H(r_2 \conc v_2) = h$, therefore
+  $H(r_1 \conc v_1) = H(r_2 \conc v_2)$. But $r_1 \conc v_1 \neq r_2 \conc v_2$. To see this,
+  note that $r_1$ and $r_2$ have the same length and could be equal, but $v_1$ and $v_2$ are different.
+  Therefore, the check performed by the \emph{collision-game} will succeed.
+
+  We conclude that, if $\mathcal{A}$ succeeds, then $\mathcal{A}^*$ succeeds, and s
+  the probability of success of $\mathcal{A}^*$ against the \emph{collision-game}
+  is at least as much as the probability of of success $\mathcal{A}$ against the \emph{binding-game}
+  (in fact the two probabilities happen to be equal):
+
+  \[
+    \Pr[\textsf{collision-game}_{H,\mathcal{A}^*}(1^\kappa)] \geq
+    \Pr[\textsf{binding-game}_{\textsf{Commit},\textsf{Check},\mathcal{A}}(1^\kappa)]
+  \]
+
+  From the assumption that $H$ is collision resistant, we know that
+
+  \[
+    \Pr[\textsf{collision-game}_{H,\mathcal{A}^*}(1^\kappa)] < \textsf{negl}\,.
+  \]
+
+  Therefore, applying the above inequality,
+  $\Pr[\textsf{binding-game}_{\textsf{Commit},\textsf{Check},\mathcal{A}}(1^\kappa)] < \textsf{negl}$,
+  too.
+\end{proof}
+
+This proof is a standard reduction proof that follows the outline we gave in Chapter~\ref{chapter.untrusty-world}.
+Note how we skipped the $\kappa$ as a parameter to the \emph{negl} function, since it is clear
+from context.
+
+We proved that \emph{binding} follows from \emph{collision resistance}. It would seem that
+\emph{hiding} must follow from \emph{preimage resistance}, but, even though this scheme is
+hiding in practice, the proof will require a different model (see Problem~\ref{prob.preimage-no-hide}).
+
+\subsection*{Applied Hashes}
+
+In practice, we will use the \texttt{SHA256} hash function. This is a hash function that takes
+any input and outputs $256$ bits (or $32$ bytes). This hash function is used in many modern
+cryptocurrencies to identify objects. Here is the \texttt{SHA256} hash of the word ``hello'',
+displayed in hexadecimal format:
+
+\texttt{2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824}
+
+\section{Signatures}\index{Signature}
+
+When Alice sends money to Bob, she needs to \emph{authorize} this payment. This means
+that the rest of the network needs Bob to \emph{prove} that Alice really gave him
+her money instead of taking his word for it.
+
+We will use a cryptographic \emph{signature scheme} to do that. A cryptographic signature
+scheme is a means for a party to say ``this message was really written by me'' and it is
+not a forgery.
+
+\subsection*{Public Key Cryptography}
+
+Before we discuss signature schemes, we must discuss the notion of identity in the cryptographic
+setting. In a traditional legal system, an identity is tied to a person's physical body
+and authorized by a government using papers such as a passport. In our case, we do not want
+to rely on physical bodies or centralized governments for proving identity. Anyone should be
+able to create a new identity \emph{pseudonymously}\index{Identity}\index{Pseudonymity}, without necessarily associating it with
+their real person. To do this, a participant uses his computer to create a \emph{key pair}.
+The key pair consists of two keys: A \emph{public key}\index{Public key} and a \emph{private key}\index{Private key}
+(or \emph{secret key}\index{Secret key}). The public key portion of the key pair can be shared freely and even
+be made public. For example, it can be published on the owner's website, social media, or on
+a newspaper, without any security problems. On the contrary, a private key must be kept secret.
+We use the public key to specify \emph{the identity about which we are speaking}. So, instead
+of saying ``Alice'' with such and such legal name, we refer to her by her public
+key. The private key can be used by Alice herself to prove her identity. That's why the
+private key must remain secret: If it falls into the hand of someone else, this someone
+else \emph{really is} Alice. Of course, any physical person can create multiple different
+key pairs and maintain multiple identities that are not necessarily associated with one
+another. This idea will play an important role in achieving a basic level of pseudonymity.
+
+The public key and private key are created together as a pair, because they are associated
+with one another mathematically in a unique manner. For every private key, there is a unique
+associated public key. For every public key, there is a unique associated private key.
+Given a private key, it is \emph{easy} to get the respective public key. Given a public
+key, it is \emph{hard} to get the respective private key, even though there is a unique
+such key. This is essential. If it were easy to get the private key from a public key,
+anyone who knew your public key could impersonate you. We will denote the public key
+$pk$ and the private key $sk$ (an abbreviation of \emph{secret key}).
+
+\subsection*{Unforgeability}
+
+A cryptographic signature is created using a particular private key $sk$ and is
+denoted $\sigma$. It is associated with a particular message $m$. This means that
+the person who holds the private key has authorized this message $m$. The message
+will say something like: ``I, Alice, gave 5 monetary units to Bob.'' Of course, the
+messages will be in a computer-readable format. We will make these messages more
+precise very soon.
+
+A signature is associated with a particular message. If the user wants to sign a
+different message, a different signature must be created. If $\sigma$ is the signature
+pertaining to the message $m$, then a signature $\sigma'$ must be created for a
+different message $m' \neq m$. The signature $\sigma$ will be invalid for message $m'$.
+This shows that cryptographic signatures are very different from hand-written signatures.
+Hand-written signatures are useless from a security point of view, as they can be
+copied and pasted around and their veracity cannot be checked. Cryptographic
+signatures cannot be copied underneath unauthorized messages. This would constitute
+a \emph{forgery}, and we will make a precise computer science claim about how
+likely such forgeries are using a cryptographic game. We emphasize that we use the
+word \emph{signature} because there is some analogy in physical signatures, but
+what we are achieving here is something truly different and much more powerful
+than pen-and-paper signatures. There is no reliance on courts of law and pseudoscientific
+``graphologists'' to tell whether a signature is genuine. Instead, the reliance is
+on hard computational problems and formal cryptographic claims.
+
+Before we define our security game, let us precisely state how a signature protocol
+works. Initially, Alice generates her key pair $(pk, sk)$ by invoking a special algorithm
+$Gen(1^\kappa)$. The public key and the secret key are both simple strings, $kappa$
+bits long (in practice typically $256$ bits each).
+She keeps $sk$ secret and publishes $pk$ by
+sending it to her friends. When the time comes for Alice to write a message $m$
+that she wishes to sign, she uses her private key $sk$ to invoke the function
+$Sig(sk, m)$ to obtain a signature $\sigma$. She sends the message $m$ together
+with the signature $\sigma$ to Bob. Bob already holds the public key $pk$ of Alice.
+He uses the public key to invoke the function $Ver(pk, m, \sigma)$, which returns
+$\true$ if the signature was genuinely created by Alice, or $\false$ otherwise.
+If the adversary sends a different message $m' \neq m$ together with this $\sigma$
+to Bob, the \emph{Ver} function will return $\false$.
+
+If both the sender and the verifier are honest, the signature scheme should always
+work. This is what constitutes a \emph{correct} signature scheme.
+
+\begin{definition}[Signature Correctness]
+  Consider a signature scheme $(Gen, Sign, Ver)$. The scheme is \emph{correct} if
+  for any key pair $(pk, sk)$ generated by invoking $Gen$, and
+  for all messages $m$, it holds that $Ver(pk, m, Sign(sk, m)) = \true$.
+\end{definition}
+
+For the security definition, we want the adversary to not be able to produce
+messages that were not authorized by their rightful owner. Since we are protecting
+an honest verifier who holds a correctly generated public key, our challenger will
+invoke \emph{Gen} to obtain the key pair $(pk, sk)$. Additionally, the adversary will
+be given access to $pk$, since this is public, but not access to $sk$ (if the adversary
+has access to $sk$, we can have no hope). The adversary will then attempt to generate
+a signature $\sigma$ that verifies for a message $m$ using the public key $pk$.
+The adversary does not have to use the \emph{Sig} algorithm, but can use any method
+she likes, as long as the $Ver$ algorithm returns $\true$. The game will output
+$\true$ if the $Ver$ algorithm outputs $\true$.
+
+But note that this approach misses something: The adversary is trying to generate
+signatures \emph{in the blind}, but in the real world, the adversary may see some
+authorized signatures that the honest signer really \emph{did} make. The adversary
+can then make use of these signatures as she sees fit. For example, she might try
+to copy/paste a signature on a different message, or alter an existing signature
+on one message to create a signature on a different message. We would like our
+game to capture the fact that the adversary has this kind of access. To make her
+even more powerful, in our game we allow the adversary to ask the signer to sign
+\emph{any message of her choice}. As long as the adversary can produce a signature
+for \emph{any message she did not ask a signature for}, we consider it a successful
+forgery. This is a very powerful notion. The adversary has a lot of power, so if
+we can create a signature scheme that is resilient to such adversaries, we will have
+a lot of confidence in our protocol.
+
+\import{./}{algorithms/alg.existential-forgery}
+
+The \emph{existential forgery game} is depicted in Algorithm~\ref{alg.existential-forgery}.
+Initially, the challenger generates a keypair $(pk, sk)$ using the honest key generation
+algorithm \emph{Gen}. He then invokes the adversary, giving her access to $pk$. Since
+$pk$ is $\kappa$ bits long, we do not need to pass $1^\kappa$ to this adversary.
+A closure function $\mathcal{O}$ is defined within the challenger. When invoked
+with a message $m$, this function gives out a signature $\sigma$ to the message
+$m$ using the secret key $sk$, but without revealing the secret key. The closure
+also records the requested message in the set $M$.
+When the adversary is invoked, she is given \emph{oracle access} to call the
+function $\mathcal{O}$. This is like a callback, and is denoted using the
+exponent notation. It means that $\mathcal{A}$ can call $\mathcal{O}$, but
+cannot look at its code. Critically, $\mathcal{A}$ cannot see the value $sk$.
+The adversary can make multiple \emph{queries} to the oracle to obtain many
+signatures. Based on the signatures it sees, it can make yet further queries
+in an adaptive manner. When she is finally ready, the adversary is expected
+to produce a signature $\sigma$ on a message $m$ that was not queried to the
+oracle $\mathcal{O}$ (the adversary can trivially succeed in providing a signature
+for messages queried to the oracle). If the message and signature provided by
+the adversary pass the \emph{Ver} check using the public key $pk$, the adversary
+is deemed successful.
+
+The security definition is straightforward. Since we have already seen a few
+identical security definition, try writing out the definition before looking
+at it.
+
+\begin{definition}[Secure Signature Schemes]
+  A signature scheme $(Gen, Sig, Ver)$ is called \emph{secure} if there
+  exists a negligible function \emph{negl} such that
+
+  \begin{align*}
+    \forall PPT \mathcal{A}:\\
+    \Pr[\textsf{existential-forgery}_{Gen, Sig, Ver, \mathcal{A}}(\kappa) = 1] < \textsf{negl}(\kappa)
+  \end{align*}
+\end{definition}
+
+Secure signature schemes are sometimes called \emph{existentially unforgeable signature
+schemes}\index{Existential Unforgeability}. We will not describe how a secure signature scheme can be built. If you are
+interested in this, there are many cryptography books~\cite{katz,foundations}
+that go into detail on this.
+
+\subsection*{Applied Signatures}
+
+Since the hash of a message is a unique identifier for it, it is sufficient that
+the hash of a message is signed instead of the message itself. This is often done
+in practice since it simplifies the implementation of signature schemes.
+One class of secure signature schemes is called
+\texttt{ECDSA}\index{ECDSA} and is based on the mathematical structure of \emph{elliptic curves}\index{Elliptic Curve}.
+These curves define how public keys are structured, and they involve some algebra
+which makes it hard for private keys to be calculated based on the knowledge of
+just the public key. The computational problem on which hardness is based is called
+the \emph{discrete logarithm problem}\index{Discrete Logarithm Problem}.
+There are different curves with different names, and each of them
+defines a different format for key pairs.
+A popular curve in cryptocurrencies is
+\texttt{secp256k1}\index{secp256k1}. Another is \texttt{ed25519}\index{ed25519}.
+
+Here is a public key of the \texttt{ed25519} signature scheme:
+
+\texttt{10b4b0f158afb93e3fd6111b564ad4c4054ae9a142362d8d9e05a9f2d6444530}
+
+Here is the respective private key:
+
+\texttt{7aa064fb575c861d5af00febf08c1c31620d5a70094c4bcb11cb2720630ee98a}
+
+Here is a signature generated with the above private key:
+
+\texttt{c538752e628c9ca43b3328f68afc76af40cf68732db00a8c9a885a6d41045b49}\linebreak
+\texttt{5ef44fb625a6742895d6819a63c254e352537998961a6802687140115811a409}
+
+As you can see, all of these look pretty much like random bytes.
+As blockchain protocol designers,
+the details of these curves and the exact underlying meaning of private keys and public keys
+do not matter to us, as long as the resulting signature
+scheme is secure. When implementing a cryptocurrency, it is best to use a library
+to do the signing and verification for us instead of implementing the signature
+scheme ourselves. Like many cryptographic primitives, it is extremely difficult to
+write a good, safe implementation for signature schemes. There are many pitfalls
+such as bad randomness and timing attacks. \emph{Do not roll your own crypto.}
+
+We will use signature schemes for basic money transfer. When Alice wishes to participate
+in the cryptocurrency, she will initially create an identity $(pk, sk)$ by invoking
+\emph{Gen}. When she is ready to get paid, she will hand out $pk$ to the person wishing to
+pay her. Later, when the time comes for her to spend her money, she will authorize a payment
+by invoking the function \emph{Sig} using her private key $sk$. The message describing
+the payment must contain both the amount that she is spending as well as the public key
+$pk'$ of the receiver. Both of these must be included in $m$ so that nobody can forge
+the amount that Alice paid or the identity of the receiver and swap it out for something
+else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ on $m$ and the signature.
+
+\section{The Transaction}\index{Transaction}
+We are now ready to start creating money. Given our insight that money comes to be
+through mutual social agreement---a social construct---we can create money simply by conjuring
+it through software. As long as it is difficult to forge and everyone agrees
+\emph{who has what}, it will become something that can take on value through social
+agreement.
+
+To solve the problem of knowing \emph{who has what}, we will employ an unusual strategy:
+We will require that \emph{every node on the network knows who owns what}. There are privacy
+and efficiency issues with this, and we will resolve both later.
+
+\subsection*{Coins}
+
+Let us imagine how we can model the transfer of money between two parties. We need to represent
+that Alice made a payment to Bob of some particular amount. We will represent this through a
+\emph{transaction}. We will draw a transaction as a node (a circle) with an \emph{incoming edge}
+and an \emph{outgoing edge}. The incoming edge is called the \emph{input}\index{Transaction input} and
+illustrates \emph{who is paying}. The outgoing
+edge is called the \emph{output}\index{Transaction output} and illustrates
+\emph{who is getting paid}. We will draw the \emph{amount being transacted}
+above the edge and \emph{the owner} below the respective edge. A transaction of $1$ unit
+between Alice and Bob is illustrated in Figure~\ref{fig.utxo-transaction}. This may seem like
+an unusual way to illustrate things, but it will soon become clear why we are adopting it.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.35 \columnwidth,keepaspectratio]{figures/utxo-transaction.pdf}
+    \caption{A transaction paying $1$ unit of money from \emph{Alice} to \emph{Bob}.}
+    \label{fig.utxo-transaction}
+\end{figure}
+
+For Alice to spend this money and give it to Bob, she must have been given this money previously.
+We will illustrate this by the output of one transaction connecting to the input of another,
+as illustrated in Figure~\ref{fig.utxo-transaction-chain}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.55 \columnwidth,keepaspectratio]{figures/utxo-transaction-chain.pdf}
+    \caption{\emph{Alice} pays $1$ unit of money to \emph{Bob}. She received this money from \emph{Charlie}.}
+    \label{fig.utxo-transaction-chain}
+\end{figure}
+
+Money changing hands in this manner is referred to as a \emph{coin}\index{Coin}. A coin has a current owner,
+denoted in the final outgoing output edge which is not connected to another transaction as input.
+It has a history of previous owners. The outgoing output
+edge of a transaction that is not connected to another transaction is an output \emph{available for spending}.
+It is a \emph{dangling output} and
+it is known as an \emph{Unspent Transaction Output} (UTXO)\index{UTXO}.
+
+As we discussed in the signatures section, we will use public keys for identities. Our transactions
+will not contain a payment from ``Alice'' to ``Bob'', but from some public key (whose respective secret key
+is held by Alice) to some other public key (whose respective secret key is held by Bob). This is
+illustrated in Figure~\ref{fig.utxo-transaction-keys}. However, for convenience, we will write out
+\emph{Alice} and \emph{Bob} in place of their public keys, understanding that the payments are
+made to public keys and not legal identities. An appropriately encoded public key to which a payment can be made is
+also known as an \emph{address}\index{Address}. An address can be exchanged between counterparties
+even before any transaction takes place.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.35 \columnwidth,keepaspectratio]{figures/utxo-transaction-keys.pdf}
+    \caption{A transaction pays from one public key to another. It does not contain real names
+             or other identifying information.}
+    \label{fig.utxo-transaction-keys}
+\end{figure}
+
+\subsection*{Multiple Outputs}
+
+It may be useful to pay for multiple things with a single transaction. If Alice receives
+her salary through one transaction, she may want to spend it on both her rent as well
+as on a book. A transaction can have multiple outputs. Each of the outputs may have a
+different receipient public key and a different amount. An example is illustrated in
+Figure~\ref{fig.utxo-multiple-outputs}. Each of the outputs can be spent independently.
+For example, Alice's landlord can spend his money while the bookstore doesn't. This
+transaction consumes one input and produces two outputs.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.35 \columnwidth,keepaspectratio]{figures/utxo-multiple-outputs.pdf}
+    \caption{Alice uses her salary, the incoming edge, in a single transaction to pay for
+             both her rent and a book in two different outgoing edges.}
+    \label{fig.utxo-multiple-outputs}
+\end{figure}
+
+An outgoing edge can either be spent (if it is connected to another transaction) or
+unspent (if it is not connected to another transaction). It cannot be partially spent.
+A UTXO can only be spent in its \emph{entirety} by being connected as input to a new
+transaction. If Alice wants to use \emph{part} of her salary to buy a book, and keep
+the rest of her salary for later spending, she must still spend her salary output
+in its entirety and use it as a transaction input. She creates \emph{two} outputs
+in this transaction: One paying the bookstore, and the other paying back to herself.
+The second output is the new UTXO that she can use to spend her remaining salary
+at a later time. This is known as a \emph{change output}\index{Change} and is
+illustrated in Figure~\ref{fig.utxo-change}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.35 \columnwidth,keepaspectratio]{figures/utxo-change.pdf}
+    \caption{Alice uses her salary, the incoming edge, in a single transaction to pay for
+             a book (top output edge). She uses the rest of her money to pay the
+             \emph{change} back to herself (bottom output edge).}
+    \label{fig.utxo-change}
+\end{figure}
+
+Coins are often spent in a series of transactions like that. Alice uses her salary
+to pay for a series of things. She first pays for a book, then gives herself the change
+of that transaction. In a next transaction, she pays for an apple, and then gives herself
+the change of that. She then pays for a coffee, and gives herself the change for that.
+This process is illustrated in Figure~\ref{fig.utxo-change-chain}. This graph has four
+UTXOs: Alice's remaining salary of $944$ units, the payment for the book store of $50$
+units, the payment to the fruit market for $1$ unit, and the payment to the coffee shop
+for $5$ units. The left-most edge, Alice's original salary of $1000$ is not a UTXO, since
+it is spent. Even though there are four UTXOs, only three transactions are depicted in this
+graph.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75 \columnwidth,keepaspectratio]{figures/utxo-change-chain.pdf}
+    \caption{Alice uses her salary, the left-most edge, in a series of transactions,
+             always giving change back to herself. The bottom-right edge is her remaining salary.}
+    \label{fig.utxo-change-chain}
+\end{figure}
+
+\subsection*{Multiple Inputs}
+
+It is also possible to \emph{combine} multiple inputs into a single transaction to make
+a larger payment. For example, Alice can use two of her salaries, each of which resides
+in a different transaction output, to make a down payment for the house she is buying.
+This is illustrated in Figure~\ref{fig.utxo-multiple-inputs}. This transaction consumes
+two outputs and produces one new output.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.35 \columnwidth,keepaspectratio]{figures/utxo-multiple-inputs.pdf}
+    \caption{Alice combines two of her salaries (left, incoming edges) to pay for her
+             house (right, outgoing edge).}
+    \label{fig.utxo-multiple-inputs}
+\end{figure}
+
+Typically, a transaction will have one or more inputs and exactly two outputs. Alice will use
+one or more payments she has received (including previous change) to pay for something she is
+purchasing, and give herself the change remaining from the purchase.
+
+\subsection*{The Conservation Law}
+
+Money must not be created out of nothing. The input amounts to a transaction must
+match the output amounts of the same transaction. This is known as the \emph{conservation law}.
+Let us denote by $\tx$ a transaction, by $\tx\textsf{.ins}$ its array of inputs,
+and by $\tx\textsf{.outs}$ its array of outputs. For each input \emph{in} in
+$\tx\textsf{.ins}$, let us denote by $\textsf{in.v}$ the amount in the particular
+input, and similarly for \emph{out}. We can write the conservation law in an equation.
+
+\begin{definition}[Conservation Law]
+  Given a transaction $\tx$, we say that it obeys the \emph{Conservation Law} if
+
+  \[
+    \sum_{\textsf{in} \in \tx\textsf{.ins}} \textsf{in.v} = \sum_{\textsf{out} \in \tx\textsf{.outs}} \textsf{out.v}
+  \]
+\end{definition}
+
+Most transactions will obey this law. However, money must come from \emph{somewhere},
+and so there must be some initial transactions that do not obey this law. These are known as
+\emph{coinbase} transactions. Even though they have valued outputs, they have no inputs. They
+are the only ones that do not respect the Conservation Law.
+Coinbase transactions follow very particular rules and they must be designated and limited,
+in order to have scarcity.
+We will explore the exact rules
+in more detail when we speak about macroeconomics in Chapter~\ref{chapter.economics}.
+Even though there can be transactions with no inputs (the coinbase transactions), every
+transaction must have at least one output.
+
+\subsection*{Outpoints}
+
+Each transaction is given an \emph{identifier} known as the \emph{txid}~\index{txid}. This is
+obtained by hashing the transaction data (including all of its inputs and outputs).
+
+Since an input of a transaction is always spending a previous output, the input can just be a
+reference to a previous output. To reference an output, we need to specify the transaction it
+belongs to, using its txid, as well as the \emph{index} of the output (whether it is the first
+output of the transaction, or the second output of the transaction, and so on). The pair
+$(\txid, idx)$ is used in place of an input and is sufficient to uniquely specify a previous
+output. The value $idx$ is simply a number $0, 1, 2, \ldots$.
+This pair is known as an \emph{outpoint}\index{Outpoint}. An outpoint example is illustrated
+in Figure~\ref{fig.utxo-outpoint}. We will illustrate the outpoint pair on top of an
+encoming edge to a transaction, although this will typically be implicit.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/utxo-outpoint.pdf}
+    \caption{The transaction number $19$ has a single input that spends the output number $1$ (to Alice)
+             of transaction number $12$.
+             The output number $0$ of transaction number $12$ (to Charlie) is still unspent.
+             Here, we have highlighted the outpoint pair $(12, 1)$ that connects the input
+             of transaction $19$ with the specific output of transaction $12$.}
+    \label{fig.utxo-outpoint}
+\end{figure}
+
+\subsection*{The UTXO Set}
+
+The whole history of payments in our system forms a \emph{transaction graph}\index{Transaction graph}.
+This is a Directed Acyclic Graph (DAG). It cannot contain cycles because transactions must be
+strictly orderable in the way that they spend: the input of a next transaction refers to
+outputs of previous trancations through outpoints that contain their hashes in the form of txids.
+An example transaction graph is illustrated in Figure~\ref{fig.utxo-tx-graph}. In this diagram,
+we are not showing the edge owners or amounts for conciseness. As new payments are made in the system,
+new transactions are added to the graph, but existing transactions are not modified, and previously
+added transactions are not removed.
+
+Some transactions in the graph have outputs that have all been spent, and we will never need to care
+about them again. Some transactions have dangling outputs, and so their outputs are available for
+spending. The money that is available for spending in the system is in the UTXOs. The set of all UTXOs
+forms the \emph{UTXO set}\index{UTXO set}.
+
+Transactions in the transaction graph can be ordered in a sequence of transactions. We can do this
+by ordering the graph in topological order. We start with an empty sequence of transactions and we
+place the transactions from the graph into the sequence one by one, ensuring each transaction appears
+only once. The strategy we use to place transactions in the sequence is that we always choose a transaction
+whose inputs point to transactions that have all already
+been placed in the sequence. Since coinbase transactions have no inputs, they can always be placed in the sequence.
+We continue
+in this manner until all transactions have been placed into our sequence. There may be multiple
+ways to order transactions in this manner, but there will always be one way to do it. All of the ways
+are \emph{consistent}: each transaction
+that spends from another transaction is placed in the sequence \emph{after} the transaction that it spends
+from. This sequence of transactions, ordered in this consistent manner, is known as a
+\emph{transaction ledger}\index{Ledger}. In Figure~\ref{fig.utxo-tx-graph}, transactions are labelled
+in one possible consistent order. As new transactions are added to our graph, they can also be appended
+to the transaction ledger while maintaining consistency.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/utxo-tx-graph.pdf}
+    \caption{A transaction graph with $3$ coinbase and $10$ non-coinbase transactions.
+             Coinbase transactions are shaded blue.
+             There are $23$ outputs, of which $6$ belong to the UTXO set.
+             The UTXO set is shaded red. Transaction number $8$ contains both
+             a spent and an unspent transaction output.}
+    \label{fig.utxo-tx-graph}
+\end{figure}
+
+Each node in our network stores the \emph{whole} transaction graph. When a party wishes to make
+a payment, they create a new tranasction and broadcast it to the network. This transaction is
+received by the other peers, who add it to their local transaction graph. Now everyone
+knows \emph{who owns what} by looking at their local UTXO set.
+
+\subsection*{Transaction Signatures}
+
+For a transaction to be valid, its inputs must point to outputs whose spending has
+been authorized by their rightful owner. This can be done by \emph{signing} the new transaction
+data using the secret key that corresponds to the public key annotated on the previous output
+being spent.
+Let us look at the transaction that Alice creates in Figure~\ref{fig.utxo-sig}. This
+new transaction, transaction $19$, is spending from an output that belongs to Alice.
+The output being spent is the output with index $0$ of transaction $7$.
+The new transaction is paying Bob $1$ unit and Charlie $2$ units, for a total of
+$3$ units.
+Alice must authorize this spending by signing using her secret key.
+The data that she signs are the contents of the new transaction:
+The owners and amounts in the outputs, and the outpoint of the input.
+It is not necessary to include the value of the input here, as the outpoint
+uniquely identifies it. It is imperative that Alice includes the public key
+of Bob in her signature when she creates this transaction. Otherwise, a malicious
+party, Eve, on the network could swap out Bob's public key with her own. If a secure
+signature scheme is used, any such forgery will be impossible due to existential
+unforgeability. The same applies in case Bob attempts to alter the amounts allocated
+to him and Charlie: Alice's signature will be invalidated, and the transaction will
+no longer look valid to any observers. Alice's signature on the transaction is packed
+together with the transaction and accompanies it whenever it is broadcast on the network.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/utxo-sig.pdf}
+    \caption{Alice creates a new transaction, transaction $19$, by which she pays Bob
+             $1$ unit
+             and Charlie $2$ units.
+             The transaction data include Bob's public key, Charlie's public key,
+             the outgoing amounts $1$ and $2$, and the outpoint $(7, 0)$.
+             These must all be signed by Alice's secret key.}
+    \label{fig.utxo-sig}
+\end{figure}
+
+If Alice wishes to create a transaction with multiple inputs she controls, she must
+provide a signature corresponding to each of the input. Consider the example illustrated
+in Figure~\ref{fig.utxo-sig-multi}. Here, Alice wishes to spend two outputs that she
+ownes. The first output has been paid to Alice's public key $pk_1$. The second output
+has been paid to Alice's public key $pk_2$. Alice controls the respective secret keys
+$sk_1$ and $sk_2$. Alice creates a new transaction, transaction $19$, containing the
+desired inputs and outputs. In the inputs, she places two outpoints pointing to the
+two outputs she wishes to spend. The new transaction data, including the inputs and outputs,
+must all be signed twice: First, using Alice's $sk_1$ (and verifiable using $pk_1$),
+and secondly using Alice's $sk_2$ (and verifiable using $pk_2$). This will yield two
+different signatures $\sigma_1$ (created using $sk_1$) and $\sigma_2$ (created using
+$sk_2$). Both of these signatures verify on the \emph{same} data, but using different
+public keys. A signature for the outpoint connected to each of the transaction's inputs
+must accompany the transaction whenever it is broadcast. A transaction is accompanied
+by as many signatures as it has inputs.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/utxo-sig-multi.pdf}
+    \caption{Alice creates a new transaction, transaction $19$, by which she pays Bob
+             $8$ units
+             and Charlie $2$ units.
+             The transaction data include Bob's public key, Charlie's public key,
+             the outgoing amounts $1$ and $2$, and two outpoints, $(7, 1)$ and $(8, 0)$.
+             All of these data must be signed twice: Once using Alice's $sk_1$ secret key,
+             and once using Alice's $sk_2$ secret key, giving two different signatures
+             $\sigma_1$ and $\sigma_2$ on the same data.}
+    \label{fig.utxo-sig-multi}
+\end{figure}
+
+\subsection*{Transaction Creation}
+
+When Alice wishes to create a new transaction, she performs the following steps:
+
+\begin{enumerate}
+  \item She picks the UTXO outputs she wishes to spend from.
+  \item She creates a new transaction with the output \emph{public keys} and \emph{amounts} she wishes to pay to.
+  \item She creates transaction inputs where she places outpoints pointing to the UTXOs she wishes to spend from.
+  \item She collects all the above transaction data into a message.
+  \item For each of the outpoints, she uses her respective private key to sign the message.
+  \item She broadcasts the transaction and its signatures to the network.
+\end{enumerate}
+
+\subsection*{Transaction Format}
+
+So far, we have treated a transaction as an abstract object. It is time to make this concrete. A transaction
+consists of its \emph{inputs} and \emph{outputs}:
+
+\begin{enumerate}
+  \item Its list of \emph{inputs}. Each element in this list is an outpoint, a pair in the form $(txid, idx)$.
+  \item Its list of \emph{outputs}. Each element in this list is a pair containing a public key
+        (the owner of the output) and an integer amount.
+\end{enumerate}
+
+An example transaction object looks like this:
+
+\begin{verbatim}
+  {
+    inputs: [
+      {
+        outpoint: (
+          cc6a88afaca94fec238258e3665d64cdde592e3ea13f151eca37d5e6589cd169,
+          0
+        )
+      },
+      {
+        outpoint: (
+          3a648c42b90af46b9bba7ae723451002aa53baba187020051e0c32112bf458a0,
+          3
+        )
+      }
+    ],
+    outputs: [
+      {
+        pk: ,
+        amount: 5012900000000
+      },
+      {
+        pk:,
+        amount:
+      },
+      {
+        pk:
+        amount:
+      }
+    ]
+  }
+\end{verbatim}
+
+\subsection*{Transaction Verification}
+
+In order to verify an incoming transaction from the network, each node must maintain the current transaction
+graph and in particular the \emph{current UTXO set}. As different nodes on the network see different transactions
+at different times, each node may have a different opinion on what their current UTXO set is.
+When a node sees a new transaction arriving from
+the network, it checks the new transaction's inputs to see if they belong to its current UTXO set.
+If the transaction is valid, the node adds the new transaction to its transaction graph.
+It also removes the new transaction's inputs
+from its \emph{current UTXO set}, and adds the new transaction's outputs to its \emph{current UTXO set}.
+This is how the transaction graph and the current UTXO set of each node evolve.
+
+When a new transaction arrives at the door of a receiver for the first time, he must check that it is
+a valid transaction. This process is called \emph{transaction verification}. It involves checking that
+this transaction is rightfully spending the money that it is claiming. If a transaction is deemed \emph{valid},
+then it is gossiped to the rest of the network. If a transaction is deemed \emph{invalid}, then it is
+rejected, and it is not gossiped to the network. This protects from spammy transactions occupying the
+network. The checks performed when verifying a transaction include checking the Conservation Law
+and checking the signatures on the new transaction.
+
+To perform these checks, he must follow the outpoints to find out the corresponding
+public keys and amounts.
+
+Transactions broadcast from different parts of the network may arrive in a different order in other
+parts of the network. This can yield to race conditions.
+
+When Bob wishes to verify a transaction $\tx$ received from the network, he performs the following steps:
+
+\begin{enumerate}
+  \item For each transaction input, he resolves the respective outpoint.
+  \begin{enumerate}
+    \item He checks that this outpoint is in his current UTXO set. \label{enum.tx-double-spend}
+    \item He retrieves the public key and amount of this outpoint.
+    \item He checks that a signature on the new transaction data verifies using the public key of the outpoint.
+  \end{enumerate}
+  \item He checks that the Conservation Law holds (or that this is a valid coinbase transaction).
+  \item He removes the outpoints from his current UTXO set.
+  \item He adds the new outputs to his current UTXO set.
+\end{enumerate}
+
+Let us discuss the step~\ref{enum.tx-double-spend} above.
+This is a necessary condition to ensure that the money really \emph{does} belong to its rightful owner and
+has not been previously spent.
+Consider would it would mean if this step failed.
+The verifier here is seeing a \emph{new} transaction, a transaction he has never seen before.
+Yet, this transaction is spending from an output that is \emph{not} in his UTXO set.
+
+It's possible that \emph{this outpoint was never added to the UTXO set in the first place}.
+This can occur for two different reasons.
+The first reason is malicious. The adversary is creating a transaction spending from
+a non-existing outpoint. This transaction must be rejected.
+The second reason is benign, and it is a \emph{race condition}.
+If Alice pays Charlie in one transaction $\tx_1$ and then Charlie pays David in another
+transaction $\tx_2$, which spends from $tx_1$, then $\tx_1$ and $\tx_2$ will be broadcast
+in this order. However, the verifier may receive them on the network
+in a different order than they were sent. He can see $\tx_2$ first, and $\tx_1$ only later.
+If a verifier sees $\tx_2$ first, then
+he cannot verify this transaction before he has seen $\tx_1$. After all, he doesn't have
+the necessary public key to verify the respective signature, and he doesn't have the
+necessary amounts to verify the Conservation Law.
+He must necessarily \emph{reject}
+$\tx_2$. It is not
+the responsibility of the verifier to hold onto $\tx_2$ until $\tx_1$ is received,
+because he cannot know if such a $\tx_1$ exists in the first place. For all it knows,
+an adversary could be attempting to spend a non-existent outpoint.
+
+Alternatively, it's also possible that \emph{this outpoint was added to the UTXO set, but was later
+removed from the UTXO set}. This means that there exists a different transaction
+which spends from the \emph{same} output.
+
+\section*{Problems}
+
+\begin{enumerate}
+  \item You are given a pre-image adversary $\mathcal{A}$ for a hash function $H$ that always
+        succeeds. Can you create a \emph{collision} adversary $\mathcal{A}^*$ against $H$
+        that succeeds often?
+  \item Show that if there exists a collision resistant and pre-image resistant hash function $H$,
+        then there exists a hash function $H'$ whose first bit is reliably predictable.
+        Use a computational reduction to show that $H'$ is collision resistant and pre-image
+        resistant.
+  \item Consider a hash-based commitment scheme construction in which no salt is used.
+        Prove that the scheme is correct. Use collision resistance to prove that the scheme is binding.
+        Calculate the probability of success of a hiding adversary in the
+        hiding game.\label{prob.commit-salt}
+  \item Construct a correct commitment scheme which is hiding but not binding.
+  \item Construct a correct commitment scheme which is binding but not hiding.
+  \item Show that the hash-based commitment scheme constructed using a
+        pathological secure hash function may not be hiding.
+        (Hint: Start with a secure hash function $H$ and modify it
+         to obtain a pathological secure hash function $H^*$.)\label{prob.preimage-no-hide}
+  \item Construct a correct but insecure signature scheme.
+\end{enumerate}
+
+\section*{Further Reading}
+
+Any cryptography book contains more information about hash functions and signature schemes.
+Our treatment here was superficial (as we did not, for example, treat \emph{keyed} hash functions).
+Read the security definitions in \emph{Modern Cryptography}~\cite{katz} pertaining to \emph{collision resistance},
+\emph{pre-image resistance} and \emph{second pre-image resistance}. Read the security definitions
+for \emph{existential unforgeability}. In the same book, you can find constructions for signature
+schemes using various methods, including some details on elliptic curves.
+
+The UTXO model was first put forth in the context of Bitcoin by Satoshi Nakamoto. Satoshi
+introduced blockchains, and his paper, \emph{Bitcoin: A Peer-to-Peer Electronic Cash System}~\cite{bitcoin} is
+mandatory reading. It is an easy paper that includes details about the UTXO model that we explored
+in this chapter, but also blocks, chains, and SPV proofs that we will explore in the next chapters.
 
 {\color{red}
 \begin{itemize}
-\item 
+\item
   Goal: Transparency / verifiability (everyone knows that the money they claim they have, they *actually* have)
 \item
   What is money? How do we know today who owns what? Did we track it through history? Do we have that history? No -- we trust our social environment. A kind of "honest majority" setting.
@@ -10,27 +992,15 @@
   \begin{itemize}
     \item Problems hard in the average case VS problems hard in the worst case
   \end{itemize}
-\item Commitment schemes
-\item The binding and hiding games
-\item Hashes
-\item The collision resistance and pre-image resistance games
-\item Public and private keys
-\item Signatures, signing, verifying, correctness, security
-\item The existential unforgeability game
-\item A transaction
-\item Addresses
-\item One input and one output
-\item Amounts
-\item Inputs and outputs in UTXO
-\item Splitting money
-\item Merging money
-\item Conservation Law
-\item Change
-\item Outpoints -- the transaction graph
-\item The transaction ledger / transaction serialization
 \item UTXO as application state
 \item The evolution of the UTXO
-\item What money do I own? Calculating balances
+\item Transaction lifetime -- creating a new transaction
+\item Steps for transaction validation
+\item Transaction signature creation and verification
+\item What money do I own? Calculating balances / Wallets as a collection of keys
+\item Verifying a payment
+\item Transaction broadcasting
+\item Everyone maintains a transaction graph!
 \item Double spending
 \item Reading: Chapter 5 introduction and section 5.1 from Modern Cryptography (2nd ed.)
 \item Reading: Chapter 12 introduction (skip comparison to MACs and relation to encryption) and sections 12.1, 12.2, 12.3 from Modern Cryptography (2nd ed.)

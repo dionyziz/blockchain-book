@@ -1,0 +1,14 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.collision-game} The collision-finding
+             game for a hash function $H$.}
+    \begin{algorithmic}[1]
+        \Function{\sf collision-game$_{H,\mathcal{A}}$}{$\kappa$}
+            \Let{x_1, x_2}{\mathcal{A}(1^\kappa)}
+            \If{$H_\kappa(x_1) = H_\kappa(x_2) \land x_1 \neq x_2$}
+                \State\Return{true}
+            \EndIf
+            \State\Return{false}
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}

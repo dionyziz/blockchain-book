@@ -1,0 +1,11 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.commit-security} The computational reduction for the security proof of
+             commitment schemes from hash functions.}
+    \begin{algorithmic}[1]
+        \Function{$\mathcal{A}^*_{\mathcal{A}}$}{$1^\kappa$}
+            \Let{h, v_1, r_1, v_2, r_2}{\mathcal{A}(1^\kappa)}
+            \State\Return$(r_1 \conc v_1, r_2 \conc v_2)$
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}
