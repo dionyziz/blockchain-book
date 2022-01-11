@@ -46,3 +46,17 @@
 \item A proof of the Common Prefix property
 \end{itemize}
 }
+
+\section*{Problems}
+
+\begin{enumerate}
+  \item Consider an execution under a minority adversary and good parameters such that
+        the Common Prefix property is typically preserved for some parameter $k$. Now,
+        under the same parameters, you, the adversary, are given a special power: You
+        can change the response to exactly \emph{one} fresh random oracle query by the
+        honest parties. You can change the query adaptively (you can decide whether you
+        want to change it, or not, once you see the query). You cannot change an old query
+        for which the random oracle already has a cached entry. After you change one response,
+        the random oracle caches your response and responds consistently in the future.
+        How would you use this ability to break Common Prefix for the same parameter $k$?
+\end{enumerate}
