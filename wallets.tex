@@ -24,8 +24,8 @@ of the wallet is to safeguard the private keys of the user.
 In order to access the blockchain, the wallet must somehow communicate
 with a blockchain node. This can be done by bundling the implementation of the
 wallet component, responsible for key management and signing transactions, together
-with a full node, responsible for verifying and choosing the longest valid chain.
-Alternatively, instead of implementing the full node as part of the wallet, the
+with a blockchain node, responsible for verifying and choosing the longest valid chain.
+Alternatively, instead of implementing the node as part of the wallet, the
 wallet can simply connect to a trustworthy node and use that to access the
 blockchain. Either way, the wallet needs access to a node. It uses this node to
 \emph{read} from the blockchain in order to know how much money it has and which UTXOs in
@@ -83,7 +83,7 @@ such pairs. In fact, the wallet may decide to generate a new private and public 
 and add it to its set of keys.
 
 A primary job of the wallet is to know how much money it holds.
-The wallet remains in contact with its full node and becomes aware of the evolving UTXO set. It
+The wallet remains in contact with its node and becomes aware of the evolving UTXO set. It
 can find out how much money it owns by walking the UTXO set and inspecting it for outputs that correspond
 to public keys in its set. The value held by a wallet is simply their sum:
 
@@ -115,7 +115,7 @@ employee.
 For this reason, a well implemented wallet will generate a new public key
 every time it needs to receive a new payment. That way, if the same wallet receives money from two different
 sources, these sources cannot trivially deduce that they are sending money to the same receiving wallet, even
-if they talk to each other. The way this is done is as follows. The wallet talks to its full node and retrieves
+if they talk to each other. The way this is done is as follows. The wallet talks to its node and retrieves
 all the past transactions that have been recorded in the blockchain since genesis. If there exists a public key in the set
 $\mathcal{PK}$ that does not appear in any past transaction, this public key can be displayed to the user for
 receiving money. More precisely, the set of keys that have not been used and are available for receiving money
@@ -153,6 +153,7 @@ allows them to input a receiving address (or scan a QR code) and an amount of mo
 {\color{red}
 \begin{itemize}
 \item Online and offline wallets
+\item Custodian wallets (kraken, coinbase... and MetaMask etc.)
 \item Wallet seeds
 \item Hardware wallets, brain wallets
 \item Hierarchical Deterministic wallets
