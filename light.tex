@@ -1,5 +1,39 @@
 \chapter{Light Clients}
 
+So far, all the participants in our network have been downloading the whole blockchain,
+including all transactions, and rebuilding the transaction graph to verify that everything
+is well. This includes both miners, as well as wallets, who need to have access to a node.
+A node that performs this whole verification is known as a \emph{full node}\index{Full Node}.
+
+As the blockchain contains all transactions ever made by anyone, this can be quite inefficient
+if the purpose is to just operate a wallet. After all,
+why does a wallet, which concerns itself about only very specific and limited public keys,
+need to know about everyone's transactions? It is only interested in transactions that concern
+the public keys it holds, as well as verifying that any incoming money is truly existent and
+not forged.
+
+As time goes by and the blockchain grows, this problem becomes more pronounced, because transactions
+are only ever added but never removed. The larger the running time of the system, the more data
+that has to be downloaded by a node, and the more time this takes.
+This is especially bothersome for a node that holds only the genesis
+block and is booting into the system for the first time. This problem is known as the
+\emph{bootstrapping problem}\index{Bootstrapping Problem}.
+From a practical standpoint, a blockchain system is unusable if a mobile wallet app takes
+a few days to synchronize with the rest of the network when first installed, and in the meantime
+uses all of the user's bandwidth to download this data and a significant amount of battery
+for signature validation.
+
+Of course, a mobile app could use a custodian wallet that holds its private keys, or
+utilize a trusted node while holding its own private key locally. However, this entails
+a level of centralization that we would like to avoid.
+
+Towards this end, we will modify our blockchain system to allow a node to
+synchronize quickly. Our nodes will only download transactions that are of interest
+to them, as well as the proof-of-work of the chain, but no transactions that do not
+concern them.
+These nodes are known as \emph{light nodes}\index{Light Node}, and the protocol
+we will develop is called \emph{simple payment verification}\index{Simple Payment Verification} (SPV).
+
 {\color{red}
 \begin{itemize}
 \item The Random Oracle model
