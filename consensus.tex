@@ -47,6 +47,227 @@
 \end{itemize}
 }
 
+\begin{figure}[t]
+  \begin{algorithm}[H]
+      \caption{\label{alg.backbone} The backbone protocol}
+      \begin{algorithmic}[1]
+       \Statex
+          \Let{\mathcal{G}}{\epsilon}
+          \Function{$\textsf{Constructor}$}{$\mathcal{G}'$}
+              \Let{\mathcal{G}}{\mathcal{G}'}
+              \Let\chain{[\mathcal{G}]}
+              \Let{\textsf{round}}{1}
+          \EndFunction
+          \Function{$\textsf{Execute}$}{$1^\kappa$}
+              \Let{\tilde\chain}{\mathsf{maxvalid}_{\mathcal{G},\delta(\cdot)}( \chain, \mbox{any chain $\chain'$ received from the network}) }
+  %            \If{$\textsc{Input}()\mbox{ contains }\textsc{Read}$}
+  %		        \State{ {\bf write} $R(\chain)$ to \textsc{Output}()}
+  %            \EndIf
+              \If{$\tilde\chain \neq \chain$}
+                  \State\textsc{Broadcast}{$(\chain)$}
+              \EndIf
+              \Let{x}{\textsc{Input}()}
+              \Let{B}{\Call{\sc pow}{x, \tilde\chain}}
+              \If{$B \neq \bot$}
+                  \Let{C}{C \concat B}
+                  \State\textsc{Broadcast}{$(\chain)$}
+              \EndIf
+              \Let{\textsf{round}}{\textsf{round}+1}
+          \EndFunction
+          \Function{$\textsf{Read}$}{}
+              \Let{x}{\epsilon}
+              \For{$B \in C$}
+                  \Let{x}{x \concat C.x}
+              \EndFor
+              \State\Return{$x$}
+          \EndFunction
+          \vskip8pt
+      \end{algorithmic}
+  \end{algorithm}
+  \end{figure}
+
+  \begin{figure}[t]
+  \begin{algorithm}[H]
+      \caption{\label{alg.validate} The validate algorithm}
+      \begin{algorithmic}[1]
+      \Function{$\textsf{validate}_{\mathcal{G},\delta(\cdot)}$}{$C$}
+          \If{$C[0] \neq \mathcal{G}$}
+              \State\Return$\false$
+          \EndIf
+          \Let{st}{st_0}\Comment{Genesis state}
+          \Let{h}{H(C[0])}
+          \Let{st}{\delta^*(st, C[0].x)}
+          \For{$B \in C[1{:}]$}
+              \Let{(s, x, ctr)}{B}
+              \If{$H(B) > T \lor s \neq h$}
+                  \State\Return$\false$
+              \EndIf
+              \Let{st}{\delta^*(st, B.x)}
+              \If{$st = \bot$}
+                  \State\Return$\false$\Comment{Invalid state transition}
+              \EndIf
+              \Let{h}{H(B)}
+          \EndFor
+          \State\Return$\true$
+      \EndFunction
+      \end{algorithmic}
+  \end{algorithm}
+  \end{figure}
+
+  \begin{figure}[t]
+  \begin{algorithm}[H]
+      \caption{\label{alg.maxvalid} The maxvalid algorithm}
+      \begin{algorithmic}[1]
+      \Function{$\textsf{maxvalid}_{\mathcal{G},\delta(\cdot)}$}{$\overline{C}$}
+          \Let{C_\textsf{max}}{[\mathcal{G}]}
+          \For{$C \in \overline{C}$}
+              \If{$\textsf{validate}_{\mathcal{G},\delta(\cdot)}(C) \land |C| > |C_\textsf{max}|$}
+                  \Let{C_\textsf{max}}{C}
+              \EndIf
+          \EndFor
+          \State\Return{$C_\textsf{max}$}
+      \EndFunction
+      \end{algorithmic}
+  \end{algorithm}
+  \end{figure}
+
+  \begin{figure}[t]
+  \begin{algorithm}[H]
+      \caption{\label{alg.pow} The Proof-of-Work discovery algorithm}
+      \begin{algorithmic}[1]
+        \Function{$\textsf{pow}_{H,T,q}$}{$x, s$}
+            \State{$ctr \getsrandomly \{0,1\}^\kappa$}
+            \For{$i \gets 1 \text{ to } q$}
+                \Let{B}{s \concat x \concat ctr}
+                \If{$H(B) \leq T$}
+                    \State\Return{$B$}
+                \EndIf
+                \Let{ctr}{ctr + 1}
+            \EndFor
+            \State\Return{$\bot$}
+        \EndFunction
+      \end{algorithmic}
+  \end{algorithm}
+  \end{figure}
+
+  \begin{figure}[t]
+  \begin{algorithm}[H]
+      \caption{\label{alg.environment} The environment and network model running
+               for a polynomial number of rounds $\textsf{poly}(\kappa)$.}
+      \begin{algorithmic}[1]
+          \Let{r}{0}
+          \Let{\mathcal{T}}{\{\}}
+          \Let{Q}{\{\}}
+          \Function{$H_{\kappa,i}$}{$x$}
+              \If{$x \not\in \mathcal{T}$}
+                  \If{$Q = 0$}
+                      \State\Return{$\bot$}
+                  \EndIf
+                  \Let{Q}{Q - 1}
+                  \State$\mathcal{T}[x] \getsrandomly \{0, 1\}^\kappa$
+              \EndIf
+              \State\Return$\mathcal{T}[x]$
+          \EndFunction
+          \Function{$\mathcal{Z}^{n,t}_{\Pi,\mathcal{A}}$}{$1^\kappa$}
+              \State{$\mathcal{G} \getsrandomly \{0, 1\}^\kappa$}
+              \Comment{Genesis block}
+              \For{$i \gets 1 \text{ to } n - t$}
+                  \Comment{Boot honest parties}
+                  \Let{P_i}{\textsf{new } \Pi^{H_{\kappa,i}}(\mathcal{G})}
+              \EndFor
+              \Let{A}{\textsf{new } \mathcal{A}^{H_{\kappa,0}}(\mathcal{G}, n, t)}
+              \Comment{Boot adversarial parties}
+              \Let{\overline{M}}{[\,]}
+              \For{$i \gets 1 \text{ to } n - t$}
+                  \Let{\overline{M}[i]}{[\,]}
+              \EndFor
+              \While{$r < \textsf{poly}(\kappa)$}
+                  \Let{r}{r + 1}
+                  \Let{M}{\emptyset}
+                  \For{$i \gets 1 \text{ to } n - t$}
+                      \Let{Q}{q}
+                      \Let{M}{M \cup \{P_i.\textsf{execute}(\overline{M}[i])\}}
+                      \Comment{Execute honest party $i$ for round $r$}
+                  \EndFor
+                  \Let{Q}{tq}
+                  \Let{\overline{M}}{A.\textsf{execute}(M)}
+                  \Comment{Execute rushing adversary for round $r$}
+                  \For{$m \in M$}\Comment{Ensure all parties will receive message $m$}
+                      \For{$i \gets 1 \text{ to } n - t$}
+                          \label{alg.environment.connectivity}
+                          \State{$\textsf{assert}(m \in \overline{M}[i])$}\Comment{Non-eclipsing assumption}
+                      \EndFor
+                  \EndFor
+              \EndWhile
+          \EndFunction
+          \vskip8pt
+      \end{algorithmic}
+  \end{algorithm}
+  \end{figure}
+
+
+
+\section{Chain Quality}
+
+\begin{theorem}
+  Typical executions satisfy existential chain quality
+  with $s = k$.
+\end{theorem}
+\begin{proof}
+  Consider an honestly adopted chain $C$ and a chunk $C' = C[i{:}i + s]$ in it.
+  Let $b^*$ be the freshest honestly generated block preceding $C'$,
+  and suppose that $b^*$ was computed in round $r^*$ and has height $l^*$.
+  Let $b'$ be the oldest block succeeding $C'$
+  which an honest party $P'$ has ever attempted to mine on,
+  and let $r'$ be the round during which that honest party
+  adopted $b'$ and $l'$ be its height.
+  Let $S$ be the set of rounds $\{r^* + 1, \ldots, r' - 1\}$.
+  By the Patience Lemma, we know that $|S| \geq \lambda$,
+  so we can apply typicality to this set of consecutive rounds.
+  Consider the convergence opportunities in $S$
+  and let $J$ be the set of the block heights of all
+  the blocks that correspond to those convergence opportunities.
+
+  These heights $l_j \in J$ will lie in $l^* \leq l_j \leq l'$.
+  To see why, note that, after round $r^*$, all the honest parties
+  have adopted chains of height at least $l^*$ and so they will
+  not mine on anything shorter. Furthermore, if an honest party
+  mined a block of height $l' + 1$ or more before round $r'$,
+  this block would have been received by $P'$ by round $r'$,
+  and so $P'$ would only mine on blocks of length $l' + 1$ or
+  more, contradicting the definition of $r'$.
+
+  Consider which block $B$ among those that arose in convergence
+  opportunities during $S$ form part of $C'$. If the block $B$
+  with height $l$
+  is \emph{not} a part of $C'$, then this means that the
+  honest party has adopted a different block $B'$ of height $l$ in
+  its stead, as $C'$ has height at least $l$. By the Pairing Lemma,
+  $B'$ must be adversarially produced. In the same fashion, we can
+  pair every height in $J$ that does \emph{not} form a part of $C'$
+  with a separate adversarially successful query.
+
+  These adversarial queries all lie in $S$. To see why, note that
+  they must be after $r^*$ due to causality.
+  {\color{red} Something must be said about the adversarial query
+  being before $r'$.}
+
+  Therefore, $Y(S) - Z(S)$ honestly generated blocks must be in
+  $C'$. By typicality $Y(S) > Z(S)$, and so existential quality
+  holds.
+  {\color{red} We need to still argue that $Y(S) - Z(S) \geq 1$.}
+\end{proof}
+
+Based on the above proof, we can calculate the exact chain quality,
+too.
+The number of surviving honest blocks in $S$ rounds is
+$Y(S) - Z(S) \geq (1 - \frac{\delta}{3})f|S| - (1 - \frac{2\delta}{3})f|S|
+= (\frac{2\delta}{3} - \frac{\delta}{3})f|S| = \frac{\delta}{3}f|S|$.
+During these rounds, the total number of blocks by which the chain has
+grown must be at least $(1 - \epsilon)f|S|$ by chain quality. Therefore,
+the proportion of surviving honest blocks is
+$\mu = \frac{\frac{\delta}{3}f|S|}{(1 - \epsilon)f|S|} = \frac{\delta}{3(1 - \epsilon)}$.
+
 \section*{Problems}
 
 \begin{enumerate}

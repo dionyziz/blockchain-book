@@ -1,0 +1,253 @@
+\chapter{Draft: Backbone 1}
+
+\section{The Simulation Environment}
+In order to rigorously define properties of our blockchain and give security proofs, we need to precisely define how we will simulate our environment: the setup and how each round happens.
+
+\begin{figure}[H]
+\begin{algorithm}[H]
+    \caption{\label{alg.environment} The environment and network model running for a polynomial number of rounds $\textsf{poly}(\kappa)$.}
+    \begin{algorithmic}[1]
+        \State $r \leftarrow 0$
+        \Function{$\mathcal{Z}^{n,t}_{\Pi,\mathcal{A}}$}{$1^\kappa$}
+            \State{$\mathcal{G} \overset{\$}{\leftarrow} \{0, 1\}^\kappa$}
+            \Comment{Genesis block}
+            \For{$i \gets 1 \text{ to } n - t$}
+                \Comment{Boot stateful honest parties}
+                \State $P_i \leftarrow$ {\textsf{new }} $\Pi^{H_{\kappa,i}}(\mathcal{G})$
+            \EndFor
+            \State $A \leftarrow${\textsf{new }} $\mathcal{A}^{H_{\kappa,0}}(\mathcal{G}, n, t)$
+            \Comment{Boot stateful adversary}
+            \State $\overline{M} \leftarrow []$ \Comment{2D array of messages}
+            \For{$i \gets 1 \text{ to } n - t$}
+                \State $\overline{M}[i] \leftarrow []$ \Comment{Each honest party has an array of messages}
+            \EndFor
+            \While{$r < \textsf{poly}(\kappa)$} \Comment{Number of rounds}
+                \State $r \leftarrow r + 1$
+                \State $M \leftarrow \emptyset$
+                \For{$i \gets 1 \text{ to } n - t$} \Comment{Execute honest party $i$ for round $r$}
+                    \State $Q \leftarrow q$ \Comment{Maximum number of oracle queries per honest party (Section 2)}
+                    \State $M \leftarrow M \cup \{P_i.\textsf{execute}^H(\overline{M}[i])\}$ \Comment{Adversary collects all messages}
+
+                \EndFor
+                \State $Q \leftarrow tq$ \Comment{Max number of Adversarial oracle queries}
+                \State $\overline{M} \leftarrow A.\textsf{execute}^H(M)$
+                \Comment{Execute rushing adversary for round $r$}
+                \For{$m \in M$}\Comment{Ensure all parties will receive message $m$}
+                    \For{$i \gets 1 \text{ to } n - t$}
+                        \label{alg.environment.connectivity}
+                        \State{$\textsf{assert}(m \in \overline{M}[i])$}\Comment{Non-eclipsing assumption}
+                    \EndFor
+                \EndFor
+            \EndWhile
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\subsection{A Simplification: Quantize Time}
+Notice that we are running the simulation in rounds (line 12). In the real world, time is continuous, however by breaking down the simulation into short rounds, it makes it much easier to define and prove security properties of our blockchain. Furthermore, it makes it easier to define the properties of our adversary as seen below.
+
+
+\subsection{Rushing Adversary}
+In this environment, we are assuming a Rushing Adversary. This is because every round (lines 12-26), we first simulate the honest parties independently - they do not see the messages produced by each other that round - (lines 15-19), collect all the messages on the gossip network (line 17), then run the adversary with all the gossiped messages (line 20).
+
+\subsection{Sybil Adversary \& Non-Eclipsing Assumption}
+The adversary sees the messages gossiped by each honest party before the other honest parties. The adversary then has the power to manipulate what messages the honest parties will see next round in the following way
+
+\begin{enumerate}
+    \item The adversary can inject new messages
+    \item The adversary can reorder messages
+    \item The adversary can introduce disagreement
+    \item The adversary cannot censor messages (lines 20, 21, 22)
+\end{enumerate}
+The fourth point is due to the Non-Eclipsing Assumption: since there is a path of honest parties between any two honest parties, and each honest party follows the algorithm detailed in section 3, we know that an honestly produced message will be propagated to all honest parties on the next round.
+
+\section{Random Oracle Model}
+In the simulation algorithm, for both the honest parties and adversarial parties we write {\textsf{execute}}$^H$ (lines 17, 20). This means that we model the hash function as a random oracle and give both the honest and adversarial parties Black-Box access to the oracle. This means that for any "new" input, the output is queried uniformly at random from the output space (line 10) and returned. Furthermore, when an input is queried for the first time, it is stored in a cache (stored in $\mathcal{T}$), therefore if the same input is later queried, the value is looked up in the cache and returned (line 12). Black-Box access means that the parties do not have access to the cache or the random sampling algorithm. They can only submit a query $x$ and receive a response $\mathcal{T}[x]$.
+\\
+Secondly, in order to model the hash rate, we give each party a maximum number of oracle queries per round. Each honest party receives $q$ queries, and the adversary receives $qt$ queries. (line 3, 9).
+\begin{figure}[H]
+\begin{algorithm}[H]
+    \caption{\label{alg.hash} The Hash Function in the Random Oracle Model}
+    \begin{algorithmic}[1]
+        \State $r \leftarrow 0$
+        \State $\mathcal{T} \leftarrow \{\}$ \Comment{Initiate Cache}
+        \State $Q \leftarrow 0$ \Comment{$q$ for honest parties, $qt$ for adversary}
+        \Function{$H_\kappa$}{$x$}
+            \If{$x \not\in \mathcal{T}$} \Comment{First time being queried}
+                \If{$Q = 0$} \Comment{Out of Queries}
+                    \State\Return{$\bot$}
+                \EndIf
+                \State $Q \leftarrow Q - 1$
+                \State$\mathcal{T}[x] \overset{\$}{\leftarrow} \{0, 1\}^\kappa$ \Comment{Sample uniformly at random from output space and store in Cache}
+            \EndIf
+            \State\Return$\mathcal{T}[x]$ \Comment{Return value from Cache}
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+
+\section{Honest Party Algorithm}
+Below is a class of algorithms belonging to an honest party.
+\\
+\\
+The first algorithm is a constructor.
+\\
+\\
+The second algorithm is used to simulate every honest party that mines during each round of the protocol. In this simulation, every honest party follows the longest chain rule, at the beginning of each round they adopt the longest, valid chain (line 8). If they learn about a new chain that is longer then their current one, they gossip it (line 9,10). The honest party then tries to mine a block using the transactions in their mempool (line 12, 13). If a block is successfully mined, the honest party will gossip it.
+\\
+\\
+The third algorithm is used to extract all transactions from a blockchain. This is useful when validating a new chain as we need to check all transactions starting from the genesis state to ensure that there are no invalid transactions and to maintain an up-to-date UTXO set.
+\begin{figure}[H]
+\begin{algorithm}[H]
+    \caption{\label{alg.backbone} The honest party}
+    \begin{algorithmic}[1]
+     \Statex
+     \State $\mathcal{G} \leftarrow \epsilon$
+        \Function{$\textsf{Constructor}$}{$\mathcal{G}'$}
+            \State $\mathcal{G} \leftarrow \mathcal{G}'$ \Comment{Select Genesis Block}
+            \State $\chain \leftarrow [\mathcal{G}]$ \Comment{Add Genesis Block to start of chain}
+            \State \textsf{round} $\leftarrow 1$
+        \EndFunction
+        \Function{$\textsf{Execute}$}{$1^\kappa$}
+            \State $\tilde\chain \leftarrow$ maxvalid$(C, \bar M[i])$ \Comment{Adopt Longest Chain in the network}
+            \If{$\tilde\chain \neq \chain$}
+                \State\textsc{Broadcast}{$(\tilde\chain)$} \Comment{Gossip Protocol}
+            \EndIf
+            \State $x \leftarrow$ {\textsc{Input}()} \Comment{Take all transactions in mempool}
+            \State $B \leftarrow$ {\Call{PoW}{$x, \tilde\chain$}}
+            \If{$B \neq \bot$} \Comment{Successful Mining}
+                \State $\chain \leftarrow \tilde\chain || B$ \Comment{Add block to current longest chain}
+                \State\textsc{Broadcast}{$(\chain)$} \Comment{Gossip protocol}
+            \EndIf
+            \State {\textsf{round}} $\leftarrow$ {\textsf{round}+1}
+        \EndFunction
+        \Function{$\textsf{Read}$}{}
+            \State $x \leftarrow \epsilon$ \Comment{Instantiate transactions}
+            \For{$B \in C$}
+                \State $x \leftarrow x || C.x$ \Comment{Extract all transactions from each block in the chain}
+            \EndFor
+            \State\Return{$x$}
+        \EndFunction
+        \vskip8pt
+    \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section{Proof-of-Work}
+The algorithm below is run by miners to find a new block. Notice that all parties (adversarial and honest) have a maximum number of $q$ queries per round. This is to model the hash rate of parties. Furthermore, we construct a block as the concatenation of the previous block $s$, the transactions $x$, and the nonce $ctr$. For a block to be mined successfully, we require that $H(B) \leq T$, where $T$ is the mining target. Due to the size of the space $\{0, 1\}^{\kappa}$, the probability of two parties mining with the same nonce is negligible, therefore we may assume that there are no ``nonce collisions''.
+
+\begin{figure}[H]
+\begin{algorithm}[H]
+    \caption{\label{alg.pow} The Proof-of-Work discovery algorithm}
+    \begin{algorithmic}[1]
+      \Function{$\textsf{pow}_{H,T,q}$}{$x, s$}
+          \State{$ctr \overset{\$}{\leftarrow} \{0,1\}^\kappa$} \Comment{Randomly sample Nonce}
+          \For{$i \gets 1 \text{ to } q$} \Comment{Number of available queries per party}
+              \State $B \leftarrow s || x || ctr$ \Comment{Create block}
+              \If{$H(B) \leq T$} \Comment{Successful Mining}
+                  \State\Return{$B$}
+              \EndIf
+              \State ctr $\leftarrow$ ctr $+ 1$
+          \EndFor
+          \State\Return{$\bot$} \Comment{Unsuccessful Mining}
+      \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section{Longest Chain}
+This algorithm is run by honest nodes in order to adopt the longest chain each round. Since every honest node abides to the longest chain rule, the conditions are required for a chain to be adopted: the chain is valid and the chain is strictly longer (line 4). This algorithm is called in line 2 of the honest party algorithm: it will loop through every chain it received through the gossip network, check its validity and check that it is longer than the currently adopted chain.
+\begin{figure}[H]
+\begin{algorithm}[H]
+    \caption{\label{alg.maxvalid} The maxvalid algorithm}
+    \begin{algorithmic}[1]
+    \Function{$\textsf{maxvalid}_{\mathcal{G},\delta(\cdot)}$}{$\overline{C}$}
+        \State $C_\textsf{max} \leftarrow [\mathcal{G}]$ \Comment{Start with current adopted chain}
+        \For{$C \in \overline{C}$} \Comment{Iterate for every chain received through gossip network}
+            \If{$\textsf{validate}_{\mathcal{G},\delta(\cdot)}(C) \land |C| > |C_\textsf{max}|$} \Comment{Longest Chain Rule}
+                \State $C_\textsf{max} \leftarrow C$
+            \EndIf
+        \EndFor
+        \State\Return{$C_\textsf{max}$}
+    \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section{Validating a block}
+This algorithm is used to validate a block, it is called in line 4 of the longest chain algorithm run by honest parties. The algorithm first checks that the Genesis block the chain is correct (line 2). Then for every block in the chain, the algorithm will update the UTXO, checking that each transaction is valid (lines 13-16). The algorithm will also check the PoW for each block and check that the block is in the correct format of $s || x || ctr$ (lines 9-12)
+\begin{figure}[H]
+\begin{algorithm}[H]
+    \caption{\label{alg.validate} The validate algorithm}
+    \begin{algorithmic}[1]
+    \Function{$\textsf{validate}_{\mathcal{G},\delta(\cdot)}$}{$C$}
+        \If{$C[0] \neq \mathcal{G}$} \Comment{Check that first block is Genesis}
+            \State\Return$\false$
+        \EndIf
+        \State st $\leftarrow$ st$_0$ \Comment{Start at Genesis state}
+        \State $h \leftarrow H(C[0])$
+        \State st $\leftarrow \delta^*(st, C[0].x)$
+        \For{$B \in C[1{:}]$} \Comment{Iterate for every block in the chain}
+            \State $(s, x, ctr) \leftarrow B$
+            \If{$H(B) > T \lor s \neq h$} \Comment{PoW check and Ancestry check}
+                \State\Return$\false$
+            \EndIf
+            \State st $\leftarrow \delta^*(st, B.x)$ \Comment{Application Layer: update UTXO \& validate transactions}
+            \If{$st = \bot$}
+                \State\Return$\false$\Comment{Invalid state transition}
+            \EndIf
+            \State $h \leftarrow H(B)$
+        \EndFor
+        \State\Return$\true$
+    \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+
+\section{Chain Virtues}
+Equipped with this new rigorous definition of the environment, our assumptions and the algorithm ran by the honest party, we can now mathematically define the Chain Virtues, introduced earlier in the lectures.
+% \subsection{Common Prefix (\texorpdfstring{$\kappa$}{Lg})}
+% $\forall$ honest parties $P_1, P_2$ adopting chains $C_1, C_2$ at rounds $r_1 \leq r_2$ respectively, Common Prefix property  $C_1[:-\kappa] \leq C_2$ holds.
+
+\begin{enumerate}
+    \item \textbf{Common Prefix (\texorpdfstring{$\kappa$}{Lg}).}
+    $\forall$ honest parties $P_1, P_2$ adopting chains $C_1, C_2$ at any rounds $r_1 \leq r_2$ respectively, Common Prefix property  $C_1[:-\kappa] \leq C_2$ holds.
+    \item \textbf{Chain Quality (\texorpdfstring{$\mu, \ell$}{Lg}).}
+    $\forall$ honest party $P$ with adopted chain $C$,  $\forall i$ any chunk $C[i: i+\ell]$ of length $\ell > 0$ has a ratio of honest blocks $\mu$.
+    \item \textbf{Chain Growth (\texorpdfstring{$\tau, s$}{Lg}).}
+    $\forall$ honest parties $P$ and $\forall r_1, r_2$ with adopted chain $C_1$ at round $r_1$ and adopted chain $C_2$ at round $r_2 \geq r_1 + s$, it holds that $|C_2| \geq |C_1| + \tau s$.
+\end{enumerate}
+
+% \subsection{Chain Growth (\texorpdfstring{$\tau, s$}{Lg})}
+% $\forall$ honest parties $P$ and $\forall r_1, r_2$ with adopted chain $C_1$ at round $r_1$ and adopted chain $C_2$ at round $r_2 \geq r_1 + s$, Chain Growth condition $|C_2| \geq |C_1| + \tau s$ holds.
+
+% \subsection{Successful Round (\texorpdfstring{$r$}{Lg})}
+We define a round during which one or more honest party found block as a \textbf{successful round (\texorpdfstring{$r$}{Lg}).} A round has a \textbf{convergence opportunity(\texorpdfstring{$r$}{Lg})} if only one honest party found a block irrespective of adversarial parties.
+
+% \subsection{Convergence Opportunity (\texorpdfstring{$r$}{Lg})}
+% A round has a convergence opportunity if only one honest party found a block irrespective of adversarial parties
+
+\section{Pairing Lemma}
+\begin{lemma}
+Let $B = C[i]$ for some chain $C$ s.t. $B$ was computed by an honest party $P$ during a convergence opportunity $r$. Then for any block $B'$ at position $i$ of some other chain $C'$, if $B \neq B'$, then $B'$ was adversarially computed.
+\end{lemma}
+\begin{proof}
+Suppose for contradiction that $B'$ was mined on a round $r'$. For the sake of contradiction, assume that $B'$ was honestly computed. Thus, we need to analyze three following cases:
+\begin{enumerate}
+    \item Case 1: $r = r'$. This is not possible as round $r$ was a convergence opportunity.
+    \item Case 2: $r < r'$. This is not possible as due to the longest chain rule, after round $r$, everybody will have adopted a chain of at least $i$ blocks, so honest parties would not accept $B'$.
+    \item Case 3: $r > r'$. This is not possible, same as above but this time honest parties wouldn't adopt block $B$.
+\end{enumerate}
+So we have a contradiction, thus, $B'$ must have been adversarially mined.
+\end{proof}
+
+From the above, we note that,
+if the adversary wants to displace block $B$, she has to pay for it by mining $B'$. Therefore, if the adversary does not mine a block, then the convergence opportunity will be a true honest convergence.
+
+\section{Honest Majority Assumption (\texorpdfstring{$n, t, \delta$}{Lg})}
+We will now give a new definition of the honest majority assumption by introducing the honest advantage parameter $\delta$ . We will see in the next lecture that we need this parameter in order the chain virtues hold for Bitcoin. We say that the honest majority assumption holds if $t < (1 - \delta)(n - t)$.

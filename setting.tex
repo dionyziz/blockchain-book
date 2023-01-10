@@ -50,13 +50,16 @@ community must globally agree on the conclusions of such deductions. In simple
 words, when someone pays me, I must know that they have sufficient money to do
 so, and that this money given to me will be accepted by the economic community
 when I later decide to spend it. This judgement of validity consists of two
-parts: First, that the money in use has been minted legitimately in the first
-place, the property of \emph{scarcity}. Scarcity is a necessary, but not sufficient,
-property of money.
+parts: First, that the money in use has been \emph{minted} legitimately in the first
+place.
 Secondly, that this money rightfully belongs to the party who is about to
 spend it, and has not been spent before, to protect against \emph{double spending},
-the property of \emph{ownership}. Consensus pertains to ensuring both scarcity
-and ownership.
+or {ownership tracking}.
+Consensus pertains to ensuring both correct minting and correct transfers.
+For money to have value, it must be \emph{scarce}. Scarcity must be ensured
+both during minting and during transfers.
+Scarcity is a necessary, but not sufficient,
+property of money.
 
 The problem of consensus is solved differently in different monetary systems. Gold
 coins had stamps whose veracity could be checked, while paper bills have watermarking
@@ -82,19 +85,38 @@ The cypherpunk\index{Cypherpunks} political movement and the wave of
 cryptographers working on \emph{protocols} in general have an inherent hatred
 for trusted third parties. For the former, they amount to
 centralization of political power which they wish to see eliminated. For the
-latter, it constitutes a technical challenge -- if the role of the trusted
+latter, it constitutes a technical and intellectual challenge -- if the role of the trusted
 third party is fully algorithmizable, why not replace the party by a protocol
 ran by the economic community themselves? It is somewhere in the intersection of the
 two that \emph{blockchain} protocols appeared.
 
+Trusted third parties are undesirable for four reasons.
+First, the authority may fail, not because of nefarious purposes, but because of a mistake.
+There might be a power loss and its servers may be shut down, causing availability issues.
+Secondly, a trusted third party
+may become corrupted in the future, creating the possibility of abuse. While the authority
+is trustworthy today, who knows about tomorrow?
+Third, the
+authority may be honest in and of itself, but an external adversary may breach into its
+systems, especially if it is digital.
+Fourth, different parties may not have a mutual authority that they both trust.
+For example, the US government and the Chinese government may not both want to rely
+on either of the US federal reserve, or the Chinese central bank.
+Trusted parties are liabilities for the people using them, but also liabilities for
+themselves. If a bank falls victim to a digital breach, it may be held responsible
+for losses incurred. It is thus often in the best interest of both the community and
+the central authority itself to remove trust to the central authority.
+
+How can a trusted central party misbehave?
 A private bank can conjure up more money in someone else's account, or remove money
 from yours, and one's only recourse against such actions, which can be damaging
 to the economy, is legal. We rely on the functions of government, a trusted third
 party, to prevent such actions. If a bank illegally takes away money from one's
 bank account, they can sue the bank. This is a \emph{treatment} of adversarial
 behavior. In the systems we will design, our goal will be to create systems that
-\emph{prevent} adversarial behavior by making it impossible, not by detecting it
-and \emph{treating} it when it emerges. These systems will be \emph{self-enforcable}.
+\emph{prevent} adversarial behavior by making it impossible in the first place;
+not by detecting it and \emph{treating} it when it emerges.
+These systems will be \emph{self-enforcable}.
 Prevention is preferable to treatment.
 
 The question we try to answer is whether we can \emph{decentralize} money
@@ -118,14 +140,15 @@ is still centralized.
 
 Because money is a social construct and it is conjured by social delusion,
 it does not need legal backing to have value. We can rebuild money in the form
-of code, as long as we can recreate the virtues of scarcity and ownership,
+of code, as long as we can recreate scarcity, minting and ownership tracking,
 and we convince society to adopt it as currency. This is what gives rise to
 \emph{cryptocurrencies}. Similarly, because private contracts between individuals
 are also a social construct, we can also recreate these in the form of code.
 This is what gives rise to \emph{smart contracts}.
 
 Money and its functions, as well as contracts and their function, have been
-traditionally codified in the form of law.  As computer scientists, our role when implementing
+traditionally codified in the form of law. These laws have been created through
+centuries of experience and contain a lot of wisdom. As computer scientists, our role when implementing
 cryptocurrencies and smart contracts will be to identify the \emph{computational} properties of
 money and contracts. What \emph{computational} role does each of the virtues of money play
 in ensuring its correctness and security? Which of these can be modified?
@@ -140,19 +163,25 @@ Our systems will be designed in the presence of an \emph{adversary}\index{Advers
 have various nefarious goals and may try to act against the rest of the parties. We will
 highlight the parties whose interests we want to defend and designate them as
 \emph{the honest parties}\index{Honest parties}. The honest parties follow the protocol as described by us,
-the protocol designers. A party that does not exactly follow the protocol is considered adversarial.
+the protocol designers. A party beyond this group of designated honest parties is considered \emph{adversarial}.
+The adversary can deviate from the honest protocol and behave differently from what we designed.
 We will only provide assurances to the honest parties when we embark on our security proofs.
 This follows the path of cryptography: If you want security assurances, you must play honestly.
 
 We consider only \emph{one} adversary, not multiple. That single adversary can \emph{spawn}
-nodes that are acting on her behalf. The treatment in which the adversary is considered to be
+nodes that are acting on her\footnote{As a convention, we will use the female pronouns for the adversary, the male pronouns for the honest
+parties, and the neutral pronoun for the challenger.
+This helps write succinct and easy to read sentences in which the ``he'' and ``she'' pronouns
+are used with clarity. As blockchain designers in which adversarial thinking is a central tenet, we will
+take both roles of the honest party and the adversary and argue from both sides when designing a protocol
+and reason about its security.} behalf. The treatment in which the adversary is considered to be
 a single party with an overarching goal in mind gives the adversary more power. She is a more
 powerful adversary than an adversary who is fighting against another. We will design our protocols
 to be secure against this single, overarching adversary.
 
 We will design our systems to be resilient against very powerful adversaries, such as state
 actors. Our adversary can really be truly malicious. She can break laws. She might be \emph{irrational}
-and decide to lose money, just so that we can suffer, even if there is no monetary gain for her.
+and decide to lose money, just so that we suffer, even if there is no monetary gain for her.
 She can control corporations. She can control governments, including the legislative, executive,
 and judicial branches of the government. This means she can change the laws and outlaw our protocol.
 She can take over a country's or multiple countries'
@@ -192,9 +221,9 @@ our protocols are structured upon three pillars~\cite{katz}:
         return to when we speak about proof-of-work.
   \item \textbf{Rigorous proofs of security} give us the \emph{guarantee} that
         our protocols are secure, as long as our assumptions hold. Instead of
-        employing \emph{ad hoc} arguments, the proofs are mathematical theorems
-        employing computational reductions, and they assert that the protocols
-        are secure \emph{for all} adversaries.
+        employing handwavy arguments, the proofs are mathematical theorems
+        employing computational reductions ane exact probability calculations.
+        They assert that the protocols are secure \emph{for all} adversaries.
 \end{enumerate}
 
 We will model the adversary as a Turing Machine interacting
@@ -215,14 +244,14 @@ access to randomness. The same constraints are applied to the honest parties. We
 denote such parties \emph{PPT}\index{PPT}, probabilistic polynomial-time, parties. Formally speaking,
 these are modelled as Turing Machines~\cite{turing} with additional access to a random tape.
 In practice, when thinking about these machines, we simply think of them as regular computer
-programs (in, say, Python, C++ or JavaScript) in which we have access to a random number
+programs (in, say, Python, C++ or TypeScript) in which we have access to a random number
 generator, which we assume produces fresh, uniform and completely fair randomness every time
 it is called.
 
 \subsection*{Negligibility}
 
-Our security is analyzed with a \emph{security parameter}\index{Security parameter} in
-its foundations: The parameter
+In its foundations, our security is analyzed with a \emph{security parameter}\index{Security parameter}:
+The parameter
 $\kappa$. This parameter denotes what probability of failure we are willing to accept
 in our protocols: We can tolerate probabilities that are roughly $2^{-\kappa}$. For
 $\kappa = 256$, this probability is extremely small: It is extremely more probable that
@@ -281,11 +310,11 @@ this is impossible.
 
 The negligible probability of failure is the standard treatment in modern cryptography~\cite{katz}.
 Beyond the above argument pertaining to the polynomiality of adversaries, negligible
-functions are easy to work with because the observe certain \emph{closure} properties.
+functions are easy to work with because they observe certain \emph{closure} properties.
 In particular, multiplying a negligible function with a polynomial yields a negligible
 function. As constants are polynomials, scaling a negligible function by a constant
 yields a negligible function too. Of course, multiplying something negligible with
-something negligible keeps it negligible, and taking any power of a negligible function
+something negligible keeps it negligible, and taking any constant power of a negligible function
 keeps it negligible.
 
 \begin{align*}
@@ -325,8 +354,9 @@ in real implementations of the protocol. It is simply a tool we use at the mathe
 level to argue about the security of our design.
 
 The adversary and honest party run in polynomial time in the security parameter
-$\kappa$. When we say that the adversary $\mathcal{A}$ is \emph{polynomial}, we mean that the
-adversary runs in polynomial time with respect to its input. More specifically, there exists
+$\kappa$. Similar to the analysis of algorithms in all of computer science,
+when we say that the adversary $\mathcal{A}$ is \emph{polynomial}, we mean that the
+adversary runs in polynomial time with respect to its input length. More specifically, there exists
 a polynomial $p(\kappa)$ such that, given any input of size $\kappa$, the adversary runs for
 at most $p(\kappa)$ steps. If we want to give the
 adversary the option to run in polynomial time with respect to the parameter $\kappa$, we must
@@ -349,12 +379,7 @@ runs in polynomial time, as it is merely a mathematical tool).
 It invokes the honest party, giving him polynomial time in $\kappa$ to run, as well as some
 additional arguments that will be defined by the particular protocol. It then runs the adversary,
 giving
-her\footnote{As a convention, we will use the female pronouns for the adversary, the male pronouns for the honest
-parties, and the neutral pronoun for the challenger.
-This helps write succinct and easy to read sentences in which the ``he'' and ``she'' pronouns
-are used with clarity. As blockchain designers in which adversarial thinking is a central tenet, we will
-take both roles of the honest party and the adversary and argue from both sides when designing a protocol
-and reason about its security.}
+her
 polymomial time in $\kappa$ to run, as well as some additional arguments which may
 depend on the honest party's behavior. Depending on the game, the challenger may invoke the honest party
 and adversary multiple times, creating some interaction between them. Lastly, the challenger evaluates the output of the
@@ -384,7 +409,7 @@ We are not merely enumerating a bunch of attacks that we considered ourselves an
 our protocol is secure against \emph{these}!
 Instead, we are arguing against \emph{all adversaries}, even adversaries that we do
 not know about and have not imagined. The ability to argue against \emph{all} adversaries is the
-epitome of human intellect that modern cryptography has achieved, a feat only possible through the
+epitome of modern cryptography, a feat only possible through the
 formalism and models of computer science. This proof style is recent and has only appeared within
 the last 50 years.
 

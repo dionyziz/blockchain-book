@@ -8,11 +8,13 @@
 
 % Formatting
 \usepackage{color}
+\usepackage[most]{tcolorbox}
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{colortbl}
 \usepackage{xcolor}
 \definecolor{lightgray}{rgb}{0.83, 0.83, 0.83}
+\usepackage{makecell}
 
 % Footnotes
 \makeatletter
@@ -21,6 +23,9 @@
 
 % Graphics
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{pgfplots}
 
 % Math packages
 \usepackage{amsmath}
@@ -28,10 +33,12 @@
 \usepackage{amsthm}
 \usepackage{amsfonts}
 \usepackage{thm-restate}
+\usepackage{mathtools}
 
 % Algorithmic packages
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{alltt}
 
 % Bibliography, index, appendix and sectioning
 \usepackage[nottoc]{tocbibind}
@@ -39,7 +46,10 @@
 \usepackage[symbols,nogroupskip,docdef=true]{glossaries-extra}
 \usepackage[titletoc]{appendix}
 
-\newtheorem{theorem}{Theorem}
 \newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}{Remark}
 
 \import{./}{macros.tex}
