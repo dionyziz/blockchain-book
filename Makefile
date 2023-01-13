@@ -8,6 +8,9 @@ blockchain-foundations.pdf: $(SOURCES)
 	rm -f *.glsdefs
 	xelatex --halt-on-error blockchain-foundations.tex
 	bibtex blockchain-foundations
+	makeindex blockchain-foundations.idx
+	makeglossaries blockchain-foundations
+	xelatex --halt-on-error blockchain-foundations.tex
 	xelatex --halt-on-error blockchain-foundations.tex
 
 clean:
