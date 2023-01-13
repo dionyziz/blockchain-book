@@ -1,4 +1,45 @@
-\chapter{Draft: Backbone 1}
+\chapter{Security in Earnest I \small{\textsf{DRAFT}}}
+
+\section{Random Oracle}
+So far, we have defined our random oracle such that $Pr[H(B) \leq T] = p = \frac{T}{2^k}$. The guarantees of this definition are actually stronger than collision resistance of a hash function, but we will ignore that for now. Instead, we will focus on making our random oracle more concrete.
+
+\subsection{Naive Random Oracle}
+A first pass at the implementation of our random oracle would be the following algorithm.
+\begin{algorithm}
+\caption{Naive Random Oracle}
+\begin{algorithmic}
+\Procedure{H}{$B$}
+    \State $y \overset{\$}{\gets} \{0, 1\}^\kappa$
+    \State \Return $y$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+While this satisfies the statistical properties of our random oracle, this algorithm is not a hash function, and is not consistent, i.e. it does not return the same output if it is called with the same input. This inconsistency renders it useless for our purposes, so we modify it in the next section to better represent our true random oracle.
+
+\subsection{Our Random Oracle}
+Our modification of the random oracle above involves the inclusion of a state $\mathcal{T}$.
+\begin{algorithm}
+\caption{Random Oracle}
+\begin{algorithmic}
+\State $\mathcal{T} \gets \{\}$
+\Procedure{H}{$B$}
+    \If{$B \not \in \mathcal{T}$}
+        \State $y \overset{\$}{\gets} \{0, 1\}^\kappa$
+        \State $\mathcal{T}[B] = y$
+    \EndIf
+    \State \Return $\mathcal{T}[B]$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+We see that this achieves consistency, i.e. $H(x)$ returns the same output every time across different calls with the same input $x$, for any $x$. However, our storage symbol $\mathcal{T}$ must be consistent over all parties in the network, and therefore does not represent a local mapping, but rather turns our oracle into a so-called ``network function''.
+
+
+\section{Synchrony}
+Until now, we considered time as continuous. We will now follow a synchronous model where time is broken up into rounds, each round lasting a discrete time $\Delta$. Additionally, we will consider the network delay to be precisely $\Delta$. This implies that any message broadcast by an honest party at some point during the round $r$ will be received by \textbf{every honest party} at the start of round $r+1$, all at exactly the same moment.
+
+This model synchronizes the arrival of messages such that they all arrive at the boundary of each round, and let's us discretize time by eliminating complexities of network distance and speed. Further, the execution of our network entities is simplified to a ``lockstep execution'' model, where we can easily predict when any node will receive a given message, which will be precisely one round after it was broadcast.
 
 \section{The Simulation Environment}
 In order to rigorously define properties of our blockchain and give security proofs, we need to precisely define how we will simulate our environment: the setup and how each round happens.

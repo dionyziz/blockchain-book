@@ -271,7 +271,7 @@ demand that the probability of failure drops close to \emph{exponentially}, or m
 precise. If a function $f(\kappa)$ denotes the probability of failure, we want $f$ to be
 approximately on the order of $\frac{1}{2^\kappa}$ or less. Any probability in the form
 of $\frac{1}{\kappa^3 + \kappa + 9}$, or any other inverse polynomial is unacceptable,
-as the probability does not drop fast enough with respect to $\kappa$. Certainly any
+as the probability does not drop fast enough with respect to $\kappa$. Certainly any positive
 \emph{constant} probability such as $0.0001$ is unacceptable. We want our function to
 be \emph{eventually smaller than any inverse polynomial}. Such functions are called
 \emph{negligible}.
@@ -688,6 +688,18 @@ to survive cases of censorship, or of broad compromise of all the hard-coded pee
 \section*{Problems}
 
 \begin{enumerate}
+  \item Which of the following functions are negligible in $\kappa$?
+    \begin{enumerate}
+      \item $f(\kappa) = 0$
+      \item $f(\kappa) = 1$
+      \item $f(\kappa) = 2^{-128}$
+      \item $f(\kappa) = \frac{2^\kappa}{128}$
+      \item $f(\kappa) = \frac{128}{2^\kappa}$
+      \item $f(\kappa) = \frac{1}{3\kappa^3 + 7\kappa^2 + 12}$
+      \item $f(\kappa) = \frac{\kappa^{7}}{7^{\kappa}}$
+      \item $f(\kappa) = \frac{1}{\log \kappa}$
+      \item $f(\kappa) = \frac{1}{\kappa!}$
+    \end{enumerate}
   \item Use induction to prove the \emph{Union Bound} theorem.
   \item Let $f$ and $g$ be negligible functions. Show that $h(\kappa) = \max\{f(\kappa), g(\kappa)\}$
         is negligible.
@@ -696,7 +708,7 @@ to survive cases of censorship, or of broad compromise of all the hard-coded pee
       \item $\textsf{negl} \cdot \textsf{negl} = \textsf{negl}$
       \item $\textsf{const} \cdot \textsf{negl} = \textsf{negl}$
       \item $\textsf{poly} \cdot \textsf{negl} = \textsf{negl}$
-      \item $\forall k \in \mathbb{N}: \textsf{negl}^k = \textsf{negl}$
+      \item $\forall m \in \mathbb{N}: \textsf{negl}^m = \textsf{negl}$
     \end{enumerate}
 \end{enumerate}
 
