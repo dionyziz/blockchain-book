@@ -1,0 +1,14 @@
+\begin{figure}[t]
+  \begin{algorithm}[H]
+    \caption{\label{alg.collision-2preimage}
+            The adversary $\mathcal{A}'$ in the
+            proof of Theorem~\ref{thm.collision-2preimage}.}
+    \begin{algorithmic}[1]
+      \Function{$\mathcal{A}'$}{$1^\kappa$}:
+          \State $x_1 \getsrandomly \{0,1\}^{2\kappa+1}$
+          \Let{x_2}{\mathcal{A}(x_1)}
+          \State \Return $(x_1, x_2)$
+      \EndFunction
+    \end{algorithmic}
+  \end{algorithm}
+\end{figure}

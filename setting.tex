@@ -168,6 +168,12 @@ The adversary can deviate from the honest protocol and behave differently from w
 We will only provide assurances to the honest parties when we embark on our security proofs.
 This follows the path of cryptography: If you want security assurances, you must play honestly.
 
+We will assume our adversary has access to our source code and we will not keep this secret.
+This is a general principle of cryptography known as Kerckhoff's Principle\index{Kerckhoff's Principle}.
+This makes the adversary more powerful. Hence, if we can prove security against this adversary,
+we have a stronger protocol. Of course we will need to keep \emph{some} secrets from this adversary.
+These will be things like passwords and secret keys, which we will be exploring soon.
+
 We consider only \emph{one} adversary, not multiple. That single adversary can \emph{spawn}
 nodes that are acting on her\footnote{As a convention, we will use the female pronouns for the adversary, the male pronouns for the honest
 parties, and the neutral pronoun for the challenger.
@@ -248,88 +254,24 @@ programs (in, say, Python, C++ or TypeScript) in which we have access to a rando
 generator, which we assume produces fresh, uniform and completely fair randomness every time
 it is called.
 
-\subsection*{Negligibility}
-
-In its foundations, our security is analyzed with a \emph{security parameter}\index{Security parameter}:
-The parameter
-$\kappa$. This parameter denotes what probability of failure we are willing to accept
-in our protocols: We can tolerate probabilities that are roughly $2^{-\kappa}$. For
-$\kappa = 256$, this probability is extremely small: It is extremely more probable that
-a global
-earth catastrophy is caused by an asteroid hitting it \emph{during the second you
-read this particular sentence} than a probability $2^{-256}$ occurring. Simply put,
-these events never occur.
-
-When calling the adversary and allowing her to perform an attack, we will hand her
-some information, including the particular value $\kappa$ that we are interested in.
-The adversarial source code must be the same for all values of $\kappa$ (we say that we are
-interested in \emph{uniform} adversaries).
-
-We will keep the $\kappa$ parameter free throughout our analysis, but we will
-demand that the probability of failure drops close to \emph{exponentially}, or more precisely
-\emph{superpolynomially} as $\kappa$ increases linearly. Let us make this definition
-precise. If a function $f(\kappa)$ denotes the probability of failure, we want $f$ to be
-approximately on the order of $\frac{1}{2^\kappa}$ or less. Any probability in the form
-of $\frac{1}{\kappa^3 + \kappa + 9}$, or any other inverse polynomial is unacceptable,
-as the probability does not drop fast enough with respect to $\kappa$. Certainly any positive
-\emph{constant} probability such as $0.0001$ is unacceptable. We want our function to
-be \emph{eventually smaller than any inverse polynomial}. Such functions are called
-\emph{negligible}.
-
-\begin{definition}[Negligible function]\index{Negligible function}
-  A function $f(\kappa)$ is \emph{negligible} if for any polynomial degree
-  $m \in \mathbb{N}$, there exists a $\kappa_0$ such that for all
-  $\kappa > \kappa_0$:
-
-  \[
-    f(\kappa) < \frac{1}{\kappa^m}
-  \]
-\end{definition}
-
-Let us give some motivation about our choice of the class of \emph{negligible}
-functions as our acceptable probability of failure. Suppose that a PPT adversary
-$\mathcal{A}$ succeeds in breaking our protocol with some non-negligible probability
-$p(\kappa)$. This means that $p(\kappa)$ is equal to some inverse polynomial in $\kappa$.
-But now consider a different adversary $\mathcal{A}'$ that operates by running the
-adversary $\mathcal{A}$ multiple times. In particular, $\mathcal{A}'$ simulates the
-execution of $\mathcal{A}$ as many as $\frac{1}{p(\kappa)}$ times. If the success of
-$\mathcal{A}$ is independent in all of these runs, this causes the probability of $\mathcal{A}'$
-to become quite close to $1$. Additionally, the adversary $\mathcal{A}'$ still runs
-in polynomial time, because it takes time proportional to the time needed to simulate
-$\mathcal{A}$ (which is a polynomial due to $\mathcal{A}$ being a PPT) and also
-proportional to $\frac{1}{p(\kappa)}$ (which is a polynomial because $p(\kappa)$
-is non-negligible).
-
-Therefore, any inverse polynomial probability of failure would be unacceptable.
-We choose to accept negligible functions exactly because the probability of failure
-cannot be amplified in this manner. If an adverary $\mathcal{A}$ succeeds with negligible
-probability, an adversary $\mathcal{A}'$ that simulates $\mathcal{A}$ must run the
-simulation an \emph{exponential} number of times in order to achieve anything beyond
-a negligible probability. Given that we have constrained our adversaries to be polynomial-time,
-this is impossible.
-
-The negligible probability of failure is the standard treatment in modern cryptography~\cite{katz}.
-Beyond the above argument pertaining to the polynomiality of adversaries, negligible
-functions are easy to work with because they observe certain \emph{closure} properties.
-In particular, multiplying a negligible function with a polynomial yields a negligible
-function. As constants are polynomials, scaling a negligible function by a constant
-yields a negligible function too. Of course, multiplying something negligible with
-something negligible keeps it negligible, and taking any constant power of a negligible function
-keeps it negligible.
-
-\begin{align*}
-  \textsf{negl} \cdot \textsf{negl} &= \textsf{negl}\\
-  \textsf{const} \cdot \textsf{negl} &= \textsf{negl}\\
-  \textsf{poly} \cdot \textsf{negl} &= \textsf{negl}\\
-  \forall k \in \mathbb{N}: \textsf{negl}^k &= \textsf{negl}
-\end{align*}
-
 \section{Game-Based Security}
 
 We will soon give detailed and rigorous definitions of what security properties we want
 our protocols to achieve. These will be our design goals. Once we have clearly articulated
 these goals, we will attempt to formally prove that our protocols attain the desired properties.
-Our security goals will be written out in the form of a \emph{cryptographic game}. These
+
+We want to rigorously define what security means. A first attempt, trying to write out a definition
+in English, looks like this:
+
+\begin{quote}
+  A protocol $\Pi$ is secure if it is impossible for an adversary $\mathcal{A}$ to
+  break it.
+\end{quote}
+
+But what does it mean for the adversary $\mathcal{A}$ to \emph{break} our protocol exactly?
+This will depend on the exact protocol. When the time comes to talk about hashes, signatures,
+or blockchains, we will define these rigorously.
+These security goals will be written out in the form of a \emph{cryptographic game}. These
 games are algorithms that, given a particular PPT adversary, attest to whether the adversary
 has been successful in breaking the protocol.
 
@@ -346,12 +288,28 @@ parameter. We also give the game access to run the honest protocol $\Pi$. The ga
 simulate some interaction between the adversary and the honest parties. The game executes
 the adversary and the honest parties and facilitates some data exchange between them. It
 then takes the output of the adversary and decides whether the adversary has been successful
-in their endeavour to break the protocol. The game outputs a boolean output: \emph{true}
+in her endeavour to break the protocol. The game outputs a boolean output: \emph{true}
 if the adversary was successful in breaking the protocol, and \emph{false} if the adversary
 was unsuccessful. It is bad for us, the designers of the protocol, if there exists some
-adversary such that the game outputs \emph{true}. The execution of the game never occurs
+adversary such that the game outputs \emph{true}. That's why we call this a \emph{bad event}\index{Bad Event}
+The execution of the game never occurs
 in real implementations of the protocol. It is simply a tool we use at the mathematical
 level to argue about the security of our design.
+
+In its foundations, our security is analyzed with a \emph{security parameter}\index{Security parameter}:
+The parameter
+$\kappa$. This parameter denotes what probability of failure we are willing to accept
+in our protocols: We can tolerate probabilities that are roughly $2^{-\kappa}$. For
+$\kappa = 256$, this probability is extremely small: It is extremely more probable that
+a global
+earth catastrophy is caused by an asteroid hitting it \emph{during the second you
+read this particular sentence} than a probability $2^{-256}$ occurring. Simply put,
+these events never occur.
+
+When calling the adversary and allowing her to perform an attack, we will hand her
+some information, including the particular value $\kappa$ that we are interested in.
+The adversarial source code must be the same for all values of $\kappa$ (we say that we are
+interested in \emph{uniform} adversaries).
 
 The adversary and honest party run in polynomial time in the security parameter
 $\kappa$. Similar to the analysis of algorithms in all of computer science,
@@ -397,6 +355,101 @@ is illustrated diagramatically in Figure~\ref{fig.game}.
 \end{figure}
 
 \import{./}{algorithms/alg.game.tex}
+
+\subsection*{Negligibility}
+
+In an ideal world, we would like to state that our protocols are unbreakable:
+
+\begin{quote}
+  \textsf{my-game}$_{\Pi,\mathcal{A}}$($\kappa$) = \textsf{false}
+\end{quote}
+
+However, this goal is sadly unattainable. When the time comes to generate a secret
+key or a password, we will make these have bit length $\kappa$. Unfortunately, the adversary
+can \emph{guess} such secrets by taking a random guess. If our secret is sampled from the
+set $\{0, 1\}^\kappa$, the set of $\kappa$-bit strings, the probability of the adversary
+guessing correctly will be $2^{-\kappa}$. This is a probability of failure that we are
+willing to accept, as it is unavoidable.
+
+What happens if an adversary attempts to perform multiple guesses for the secret key?
+Each of these guesses has a probability of success amounting to $\frac{1}{2^\kappa}$.
+Since the adversary has polynomial time $p(\kappa)$, the number of guesses she can
+perform must be polynomial, too. What is the probability that \emph{at least one of
+these guesses} is correct? We can apply a \emph{union bound}~\cite{ross} to find this.
+
+\begin{theorem}[Union Bound]
+  Consider $n$ events $X_1, X_2, \cdots, X_n$. Then the probability
+  that \emph{any one of them} occurs is given by their \emph{union bound}:
+
+  \[
+    \Pr[X_1 \lor X_2 \lor \cdots \lor X_n] \leq \Pr[X_1] + \Pr[X_2] + \cdots + \Pr[X_n]
+  \]
+\end{theorem}
+
+Note that this is just an upper bound and these probabilities may not be exactly
+equal. To see why, consider the simple example of rolling a die $6$ times, hoping
+to get a $6$. For any one roll, the probability of getting a $6$ is $\frac{1}{6}$,
+and the union bound tells us that the probability of getting a $6$ in \emph{any
+roll} across our whole game of $6$ rolls is at most $1$. However, the actual probability
+is in fact a little less: $1 - (1 - \frac{1}{6})^6 = 0.665$. Here, we calculated
+the probability of \emph{not} winning in a single roll, which is $1 - \frac{1}{6}$.
+We then calculated the probability of failing to win in any single roll, which is
+$(1 - \frac{1}{6})^6$. Lastly, we took the complement of this probability, interpreting
+this to mean that we won in at least a single roll, obtaining $1 - (1 - \frac{1}{6})^6$.
+We will use this style of arguments a lot when counting probabilities about blocks
+and chains.
+
+Returning to our polynomial adversary, and applying a union bound, we see that
+this adversary can succeed with probability bounded by $\frac{p(\kappa)}{2^\kappa}$.
+
+If we have one adversary who can succeed with some probability $Pr_\mathcal{A}$,
+then a different adversary $\mathcal{A}'$ can succeed with probability
+bounded by $p(\kappa) Pr_{\mathcal{A}}$ for any polynomial $p$. This is known as
+\emph{amplification}\index{Amplification}.
+We wish to define a class of probability functions that we deem \emph{acceptable}
+probabilities of failure. Clearly, if an adversary has a \emph{constant} probability of success
+(such as $0.5$) that does not depend on the security parameter $\kappa$, this is \emph{not}
+acceptable, as we want $\kappa$ to be our \emph{tuning knob} of how secure our protocol will be.
+We will deem \emph{acceptable} the class of functions denoting a probability which is not
+amplifiable to a constant by this manner.
+
+Any inverse polynomial probability such as $\frac{1}{\kappa^3 + \kappa + 9}$ can be amplified by a
+polynomial adversary to be close to the union bound by repeating the experiment a polynomial
+number of times. Therefore, we must ask that our probability is \emph{smaller than any inverse
+polynomial}. Such functions are called \emph{negligible}.
+
+\begin{definition}[Negligible function]\index{Negligible function}
+  A function $f(\kappa)$ is \emph{negligible} if for any polynomial degree
+  $m \in \mathbb{N}$, there exists a $\kappa_0$ such that for all
+  $\kappa > \kappa_0$:
+
+  \[
+    f(\kappa) < \frac{1}{\kappa^m}
+  \]
+\end{definition}
+
+We choose to accept negligible functions exactly because the probability of failure
+cannot be amplified in this manner. If an adverary $\mathcal{A}$ succeeds with negligible
+probability, an adversary $\mathcal{A}'$ that simulates $\mathcal{A}$ must run the
+simulation an \emph{exponential} number of times in order to achieve anything beyond
+a negligible probability. Given that we have constrained our adversaries to be polynomial-time,
+this is impossible.
+
+The negligible probability of failure is the standard treatment in modern cryptography~\cite{katz}.
+Beyond the above argument pertaining to the polynomiality of adversaries, negligible
+functions are easy to work with because they observe certain \emph{closure} properties.
+In particular, multiplying a negligible function with a polynomial yields a negligible
+function. As constants are polynomials, scaling a negligible function by a constant
+yields a negligible function too. Of course, multiplying something negligible with
+something negligible keeps it negligible, and taking any constant power of a negligible function
+keeps it negligible.
+
+\begin{align*}
+  \textsf{negl} \cdot \textsf{negl} &= \textsf{negl}\\
+  \textsf{const} \cdot \textsf{negl} &= \textsf{negl}\\
+  \textsf{poly} \cdot \textsf{negl} &= \textsf{negl}\\
+  \forall k \in \mathbb{N}: \textsf{negl}^k &= \textsf{negl}
+\end{align*}
 
 \subsection*{Definitions of Security}
 
@@ -453,42 +506,6 @@ the value denoted by $\Pr[\textsf{Game}_{\Pi,\mathcal{A}}(\kappa) = 0]$ for a fi
 $\mathcal{A}$ is a function of $\kappa$. What we are saying here is that this function that
 counts the probability must be below some negligible function. Said differently, that probability
 must \emph{eventually} (for sufficiently large $\kappa$) become smaller than all inverse polynomials.
-
-\subsection*{Breaking by Guessing}
-
-What happens if an adversary attempts to perform multiple guesses for the secret key?
-Each of these guesses has a probability of success amounting to $\frac{1}{2^\kappa}$.
-Since the adversary has polynomial time $p(\kappa)$, the number of guesses she can
-perform must be polynomial, too. What is the probability that \emph{at least one of
-these guesses} is correct? We can apply a \emph{union bound}~\cite{ross} to find this.
-
-\begin{theorem}[Union Bound]
-  Consider $n$ events $X_1, X_2, \cdots, X_n$. Then the probability
-  that \emph{any one of them} occurs is given by their \emph{union bound}:
-
-  \[
-    \Pr[X_1 \lor X_2 \lor \cdots \lor X_n] \leq \Pr[X_1] + \Pr[X_2] + \cdots + \Pr[X_n]
-  \]
-\end{theorem}
-
-Note that this is just an upper bound and these probabilities may not be exactly
-equal. To see why, consider the simple example of rolling a die $6$ times, hoping
-to get a $6$. For any one roll, the probability of getting a $6$ is $\frac{1}{6}$,
-and the union bound tells us that the probability of getting a $6$ in \emph{any
-roll} across our whole game of $6$ rolls is at most $1$. However, the actual probability
-is in fact a little less: $1 - (1 - \frac{1}{6})^6 = 0.665$. Here, we calculated
-the probability of \emph{not} winning in a single roll, which is $1 - \frac{1}{6}$.
-We then calculated the probability of failing to win in any single roll, which is
-$(1 - \frac{1}{6})^6$. Lastly, we took the complement of this probability, interpreting
-this to mean that we won in at least a single roll, obtaining $1 - (1 - \frac{1}{6})^6$.
-We will use this style of arguments a lot when counting probabilities about blocks
-and chains.
-
-Returning to our polynomial adversary, and applying a union bound, we see that
-this adversary can succeed with probability at most $\frac{p(\kappa)}{2^\kappa}$,
-which remains negligible, because $\textsf{poly} \cdot \textsf{negl} = \textsf{negl}$.
-This reinforces our reason for adopting the class of
-negligible functions as our acceptable probability of failure.
 
 \subsection*{The Honest/Adversarial Gap}
 

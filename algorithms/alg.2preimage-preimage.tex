@@ -1,0 +1,12 @@
+
+\begin{algorithm}[H]
+  \caption{The 2nd preimage adversary $\mathcal{A}'$ of Theorem~\ref{thm.2preimage-preimage}.}
+  \label{alg.2preimage-preimage}
+  \begin{algorithmic}[1]
+    \Function{$\mathcal{A}'$}{$x_1$}:
+        \Let{y}{H(x_1)}
+        \Let{x_2}{\mathcal{A}(y)}
+        \State \Return $x_1 \neq x_2 \land H(x_1) = H(x_2)$
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}

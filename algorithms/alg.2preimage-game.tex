@@ -1,0 +1,13 @@
+\begin{figure}[t]
+  \begin{algorithm}[H]
+    \caption{\label{alg.2preimage-game} The second-preimage-finding
+            game for a hash function $H$.}
+    \begin{algorithmic}[1]
+      \Function{$\mathsf{2PRE}_{\mathcal{A},H}$}{$\kappa$}:
+          \State $x_1 \getsrandomly \{0,1\}^{2\kappa+1}$
+          \Let{x_2}{\mathcal{A}(x_1)}
+          \State \Return $x_1 \neq x_2 \wedge H_\kappa(x_1) = H_\kappa(x_2)$
+      \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+\end{figure}
