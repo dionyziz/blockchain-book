@@ -505,18 +505,20 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
 \section*{Problems}
 
 \begin{enumerate}
+  \item What is an example of a hash function that is not collision resistant, preimage resistant, or
+  2nd preimage resistant?
   \item The proof of Theorem~\ref{thm.2preimage-preimage} is a proof with reference to the illustration. Make it rigorous so that it doesn't speak of images, boxes, and dashed lines. Instead, use exact counting formulas and define appropriate notation to represent the boxes as equivalence classes.
   \item Give a simpler proof of Theorem~\ref{thm.2preimage-preimage}.
   \item Combine Theorems~\ref{thm.collision-2preimage} and~\ref{thm.2preimage-preimage} to
         show that collision resistance implies preimage resistance.
-  \item You are given a pre-image adversary $\mathcal{A}$ for a hash function $H$ that always
+  \item You are given a pre-image adversary $\mathcal{A}$ for a hash function $H$ that \emph{always}
         succeeds. Can you create a \emph{collision} adversary $\mathcal{A}^*$ against $H$
         that succeeds often?
-  \item Show that if there exists a collision resistant and pre-image resistant hash function $H$,
-        then there exists a hash function $H'$ whose first bit is reliably predictable.
-        Use a computational reduction to show that $H'$ is collision resistant and pre-image
-        resistant.
+  \item Given a collision resistant hash function $H$,
+        make a collision resistant hash function $H'$ whose first bit is reliably predictable.
   \item Construct a correct but insecure signature scheme.
+  \item Let $H:\{0,1\}^* \to \{0,1\}^{\kappa}$ be a collision-resistant hash function and define
+        $G(x) = H(H(x))$. Show that $G$ is a collision-resistant hash function.
 \end{enumerate}
 
 \section*{Further Reading}
