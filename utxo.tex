@@ -246,7 +246,8 @@ to the transaction ledger while maintaining consistency.
 Each node in our network stores the \emph{whole} transaction graph. When a party wishes to make
 a payment, they create a new tranasction and broadcast it to the network. This transaction is
 received by the other peers, who add it to their local transaction graph. Now everyone
-knows \emph{who owns what} by looking at their local UTXO set.
+knows \emph{who owns what} by looking at their local UTXO set. The sum of all the values
+in the UTXO set is equal to the total amount of money in the system.
 
 In particular, if I, as an honest node, want to know \emph{how much money I have}, I look
 at my local UTXO set and collect all those UTXOs who are marked with a public key whose
@@ -459,7 +460,7 @@ encoding function which adds some checksums to avoid mistypes.
 These details are implementation details and are immaterial to the foundational
 functionality of the system.
 
-\section{Transaction Verification}
+\section{Transaction Validation}
 
 In order to verify an incoming transaction from the network, each node must maintain the current transaction
 graph and in particular the \emph{current UTXO set}.
@@ -534,6 +535,8 @@ This can lead to race conditions, which we tackle in the next chapter.
 
 \section*{Problems}
 
+TBD
+
 \section*{Further Reading}
 
 The UTXO model was first put forth in the context of Bitcoin by Satoshi Nakamoto. Satoshi
@@ -548,13 +551,6 @@ go into a lot of detail about the particularities of transaction, key, and addre
 for Bitcoin and Ethereum respectively.
 
 % TODO: Make sure these are covered
-% {\color{red}
-% \begin{itemize}
 % \item What money do I own? Calculating balances / Wallets as a collection of keys
-% \item Verifying a payment
 % \item Reading: Chapter 5 introduction and section 5.1 from Modern Cryptography (2nd ed.)
 % \item Reading: Chapter 12 introduction (skip comparison to MACs and relation to encryption) and sections 12.1, 12.2, 12.3 from Modern Cryptography (2nd ed.)
-% \item Exercises 2 and 3
-% \end{itemize}
-% }
-%
