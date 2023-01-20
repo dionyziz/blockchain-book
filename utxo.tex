@@ -1,4 +1,4 @@
-\chapter{The UTXO Application Layer}
+\chapter{The UTXO}
 
 % \input{./commitments.tex} % TODO: restore this file to build Ouroboros Proof-of-Stake later?
 
@@ -68,12 +68,12 @@ even before any transaction takes place.
     \label{fig.utxo-transaction-keys}
 \end{figure}
 
-\subsection*{Multiple Outputs}
+\section{Multiple Outputs}
 
 It may be useful to pay for multiple things with a single transaction. If Alice receives
 her salary through one transaction, she may want to spend it on both her rent as well
 as on a book. A transaction can have multiple outputs. Each of the outputs may have a
-different receipient public key and a different amount. An example is illustrated in
+different recipient public key and a different amount. An example is illustrated in
 Figure~\ref{fig.utxo-multiple-outputs}. Each of the outputs can be spent independently.
 For example, Alice's landlord can spend his money while the bookstore doesn't. This
 transaction consumes one input and produces two outputs.
@@ -125,7 +125,7 @@ graph.
     \label{fig.utxo-change-chain}
 \end{figure}
 
-\subsection*{Multiple Inputs}
+\section{Multiple Inputs}
 
 It is also possible to \emph{combine} multiple inputs into a single transaction to make
 a larger payment. For example, Alice can use two of her salaries, each of which resides
@@ -145,9 +145,10 @@ Typically, a transaction will have one or more inputs and exactly two outputs. A
 one or more payments she has received (including previous change) to pay for something she is
 purchasing, and give herself the change remaining from the purchase.
 
-\subsection*{The Conservation Law}
+\section{The Conservation Law}
 
-Money must not be created out of nothing. The input amounts to a transaction must
+Money needs to be scarce. When money is transacted, new money must not be created out of nothing.
+The input amounts to a transaction must
 match the output amounts of the same transaction. This is known as the \emph{conservation law}.
 Let us denote by $\tx$ a transaction, by $\tx\textsf{.ins}$ its array of inputs,
 and by $\tx\textsf{.outs}$ its array of outputs. For each input \emph{in} in
@@ -169,24 +170,24 @@ are the only ones that do not respect the Conservation Law.
 Coinbase transactions follow very particular rules and they must be designated and limited,
 in order to have scarcity.
 We will explore the exact rules
-in more detail when we speak about macroeconomics in Chapter~\ref{chapter.economics}.
+in more detail when we speak about macroeconomics in Chapter~\ref{chapter:pow}.
 Even though there can be transactions with no inputs (the coinbase transactions), every
 transaction must have at least one output.
 
-\subsection*{Outpoints}
+\section{Outpoints}
 
-Each transaction is given an \emph{identifier} known as the \emph{txid}~\index{txid}. This is
+Each transaction is given an \emph{identifier} known as the \emph{$\txid$}~\index{txid}. This is
 obtained by hashing the transaction data (including all of its inputs and outputs).
 
 Since an input of a transaction is always spending a previous output, the input can just be a
 reference to a previous output. To reference an output, we need to specify the transaction it
-belongs to, using its txid, as well as the \emph{index} of the output (whether it is the first
+belongs to, using its $\txid$, as well as the \emph{index} of the output (whether it is the first
 output of the transaction, or the second output of the transaction, and so on). The pair
-$(\txid, idx)$ is used in place of an input and is sufficient to uniquely specify a previous
-output. The value $idx$ is simply a number $0, 1, 2, \ldots$.
+$(\txid, \idx)$ is used in place of an input and is sufficient to uniquely specify a previous
+output. The value $\idx$ is simply a number $0, 1, 2, \ldots$.
 This pair is known as an \emph{outpoint}\index{Outpoint}. An outpoint example is illustrated
 in Figure~\ref{fig.utxo-outpoint}. We will illustrate the outpoint pair on top of an
-encoming edge to a transaction, although this will typically be implicit.
+incoming edge to a transaction, although this will typically be implicit.
 
 \begin{figure}[h]
     \centering
@@ -199,16 +200,16 @@ encoming edge to a transaction, although this will typically be implicit.
     \label{fig.utxo-outpoint}
 \end{figure}
 
-\subsection*{The UTXO Set}
+\section{The UTXO Set}
 
 The whole history of payments in our system forms a \emph{transaction graph}\index{Transaction graph}.
 This is a Directed Acyclic Graph (DAG). It cannot contain cycles because transactions must be
 strictly orderable in the way that they spend: the input of a next transaction refers to
-outputs of previous trancations through outpoints that contain their hashes in the form of txids.
+outputs of previous trancations through outpoints that contain their hashes in the form of $\txid$s.
 An example transaction graph is illustrated in Figure~\ref{fig.utxo-tx-graph}. In this diagram,
 we are not showing the edge owners or amounts for conciseness. As new payments are made in the system,
 new transactions are added to the graph, but existing transactions are not modified, and previously
-added transactions are not removed.
+added transactions are not removed. This is an append-only graph.
 
 Some transactions in the graph have outputs that have all been spent, and we will never need to care
 about them again. Some transactions have dangling outputs, and so their outputs are available for
@@ -247,7 +248,12 @@ a payment, they create a new tranasction and broadcast it to the network. This t
 received by the other peers, who add it to their local transaction graph. Now everyone
 knows \emph{who owns what} by looking at their local UTXO set.
 
-\subsection*{Transaction Signatures}
+In particular, if I, as an honest node, want to know \emph{how much money I have}, I look
+at my local UTXO set and collect all those UTXOs who are marked with a public key whose
+respective private key I am in possession of. Summing all of their values gives me my
+current holdings.
+
+\section{Transaction Signatures}
 
 For a transaction to be valid, its inputs must point to outputs whose spending has
 been authorized by their rightful owner. This can be done by \emph{signing} the new transaction
@@ -258,6 +264,19 @@ new transaction, transaction $19$, is spending from an output that belongs to Al
 The output being spent is the output with index $0$ of transaction $7$.
 The new transaction is paying Bob $1$ unit and Charlie $2$ units, for a total of
 $3$ units.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/utxo-sig.pdf}
+  \caption{Alice creates a new transaction, transaction $19$, by which she pays Bob
+           $1$ unit
+           and Charlie $2$ units.
+           The transaction data include Bob's public key, Charlie's public key,
+           the outgoing amounts $1$ and $2$, and the outpoint $(7, 0)$.
+           These must all be signed by Alice's secret key.}
+  \label{fig.utxo-sig}
+\end{figure}
+
 Alice must authorize this spending by signing using her secret key.
 The data that she signs are the contents of the new transaction:
 The owners and amounts in the outputs, and the outpoint of the input.
@@ -273,34 +292,6 @@ together with the transaction and accompanies it whenever it is broadcast on the
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/utxo-sig.pdf}
-    \caption{Alice creates a new transaction, transaction $19$, by which she pays Bob
-             $1$ unit
-             and Charlie $2$ units.
-             The transaction data include Bob's public key, Charlie's public key,
-             the outgoing amounts $1$ and $2$, and the outpoint $(7, 0)$.
-             These must all be signed by Alice's secret key.}
-    \label{fig.utxo-sig}
-\end{figure}
-
-If Alice wishes to create a transaction with multiple inputs she controls, she must
-provide a signature corresponding to each of the input. Consider the example illustrated
-in Figure~\ref{fig.utxo-sig-multi}. Here, Alice wishes to spend two outputs that she
-ownes. The first output has been paid to Alice's public key $pk_1$. The second output
-has been paid to Alice's public key $pk_2$. Alice controls the respective secret keys
-$sk_1$ and $sk_2$. Alice creates a new transaction, transaction $19$, containing the
-desired inputs and outputs. In the inputs, she places two outpoints pointing to the
-two outputs she wishes to spend. The new transaction data, including the inputs and outputs,
-must all be signed twice: First, using Alice's $sk_1$ (and verifiable using $pk_1$),
-and secondly using Alice's $sk_2$ (and verifiable using $pk_2$). This will yield two
-different signatures $\sigma_1$ (created using $sk_1$) and $\sigma_2$ (created using
-$sk_2$). Both of these signatures verify on the \emph{same} data, but using different
-public keys. A signature for the outpoint connected to each of the transaction's inputs
-must accompany the transaction whenever it is broadcast. A transaction is accompanied
-by as many signatures as it has inputs.
-
-\begin{figure}[h]
-    \centering
     \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/utxo-sig-multi.pdf}
     \caption{Alice creates a new transaction, transaction $19$, by which she pays Bob
              $8$ units
@@ -313,11 +304,28 @@ by as many signatures as it has inputs.
     \label{fig.utxo-sig-multi}
 \end{figure}
 
-\subsection*{Transaction Creation}
+If Alice wishes to create a transaction with multiple inputs she controls, she must
+provide a signature corresponding to each of the inputs. Consider the example illustrated
+in Figure~\ref{fig.utxo-sig-multi}. Here, Alice wishes to spend two outputs that she
+owns. The first output has been paid to Alice's public key $pk_1$. The second output
+has been paid to Alice's public key $pk_2$. Alice controls the respective secret keys
+$sk_1$ and $sk_2$. Alice creates a new transaction, transaction $19$, containing the
+desired inputs and outputs. In the inputs, she places two outpoints pointing to the
+two outputs she wishes to spend. The new transaction data, including the inputs and outputs,
+must all be signed twice: First, using Alice's $sk_1$ (and verifiable using $pk_1$),
+and secondly using Alice's $sk_2$ (and verifiable using $pk_2$). This will yield two
+different signatures $\sigma_1$ (created using $sk_1$) and $\sigma_2$ (created using
+$sk_2$). Both of these signatures verify on the \emph{same} data, but using different
+public keys. A signature for the outpoint connected to each of the transaction's inputs
+must accompany the transaction whenever it is broadcast. A transaction is accompanied
+by as many signatures as it has inputs.
 
-When Alice wishes to create a new transaction, she performs the following steps:
+\section{Transaction Creation}
+
+When the honest node Alice wishes to create a new transaction, she performs the following steps:
 
 \begin{enumerate}
+  \item She requests the public key of the recipient through some off-chain means (e.g., via e-mail or a QR code).
   \item She picks the UTXO outputs she wishes to spend from.
   \item She creates a new transaction with the output \emph{public keys} and \emph{amounts} she wishes to pay to.
   \item She creates transaction inputs where she places outpoints pointing to the UTXOs she wishes to spend from.
@@ -326,13 +334,13 @@ When Alice wishes to create a new transaction, she performs the following steps:
   \item She broadcasts the transaction and its signatures to the network.
 \end{enumerate}
 
-\subsection*{Transaction Format}
+\section{Transaction Format}
 
 So far, we have treated a transaction as an abstract object. It is time to make this concrete. A transaction
 consists of its \emph{inputs} and \emph{outputs}:
 
 \begin{enumerate}
-  \item Its list of \emph{inputs}. Each element in this list is an outpoint, a pair in the form $(txid, idx)$.
+  \item Its list of \emph{inputs}. Each element in this list is an outpoint, a pair in the form $(\txid, \idx)$.
   \item Its list of \emph{outputs}. Each element in this list is a pair containing a public key
         (the owner of the output) and an integer amount.
 \end{enumerate}
@@ -344,39 +352,117 @@ An example transaction object looks like this:
     inputs: [
       {
         outpoint: (
-          cc6a88afaca94fec238258e3665d64cdde592e3ea13f151eca37d5e6589cd169,
+          "cc6a88afaca94fec238258e3665d64cd
+           de592e3ea13f151eca37d5e6589cd169",
           0
         )
       },
       {
         outpoint: (
-          3a648c42b90af46b9bba7ae723451002aa53baba187020051e0c32112bf458a0,
+          "3a648c42b90af46b9bba7ae723451002
+           aa53baba187020051e0c32112bf458a0",
           3
         )
       }
     ],
     outputs: [
       {
-        pk: ,
+        pk: "36dec8c46741efdab93a77f8fc75acec
+             6e290b1ce0f280e04753db5c864a6469",
         amount: 5012900000000
       },
       {
-        pk:,
-        amount:
+        pk: "f71c1e7478459d90764d59dd9cb0ea9f
+             62406d2c1412dea7c6de0c0355183066",
+        amount: 3170000000000
       },
       {
-        pk:
-        amount:
+        pk: "d9169b9601f3121f316f44e4d1bd0ecc
+             d6d07df4d152fdcbf59a210e7c77e467"
+        amount: 135000000000
       }
     ]
   }
 \end{verbatim}
 
-\subsection*{Transaction Verification}
+The amounts are given as integers. These are given in
+the smallest denomination possible that we want to allow our cryptocurrency to take.
+For example, Bitcoin uses the \emph{satoshi} unit, equal to
+$10^{-8}$ bitcoin, whereas Ethereum uses the \emph{wei}, equal to
+$10^{-18}$ ether. The coins cannot be further divided beyond integer amounts.
+This avoids floating point errors.
+
+The transaction example above is an \emph{unsigned} transaction, and cannot be
+broadcast to the network as-is. Signatures must be included with each outpoint
+to authenticate the respective input. A \emph{signed} transaction looks something
+like this:
+
+\begin{Verbatim}
+  {
+    inputs: [
+      {
+        outpoint: (
+          "cc6a88afaca94fec238258e3665d64cd
+           de592e3ea13f151eca37d5e6589cd169",
+          0
+        ),
+        sig:
+          "680b733e57690024d18025603f6df238
+           b6f181c2de76b96961a90c1f0fc0d1e2
+           42795ddd48f06e6ac2760579459b6b98
+           ef77d91c4278dd0a9feaac91a57eae08"
+      },
+      {
+        outpoint: (
+          "3a648c42b90af46b9bba7ae723451002
+           aa53baba187020051e0c32112bf458a0",
+          3
+        ),
+        sig:
+          "13f1eb894921c7535ac51aac874187ac
+           993b0dcf7b3b439b15cf408dbf66db2b
+           7739605ef9ab0bc79be7957a9e15ef0b
+           e0dd92524c8881cc3fd3742c621e8c0b"
+      }
+    ],
+    outputs: [
+      {
+        pk: "36dec8c46741efdab93a77f8fc75acec
+             6e290b1ce0f280e04753db5c864a6469",
+        amount: 5012900000000
+      },
+      {
+        pk: "f71c1e7478459d90764d59dd9cb0ea9f
+             62406d2c1412dea7c6de0c0355183066",
+        amount: 3170000000000
+      },
+      {
+        pk: "d9169b9601f3121f316f44e4d1bd0ecc
+             d6d07df4d152fdcbf59a210e7c77e467"
+        amount: 135000000000
+      }
+    ]
+  }
+\end{Verbatim}
+
+Naturally, the particularities of how transactions are encoded differ from blockchain
+to blockchain in practice. For example, Bitcoin uses the \texttt{secp256k1} signature
+scheme to produce the public keys to receive payments and
+\texttt{sha256} as the hash by which $\txid$ is calculated.
+In contrast, Ethereum uses the \texttt{keccak} hash to calculate $\txid$,
+and Cosmos Hub uses the \texttt{ed25519} signature scheme to generate public keys.
+The encoding of addresses also differs from cryptocurrency to cryptocurrency.
+For example, Bitcoin encodes addresses by taking the public key,
+hashing it with two different hashes (\texttt{ripemd} and \texttt{sha256}),
+and then applying the \texttt{base58}
+encoding function which adds some checksums to avoid mistypes.
+These details are implementation details and are immaterial to the foundational
+functionality of the system.
+
+\section{Transaction Verification}
 
 In order to verify an incoming transaction from the network, each node must maintain the current transaction
-graph and in particular the \emph{current UTXO set}. As different nodes on the network see different transactions
-at different times, each node may have a different opinion on what their current UTXO set is.
+graph and in particular the \emph{current UTXO set}.
 When a node sees a new transaction arriving from
 the network, it checks the new transaction's inputs to see if they belong to its current UTXO set.
 If the transaction is valid, the node adds the new transaction to its transaction graph.
@@ -393,12 +479,8 @@ network. The checks performed when verifying a transaction include checking the 
 and checking the signatures on the new transaction.
 
 To perform these checks, he must follow the outpoints to find out the corresponding
-public keys and amounts.
-
-Transactions broadcast from different parts of the network may arrive in a different order in other
-parts of the network. This can yield to race conditions.
-
-When Bob wishes to verify a transaction $\tx$ received from the network, he performs the following steps:
+public keys and amounts. When the honest party  Bob wishes to verify a transaction $\tx$ received from
+the network, he performs the following steps:
 
 \begin{enumerate}
   \item For each transaction input, he resolves the respective outpoint.
@@ -425,7 +507,7 @@ The first reason is malicious. The adversary is creating a transaction spending 
 a non-existing outpoint. This transaction must be rejected.
 The second reason is benign, and it is a \emph{race condition}.
 If Alice pays Charlie in one transaction $\tx_1$ and then Charlie pays David in another
-transaction $\tx_2$, which spends from $tx_1$, then $\tx_1$ and $\tx_2$ will be broadcast
+transaction $\tx_2$, which spends from $\tx_1$, then $\tx_1$ and $\tx_2$ will be broadcast
 in this order. However, the verifier may receive them on the network
 in a different order than they were sent. He can see $\tx_2$ first, and $\tx_1$ only later.
 If a verifier sees $\tx_2$ first, then
@@ -440,30 +522,17 @@ an adversary could be attempting to spend a non-existent outpoint.
 
 Alternatively, it's also possible that \emph{this outpoint was added to the UTXO set, but was later
 removed from the UTXO set}. This means that there exists a different transaction
-which spends from the \emph{same} output.
+which spends from the \emph{same} output. This is called a \emph{double spend},
+and it must be rejected. Double spends are necessarily adversarially created.
+Honest parties do not produce double spending transactions.
+
+Transactions broadcast from different parts of the network may arrive in a different order in other
+parts of the network.
+As different nodes on the network see different transactions
+at different times, each node may have a different opinion on what their current UTXO set is.
+This can lead to race conditions, which we tackle in the next chapter.
 
 \section*{Problems}
-
-\begin{enumerate}
-  \item You are given a pre-image adversary $\mathcal{A}$ for a hash function $H$ that always
-        succeeds. Can you create a \emph{collision} adversary $\mathcal{A}^*$ against $H$
-        that succeeds often?
-  \item Show that if there exists a collision resistant and pre-image resistant hash function $H$,
-        then there exists a hash function $H'$ whose first bit is reliably predictable.
-        Use a computational reduction to show that $H'$ is collision resistant and pre-image
-        resistant.
-  \item Consider a hash-based commitment scheme construction in which no salt is used.
-        Prove that the scheme is correct. Use collision resistance to prove that the scheme is binding.
-        Calculate the probability of success of a hiding adversary in the
-        hiding game.\label{prob.commit-salt}
-  \item Construct a correct commitment scheme which is hiding but not binding.
-  \item Construct a correct commitment scheme which is binding but not hiding.
-  \item Show that the hash-based commitment scheme constructed using a
-        pathological secure hash function may not be hiding.
-        (Hint: Start with a secure hash function $H$ and modify it
-         to obtain a pathological secure hash function $H^*$.)\label{prob.preimage-no-hide}
-  \item Construct a correct but insecure signature scheme.
-\end{enumerate}
 
 \section*{Further Reading}
 
@@ -474,28 +543,15 @@ in this chapter, but also blocks, chains, and SPV proofs that we will explore in
 
 For many more details on transaction format particularities in the specific implementation of the UTXO
 model in Bitcoin, refer to the Bitcoin Developer Guide~\cite{bitcoin-dev-guide}.
+The books Mastering Bitcoin~\cite{mastering-bitcoin} and Mastering Ethereum~\cite{mastering-ethereum}
+go into a lot of detail about the particularities of transaction, key, and address formats
+for Bitcoin and Ethereum respectively.
 
 % TODO: Make sure these are covered
 % {\color{red}
 % \begin{itemize}
-% \item
-%   Goal: Transparency / verifiability (everyone knows that the money they claim they have, they *actually* have)
-% \item
-%   What is money? How do we know today who owns what? Did we track it through history? Do we have that history? No -- we trust our social environment. A kind of "honest majority" setting.
-% % \item The adversary
-%   \begin{itemize}
-%     \item Problems hard in the average case VS problems hard in the worst case
-%   \end{itemize}
-% \item UTXO as application state
-% \item The evolution of the UTXO
-% \item Transaction lifetime -- creating a new transaction
-% \item Steps for transaction validation
-% \item Transaction signature creation and verification
 % \item What money do I own? Calculating balances / Wallets as a collection of keys
 % \item Verifying a payment
-% \item Transaction broadcasting
-% \item Everyone maintains a transaction graph!
-% \item Double spending
 % \item Reading: Chapter 5 introduction and section 5.1 from Modern Cryptography (2nd ed.)
 % \item Reading: Chapter 12 introduction (skip comparison to MACs and relation to encryption) and sections 12.1, 12.2, 12.3 from Modern Cryptography (2nd ed.)
 % \item Exercises 2 and 3

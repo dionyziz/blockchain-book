@@ -509,6 +509,14 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
   \item Give a simpler proof of Theorem~\ref{thm.2preimage-preimage}.
   \item Combine Theorems~\ref{thm.collision-2preimage} and~\ref{thm.2preimage-preimage} to
         show that collision resistance implies preimage resistance.
+  \item You are given a pre-image adversary $\mathcal{A}$ for a hash function $H$ that always
+        succeeds. Can you create a \emph{collision} adversary $\mathcal{A}^*$ against $H$
+        that succeeds often?
+  \item Show that if there exists a collision resistant and pre-image resistant hash function $H$,
+        then there exists a hash function $H'$ whose first bit is reliably predictable.
+        Use a computational reduction to show that $H'$ is collision resistant and pre-image
+        resistant.
+  \item Construct a correct but insecure signature scheme.
 \end{enumerate}
 
 \section*{Further Reading}

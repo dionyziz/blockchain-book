@@ -177,3 +177,18 @@ from context.
 We proved that \emph{binding} follows from \emph{collision resistance}. It would seem that
 \emph{hiding} must follow from \emph{preimage resistance}, but, even though this scheme is
 hiding in practice, the proof will require a different model (see Problem~\ref{prob.preimage-no-hide}).
+
+\section*{Problems}
+
+\begin{enumerate}
+  \item Consider a hash-based commitment scheme construction in which no salt is used.
+        Prove that the scheme is correct. Use collision resistance to prove that the scheme is binding.
+        Calculate the probability of success of a hiding adversary in the
+        hiding game.\label{prob.commit-salt}
+  \item Construct a correct commitment scheme which is hiding but not binding.
+  \item Construct a correct commitment scheme which is binding but not hiding.
+  \item Show that the hash-based commitment scheme constructed using a
+        pathological secure hash function may not be hiding.
+        (Hint: Start with a secure hash function $H$ and modify it
+         to obtain a pathological secure hash function $H^*$.)\label{prob.preimage-no-hide}
+\end{enumerate}
