@@ -282,11 +282,17 @@ The game will be specific to the protocol and property we wish to describe, and 
 a relevant name. The game is also known as the \emph{challenger} or \emph{experiment}.
 To use one of the games, first,
 we decide which adversary we want to evaluate, and fix the source code that defines this adversary.
-We call this adversary $\mathcal{A}$, denoting a particular computer program.
+We call this adversary
+\glsxtrnewsymbol[description={adversary}]{adversary}{$\mathcal{A}$}\glsadd{adversary}
+$\mathcal{A}$,
+denoting a particular computer program.
 We are only interested in evaluating the performance of PPT adversaries against the game.
 We then run the
 game, which is a different computer program, and give it the source code of the adversary as a
-parameter. We also give the game access to run the honest protocol $\Pi$. The game will
+parameter. We also give the game access to run the honest protocol
+\glsxtrnewsymbol[description={honest protocol}]{honest}{$\Pi$}\glsadd{honest}
+$\Pi$.
+The game will
 simulate some interaction between the adversary and the honest parties. The game executes
 the adversary and the honest parties and facilitates some data exchange between them. It
 then takes the output of the adversary and decides whether the adversary has been successful
@@ -300,6 +306,7 @@ level to argue about the security of our design.
 
 In its foundations, our security is analyzed with a \emph{security parameter}\index{Security parameter}:
 The parameter
+\glsxtrnewsymbol[description={security parameter}]{security}{$\kappa$}\glsadd{security}
 $\kappa$. This parameter denotes what probability of failure we are willing to accept
 in our protocols: We can tolerate probabilities that are roughly $2^{-\kappa}$. For
 $\kappa = 256$, this probability is extremely small: It is extremely more probable that
@@ -672,7 +679,7 @@ hope to be able to deduce who owns how much money in their respective counterpar
 
 Following our pattern of a powerful adversary, we give the adversary the ability to create
 as many identities on the network as she desires. This is termed a
-\emph{Sybil attack}~\cite{sybil}. The adversary may overwhelm an honest party with adversarial
+\emph{Sybil attack}~\cite{sybil}\index{Sybil Attack}. The adversary may overwhelm an honest party with adversarial
 connections as illustrated in Figure~\ref{fig.sybil}.
 
 \begin{definition}[Sybil Attack]

@@ -12,7 +12,10 @@ number as the identifier, as we want the identifier to be unfakeable: Given an i
 we want to be able to check that the object really does correspond to the identifier.
 
 For this, we will use \emph{cryptographically secure hash functions}\index{Hash function}. The hash function
-is a function $H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$, where $\kappa$ is the
+is a function
+\glsxtrnewsymbol[description={hash function}]{hash}{$H$}\glsadd{hash}
+$H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$,
+where $\kappa$ is the
 security parameter. As you can see, the hash function accepts \emph{any} string as input,
 but \emph{always} returns a $\kappa$ bits long string. This makes it useful as a
 \emph{compression} mechanism, as these identifiers are short ($\kappa$ will be $256$
@@ -44,7 +47,7 @@ $2^{2\kappa}$ combinations, its running time is exponential. The result that has
 functions must \emph{necessarily} have collisions stems from the Pigeonhole
 Principle~\cite{liu}:
 
-\begin{theorem}[Pigeonhole]
+\begin{theorem}[Pigeonhole]\index{Pigeonhole Principle}
   Consider a function $f: A \longrightarrow B$. If $|A| > |B|$, then there must
   exist $x_1$ and $x_2$ such that $f(x_1) = f(x_2)$.
 \end{theorem}
@@ -142,7 +145,7 @@ as $x$.
 But, perhaps, we are simply asking too much of this adversary. It would already be a big problem
 for us if the adversary, given some $x_1$, can find a \emph{different} $x_2$ that hashes to the same
 value. We call this property \emph{second primage resistance}, and it is defined through the following
-game.
+game.\index{2nd Preimage Resistance}
 
 \import{./}{algorithms/alg.2preimage-game}
 
@@ -313,8 +316,8 @@ and authorized by a government using papers such as a passport. In our case, we 
 to rely on physical bodies or centralized governments for proving identity. Anyone should be
 able to create a new identity \emph{pseudonymously}\index{Identity}\index{Pseudonymity}, without necessarily associating it with
 their real person. To do this, a participant uses his computer to create a \emph{key pair}.
-The key pair consists of two keys: A \emph{public key}\index{Public key} and a \emph{private key}\index{Private key}
-(or \emph{secret key}\index{Secret key}). The public key portion of the key pair can be shared freely and even
+The key pair consists of two keys: A \emph{public key}\index{Public key} and a \emph{secret key}\index{Secret Key}
+(or \emph{private key}\index{Private Key}). The public key portion of the key pair can be shared freely and even
 be made public. For example, it can be published on the owner's website, social media, or on
 a newspaper, without any security problems. On the contrary, a private key must be kept secret.
 We use the public key to specify \emph{the identity about which we are speaking}. So, instead
@@ -332,12 +335,19 @@ Given a private key, it is \emph{easy} to get the respective public key. Given a
 key, it is \emph{hard} to get the respective private key, even though there is a unique
 such key. This is essential. If it were easy to get the private key from a public key,
 anyone who knew your public key could impersonate you. We will denote the public key
-$pk$ and the private key $sk$ (an abbreviation of \emph{secret key}).
+\glsxtrnewsymbol[description={public key}]{pubkey}{$pk$}\glsadd{pubkey}
+$pk$
+and the secret (or private) key
+\glsxtrnewsymbol[description={secret key}]{seckey}{$sk$}\glsadd{seckey}
+$sk$.
 
 \subsection*{Unforgeability}
 
 A cryptographic signature is created using a particular private key $sk$ and is
-denoted $\sigma$. It is associated with a particular message $m$. This means that
+denoted
+\glsxtrnewsymbol[description={signature}]{signature}{$\sigma$}\glsadd{signature}
+$\sigma$.
+It is associated with a particular message $m$. This means that
 the person who holds the private key has authorized this message $m$. The message
 will say something like: ``I, Alice, gave 5 monetary units to Bob.'' Of course, the
 messages will be in a computer-readable format. We will make these messages more
@@ -366,9 +376,14 @@ bits long (in practice typically $256$ bits each).
 She keeps $sk$ secret and publishes $pk$ by
 sending it to her friends. When the time comes for Alice to write a message $m$
 that she wishes to sign, she uses her private key $sk$ to invoke the function
-$Sig(sk, m)$ to obtain a signature $\sigma$. She sends the message $m$ together
+\glsxtrnewsymbol[description={signature function}]{sig}{$Sig$}\glsadd{sig}
+$Sig(sk, m)$
+to obtain a signature $\sigma$. She sends the message $m$ together
 with the signature $\sigma$ to Bob. Bob already holds the public key $pk$ of Alice.
-He uses the public key to invoke the function $Ver(pk, m, \sigma)$, which returns
+He uses the public key to invoke the function
+\glsxtrnewsymbol[description={signature verification}]{ver}{$Ver$}\glsadd{ver}
+$Ver(pk, m, \sigma)$,
+which returns
 $\true$ if the signature was genuinely created by Alice, or $\false$ otherwise.
 If the adversary sends a different message $m' \neq m$ together with this $\sigma$
 to Bob, the \emph{Ver} function will return $\false$.
