@@ -1,159 +1,193 @@
 \chapter{Blocks and Chains \small{\textsf{DRAFT}}}
 
-\section{Protecting against Double Spend Attacks}
+\section{The Network Delay}
 
-\subsection{Network Delay}
+In the last chapter, we created a monetary system in which participants can issue transactions
+and transfer money between one another while maintaining scarcity. We ensured participants can
+only spend their own money by using an unforgeable signature scheme to authenticate transactions
+that everyone verified. By gossiping transactions on the network, every participant assembled
+them, upon verification, into a transaction graph, and reading the UTXO set of that transaction
+graph enabled participants to determine \emph{who owns what}.
+Furthermore, we made that transaction graph append-only. Our intuition is that, since every
+transaction is gossiped, everyone will eventually arrive at the same transaction graph,
+and the population will reach consensus on the UTXO set, even if some transactions take
+a moment to arrive to distant parts of the network. Note that, it doesn't matter to us if
+different honest parties observe transactions arriving on the network in different order,
+as long as all the parties compute the same UTXO set. This is the only thing that's important
+to determine \emph{who owns what}. If two honest nodes accept the same set of transactions,
+even if they have processed them in different order, they will arrive at the same transaction
+graph and the UTXO set computed by them will be the same.
 
-To ensure complete security of the network, all nodes must have ledgers that completely agree on the set of transactions that has happened\footnote{Interestingly, it is not necessary to require that every node agree on the order of transactions, because there is only one way to draw a construct a UTXO graph out of any valid set of transactions anyway.}. Otherwise, if two nodes have ledgers that disagree than one another, then there may be disagreements on what transactions are valid and what transactions are not. For instance, if Alice believes that she has 10 dollars left, whereas Bob believes that she only has 3, then if Alice makes a transaction with a value of 5, she will think that her own transaction is valid, whereas Bob will not, leading to a disagreement.
+Of course, if a transaction is delayed while in transit on the network \emph{for ever}, some nodes
+will not receive it and they will not be in consensus with the rest of the network, but this
+contradicts our non-eclipsing assumption that we introduced in
+Chapter~\ref{chapter.untrusty-world}. To make our intuition more precise, let us quantify how
+long it takes for a message to reach the whole network when it is broadcast by any party.
+We call this the \emph{network delay parameter}.
 
-Using the model we have developed in class so far, it is impossible for there to be complete consensus among the ledgers. This is because we assume every  network has a network delay. Network delay, or $\Delta$, is defined as the maximum time needed for a message to reach from one honest party to every other honest party. In other words, when a honest party makes a transaction, it may take up to $\Delta$ time interval for the transaction to propagate to every other honest party. The existence of network delays allows adversaries to make a double spend attack, which is when an adversary can spend the same UTXO more than once.
+\glsxtrnewsymbol[description={network delay}]{delay}{$\Delta$}\glsadd{delay}
+\begin{definition}[Network Delay]\index{Network Delay}
+  The \emph{network delay parameter} $\Delta$ measures the maximum time it takes
+  for a message to travel from one honest party to every other honest party on the
+  network.
+\end{definition}
 
-\begin{figure}[]
+Because honest parties gossip adversarial messages, this network delay ensures that
+even adversarial messages make it across the network within $\Delta$ time. That is,
+if an honest party receives an adversarial message at some point in time, then every
+honest party will see the same adversarial message within time $\Delta$.
+
+Now we can express our intuition that nodes reach consensus more precisely:
+While some transactions may be delayed up to $\Delta$ time,
+if no transactions are broadcast for a time of $\Delta$, everyone's transaction
+graph will converge to be the same, and the UTXO set will be shared among along
+all honest parties. Unfortunately, this intuition is misguided, and things are not
+that simple. Things break down when double spend transactions are introduced
+by the adversary.
+
+\section{The Double Spend}\index{Double Spend}
+
+Let's try to understand the double spending problem a little more carefully. Eve
+receives $1$ unit of money from Alice through a transaction $\tx_1$ as illustrated in
+Figure~\ref{fig.double-spend}. The transaction $\tx_1$ was created honestly by Alice
+and has one input of $1$ unit coming from Alice, and one output of $1$ unit paying
+Eve's public key. Eve now creates two transactions: The first transaction, $\tx_2$
+consumes the single output of $\tx_1$ and pays $1$ unit back to Alice. The second transaction,
+$\tx_2'$ also consumes the single output of $\tx_1$ and pays $1$ unit, this time to Eve.
+
+Suppose that two other parties, Charlie and Dave, have already seen $\tx_1$ on the network,
+but have not yet received either of $\tx_2$ or $\tx_2'$. If Charlie receives $\tx_2$, he
+will accept this transaction as valid. The transaction's input contains an outpoint that
+points to an element of the UTXO set in his view, since the output of $\tx_1$ has not been
+previously spent. Furthermore, the transaction contains a valid signature by Eve created
+with the correct public key, and it satisfies the Conservation Law. Upon accepting $\tx_2$,
+Charlie updates his UTXO set, removing the output of $\tx_1$ and adding the output of
+$\tx_2$ to it. If Charlie now receives $\tx_2'$, he will reject this transaction, as
+it is spending from an output that is not in the UTXO set in his view.
+
+On the contrary, Dave receives $\tx_2'$ first, and $\tx_2$ after. When Dave receives $\tx_2'$,
+he considers this a valid transaction, because it is spending from the UTXO set in his view.
+Dave, contrary to Charlie, believes that the output of $\tx_1$ is still in the UTXO set.
+Dave then updates his UTXO set, removing the output of $\tx_1$ and adding the output
+of $\tx_2'$ to it.
+
+At this point Charlie's and Dave's view are in disagreement. This is a problem. If Alice has
+also received $\tx_2$ prior to $\tx_2'$, she will justifiably believe that Eve paid her.
+While Charlie will accept Alice's money, because it is in his UTXO set, Dave will not accept
+Alice's money. We have arrived at a situation where Alice's money is not acceptable to everyone.
+We have lost consensus on \emph{who owns what}.
+
+\begin{figure}[h]
     \centering
-    \pgfplotsset{compat=1.15}
-\usetikzlibrary{arrows}
-
-
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,373); %set diagram left start at 0, and has height of 373
-
-%Shape: Rectangle [id:dp4222874871095379]
-\draw  [fill={rgb, 255:red, 255; green, 176; blue, 176 }  ,fill opacity=1 ] (250,15) -- (551,15) -- (551,175) -- (250,175) -- cycle ;
-%Shape: Rectangle [id:dp27119088832304294]
-\draw  [fill={rgb, 255:red, 218; green, 255; blue, 182 }  ,fill opacity=1 ] (250,175) -- (551,175) -- (551,327) -- (250,327) -- cycle ;
-%Shape: Circle [id:dp7535350871179451]
-\draw   (300,76) .. controls (300,62.19) and (311.19,51) .. (325,51) .. controls (338.81,51) and (350,62.19) .. (350,76) .. controls (350,89.81) and (338.81,101) .. (325,101) .. controls (311.19,101) and (300,89.81) .. (300,76) -- cycle ;
-%Shape: Circle [id:dp1786757049950185]
-\draw   (101,176) .. controls (101,162.19) and (112.19,151) .. (126,151) .. controls (139.81,151) and (151,162.19) .. (151,176) .. controls (151,189.81) and (139.81,201) .. (126,201) .. controls (112.19,201) and (101,189.81) .. (101,176) -- cycle ;
-%Shape: Circle [id:dp9999109102395547]
-\draw   (300,276) .. controls (300,262.19) and (311.19,251) .. (325,251) .. controls (338.81,251) and (350,262.19) .. (350,276) .. controls (350,289.81) and (338.81,301) .. (325,301) .. controls (311.19,301) and (300,289.81) .. (300,276) -- cycle ;
-%Straight Lines [id:da004256671229494469]
-\draw    (151,176) -- (298.34,77.11) ;
-\draw [shift={(300,76)}, rotate = 146.13] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da6957853652663155]
-\draw    (151,176) -- (298.34,274.89) ;
-\draw [shift={(300,276)}, rotate = 213.87] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da19761224874945627]
-\draw    (350,76) -- (449,75.02) ;
-\draw [shift={(451,75)}, rotate = 179.43] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da5100558556413184]
-\draw    (350,277) -- (449,276.02) ;
-\draw [shift={(451,276)}, rotate = 179.43] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da7609466290612366]
-\draw    (5,175) -- (99,175.98) ;
-\draw [shift={(101,176)}, rotate = 180.6] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (216,229) node [anchor=north west][inner sep=0.75pt]   [align=left] {1};
-% Text Node
-\draw (220,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {1};
-% Text Node
-\draw (387,255) node [anchor=north west][inner sep=0.75pt]   [align=left] {1};
-% Text Node
-\draw (390,55) node [anchor=north west][inner sep=0.75pt]   [align=left] {1};
-% Text Node
-\draw (45,155) node [anchor=north west][inner sep=0.75pt]   [align=left] {1};
-% Text Node
-\draw (121,205) node [anchor=north west][inner sep=0.75pt]   [align=left] {A};
-% Text Node
-\draw (319,304) node [anchor=north west][inner sep=0.75pt]   [align=left] {C};
-% Text Node
-\draw (318,106) node [anchor=north west][inner sep=0.75pt]   [align=left] {B};
-% Text Node
-\draw (252,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {{\scriptsize $tx_1$, spending the UTXO originating from A}};
-% Text Node
-\draw (252,178) node [anchor=north west][inner sep=0.75pt]   [align=left] {{\scriptsize $tx_2$, also spending the UTXO originating from A}};
-
-
-\end{tikzpicture}
-    \caption{Under our current scheme, the honest node cannot distinguish whether $tx_1$ or $tx_2$ is valid, if both are broadcasted within the network delay $\Delta$}
-    \label{fig:my_label}
+    \includegraphics[width=0.6 \columnwidth,keepaspectratio]{figures/double-spend.pdf}
+    \caption{A double spend transaction. Alice paid Eve $1$ unit through $\tx_1$, but Eve spent it in both $\tx_2$ and in $\tx_2'$,
+             which have different recipients.}
+    \label{fig.double-spend}
 \end{figure}
 
-\subsection{Double Spend}
+\section{Simple Ideas Don't Work}
 
-The adversary can achieve double spending by signing and broadcasting two different transaction that spends the same UTXO. Let's call these $tx_1$ and $tx_2$ (See Figure 1). Now, notice that if it takes a maximum of $\Delta$ for a transaction to be broadcasted to every other honest note, then the honest nodes could receive these two transactions in different orders, as long as both transactions are broadcasted within a time span $\Delta$. For example, honest node $B$ could receive $tx_1$ first and validate that transaction, and then reject the $tx_2$ that comes later because an outpoint of $tx_2$ is no longer in the UTXO set. On the other hand, honest node $C$ could receive the transactions in the opposite order, and validate $tx_2$ whilst rejecting $tx_1$ as invalid. As a result, the ledgers $L_B \neq L_C$, and there will be disagreement about ownership.
+Let us consider three simple ideas to resolve the double spending problem that first come to mind.
+Sadly, these ideas won't work.
 
-% \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt
+\noindent
+\textbf{Idea 1: Reject double spends altogether.} Honest parties never double spend. Since the adversary is the only one
+creating double spends, why do we need to provide any assurances? We can opt to simply invalidate that
+money. We add the following rule to our protocol:
 
-\begin{figure}[h!]
-\centering
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+\begin{quote}
+If you see a transaction that is a double-spend,
+then consider \emph{all} of the transaction outputs that pertain to the double spend transactions invalid.
+\end{quote}
 
-%Straight Lines [id:da1698250768931009]
-\draw    (95,121) -- (328,120.97) ;
-%Straight Lines [id:da9907463042314588]
-\draw    (94,153) -- (327,152.97) ;
+This approach is problematic. The reason is that the adversary can retroactively take back
+a payment: She initially broadcasts $\tx_2$ to the network paying Alice, but keeps $\tx_2'$ withheld,
+as illustrated in the timeline of Figure~\ref{fig.simple-idea-1}.
+Alice, like everyone else, observes $\tx_2$ on the network, but not $\tx_2'$. She thinks this is
+a normal transaction and accepts the payment. In exchange for this payment, Alice provides a service
+to Eve: she serves her coffee. At a later time, Eve has enjoyed the coffee and has departed from Alice's
+establishment. At this point, Eve broadcasts $\tx_2'$, a double spend of $\tx_2$. Suddenly, everyone
+on the network considers both $\tx_2$ and $\tx_2'$ invalid. Alice's money is gone. Therefore, we cannot
+adopt this construction.
 
-% Text Node
-\draw (131,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle tx_{1}$};
-% Text Node
-\draw (228,100) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle tx_{2}$};
-% Text Node
-\draw (280,134) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle tx_{1}$};
-% Text Node
-\draw (180,134) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle tx_{2}$};
-% Text Node
-\draw (78,111) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle B$};
-% Text Node
-\draw (77,145) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle C$};
-
-
-\end{tikzpicture}
-\caption{A possible configuration of transaction arrival times that make the protocol vulnerable to double spends, assuming both transactions reach both parties within time $\Delta$; B and C disagree whether $tx_1$ or $tx_2$ came first, i.e. which one is valid.}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4 \columnwidth,keepaspectratio]{figures/simple-idea-1.pdf}
+    \caption{The first idea is unviable because it allows the
+    adversary to retroactively invalidate an earlier transaction much later. Here, $\tx_2'$
+    is initially withheld, but broadcast much later, causing an invalidation to the earlier
+    $\tx_2$ transaction.}
+    \label{fig.simple-idea-1}
 \end{figure}
 
-What are some simple solutions that could solve this double spend problem? One idea is to just cancel double spends, since no honest node would ever double spend. We would cancel both transactions if double spend occurs. However, consider the scenario where an adversary first buys an item in one transaction, and goes on to double spend the money used in that transaction after every honest node receives the first transaction. When both transactions are later cancelled, the adversary still owns that item, so the seller loses money in that case.
+\noindent
+\textbf{Idea 2: Accept the first transaction seen.} As we saw, two different honest parties can disagree in
+the order in which two transactions arrived on the network. The situation is illustrated in
+Figure~\ref{fig.simple-idea-2}. Therefore, the following simple construction does not work:
 
-A second idea is to accept the first transaction that is received and cancel the second transaction. However, as previously discussed, different nodes may receive the transactions in different orders if they are broadcasted within the time span $\Delta$. As such, each node will believe that the first transaction they received is valid, and since the order of transactions cannot be guaranteed, the ledgers disagree in this case as well.
+\begin{quote}
+  Among double spending transactions, accept the first, and reject every subsequent transaction.
+\end{quote}
 
-A third idea is to set up a time window. If both transactions are received within the window, then we cancel both transactions. Otherwise, we accept the first transaction and cancel the second transaction that lies outside of the time window. Ideally, the time window would allow all honest nodes to receive the first transaction, before the second transaction is then broadcasted. However, consider the scenario where the adversary broadcast the second transaction $tx_2$ at time $t$ just before the end of the time window, such that $t + \Delta$ lies outside of the time window. In this case, some nodes would recieve $tx_2$ within that time window, and other nodes would receive it outside of the time window. Hence, there will be disagreements once again.
+However, we now note that these two transactions must be broadcast
+to honest parties in close succession, and in particular within time $\Delta$. If the adversary
+were to reveal $\tx_2$ to Charlie first, but then wait for more than $\Delta$ time until she revealed
+$\tx_2'$ to Dave, then Charlie would have gossiped $\tx_2$ and Dave would have receive it within $\Delta$
+and prior to seeing $\tx_2'$. In that case, Charlie and Dave would be in agreement.
+In order for the adversary to cause disagreement, she must broadcast the two double spending
+transactions to two different honest parties within time $\Delta$ of each other. Yet, this is
+simple for an adversary to do, so we cannot adopt this construction either.
 
-It is clear that none of our preliminary ideas work, and to adequately defend against a double spend attack, we need to introduce the idea of a Block.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.325 \columnwidth,keepaspectratio]{figures/simple-idea-2.pdf}
+    \caption{The second idea is unviable because parties
+    have views in disagreement about transaction order. Here, Charlie believes $\tx_2$
+    precedes $\tx_2'$, whereas Dave believes $\tx_2'$ precedes $\tx_2$.}
+    \label{fig.simple-idea-2}
+\end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     \pgfplotsset{compat=1.15}
-% \pagestyle{empty}
-% \definecolor{ffxfqq}{rgb}{1,0.4980392156862745,0}
-% \definecolor{zzttqq}{rgb}{0.6,0.2,0}
-% \definecolor{ududff}{rgb}{0.30196078431372547,0.30196078431372547,1}
-% \scalebox{0.6}{
-% \begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=1cm,y=1cm]
-% \begin{axis}[
-% x=1cm,y=1cm,
-% axis lines=none,
-% ymajorgrids=false,
-% xmajorgrids=false,
-% xmin=-1.3128470607471872,
-% xmax=20.44568941424386,
-% ymin=-8.631026867350604,
-% ymax=5.681622600989533,
-% xtick={0,2,...,20},
-% ytick={-8,-6,...,4},]
-% \clip(-1.3128470607471872,-8.631026867350604) rectangle (20.44568941424386,5.681622600989533);
-% \draw [->,line width=2pt] (0,0) -- (19.549029228944946,0);
-% \draw [line width=2pt] (1.9776177427409318,0.8723145100091193)-- (1.9776177427409318,-1.0800645440135472);
-% \draw [line width=2pt] (7.962083973549545,0.7874284641820468)-- (8.004526996463081,-1.1225075669270834);
-% \draw (1.458677547283992,-1.5160681721063742) node[anchor=north west] {$ tx_1$};
-% \draw (7.374021113678896,-1.5160681721063742) node[anchor=north west] {$tx_2$};
-% \draw [->,line width=2pt] (6,-4) -- (12,-4);
-% \draw [->,line width=2pt] (6,-4) -- (0,-4);
-% \draw (5.491866342553244,-4.825351286173458) node[anchor=north west] {w};
-% \begin{scriptsize}
-% \draw [fill=ududff] (1.9776177427409318,0.8723145100091193) circle (2.5pt);
-% \draw [fill=ududff] (1.9776177427409318,-1.0800645440135472) circle (2.5pt);
-% \draw [fill=ududff] (7.962083973549545,0.7874284641820468) circle (2.5pt);
-% \draw [fill=ududff] (8.004526996463081,-1.1225075669270834) circle (2.5pt);
-% \end{scriptsize}
-% \end{axis}
-% \end{tikzpicture}}
-%     \caption{Idea 3: within the window w, cancel both transactions, and outside the window w, accept the first transaction}
-%     \label{fig:my_label}
-% \end{figure}
+\noindent
+\textbf{Idea 3: Reject double spends within $u$.} Why don't we combine ideas 1 and 2? We saw that
+Idea 1 is problematic because it allows the adversary to retroactively take back a transaction after
+a long time into the future. We also saw that Idea 2 is problematic because it allows an adversary to
+cause disagreement when two transactions are broadcast in close succession. This creates a natural
+new construction idea:
+
+\begin{quote}
+Upon seeing a transaction, wait for some time $u \geq \Delta$. If a double spend
+appears within the window $u$, reject all double spending transactions. However, if $u$ has passed and we have
+not seen any double spends, accept the single transaction that we have seen. If a double spend appears in
+the future, just reject that one.
+\end{quote}
+
+At first sight, this third idea seems to work: After time $u$ has passed, either the money is accepted or not.
+The adversary cannot walk away as she did against Idea 1. If the adversary broadcasts two conflicting
+transactions within $\Delta$ time, as she did against Idea 2, they will both be rejected. It won't matter
+that different parties saw them in different order.
+
+Sadly, on closer inspection, this idea does not work,
+either. The strategy of the adversary is now to cause disagreement between Charlie and Dave with
+regards to \emph{whether or not} the two transactions appeared within time $u$. The problematic situation
+is illustrated in Figure~\ref{fig.simple-idea-3}. The adversary initially broadcasts $\tx_2$
+to both Charlie and Dave. Both Charlie's and Dave's clocks start ticking to measure the time $u$.
+Right before time $u$ hits, the adversary broadcasts $\tx_2'$ to Charlie. Now, Charlie has seen
+a double spend within time $u$, and so he rejects both $\tx_2$ and $\tx_2'$. He also rebroadcasts
+$\tx_2'$ to Dave, but this message will require time $\Delta$ to reach Dave. In the meantime,
+time $u$ has passed, and Dave accepts $\tx_2$. When $\tx_2'$ arrives on Dave's end, Dave has
+already accepted $\tx_2$ and now rejects $\tx_2'$. Now Charlie and Dave are in disagreement:
+Dave thinks $\tx_2$ is valid, whereas Charlie thinks $\tx_2$ is invalid.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.45 \columnwidth,keepaspectratio]{figures/simple-idea-3.pdf}
+    \caption{The third idea is unviable because parties
+    disagree about whether $\tx_2$ and $\tx_2'$ have arrived within time $u$,
+    and follow different policies. Here, Charlie rejects both transactions, whereas
+    Dave accepts $\tx_2$ and rejects $\tx_2'$.}
+    \label{fig.simple-idea-3}
+\end{figure}
+
 \section{Blocks and Blockchains}
 \subsection{Virtues of Ledgers}
 There are two virtues of ledgers that should be satisfied:
