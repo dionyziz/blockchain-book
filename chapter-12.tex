@@ -1,45 +1,42 @@
 \chapter{Security in Earnest I \small{\textsf{DRAFT}}}
 
+We have spent the previous chapters developing our intuition about blockchain systems and why
+they work. In this chapter and the next couple of chapters, we will formalize the notion of
+security and prove that blockchains are secure. We start by making a few things more precise,
+beginning with our hash function and the notion of time. Once we have specified these, we
+will precisely identify the environment that the parties operate in. This will make precise
+the concept of a Sybil adversary and the non-eclipsing assumption, among other things.
+Next, we will precisely write out the protocol of the honest parties.
+We will move on to formally prove the three chain virtues we explored intuitively:
+Chain Growth, Common Prefix, and Chain Quality.
+Finally, we will formally show that ledger virtues follow from chain virtues.
+
 \section{Random Oracle}
-So far, we have defined our random oracle such that $Pr[H(B) \leq T] = p = \frac{T}{2^k}$. The guarantees of this definition are actually stronger than collision resistance of a hash function, but we will ignore that for now. Instead, we will focus on making our random oracle more concrete.
+In Chapter~\ref{chapter:blocks}, we argued that the hash function behaves like a random
+oracle and that $Pr[H(B) \leq T] = p = \frac{T}{2^k}$. Let us now make the random oracle
+model more precise. We want the hash function to return a uniformly randomly chosen $\kappa$-bit
+value whenever it is invoked with a fresh input. However, in order for it to be a function,
+we want it to return the \emph{same} value when it is invoked again with the same input. The
+random oracle is a shared functionality among all honest parties: If two different parties
+invoke it, the oracle must answer consistently. This is illustrated in Algorithm~\ref{alg.ro}.
 
-\subsection{Naive Random Oracle}
-A first pass at the implementation of our random oracle would be the following algorithm.
-\begin{algorithm}
-\caption{Naive Random Oracle}
-\begin{algorithmic}
-\Procedure{H}{$B$}
-    \State $y \overset{\$}{\gets} \{0, 1\}^\kappa$
-    \State \Return $y$
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
+\import{./}{algorithms/alg.ro}
 
-While this satisfies the statistical properties of our random oracle, this algorithm is not a hash function, and is not consistent, i.e. it does not return the same output if it is called with the same input. This inconsistency renders it useless for our purposes, so we modify it in the next section to better represent our true random oracle.
-
-\subsection{Our Random Oracle}
-Our modification of the random oracle above involves the inclusion of a state $\mathcal{T}$.
-\begin{algorithm}
-\caption{Random Oracle}
-\begin{algorithmic}
-\State $\mathcal{T} \gets \{\}$
-\Procedure{H}{$B$}
-    \If{$B \not \in \mathcal{T}$}
-        \State $y \overset{\$}{\gets} \{0, 1\}^\kappa$
-        \State $\mathcal{T}[B] = y$
-    \EndIf
-    \State \Return $\mathcal{T}[B]$
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
-
-We see that this achieves consistency, i.e. $H(x)$ returns the same output every time across different calls with the same input $x$, for any $x$. However, our storage symbol $\mathcal{T}$ must be consistent over all parties in the network, and therefore does not represent a local mapping, but rather turns our oracle into a so-called ``network function''.
-
+The oracle keeps track of the randomnesses it has generated in a dictionary $\mathcal{T}$. If
+the key $B$ queried has been queried before, the random oracle returns the cached value $\mathcal{T}[B]$.
+Otherwise, the oracle generates a uniformly random $\kappa$-bit string.
 
 \section{Synchrony}
-Until now, we considered time as continuous. We will now follow a synchronous model where time is broken up into rounds, each round lasting a discrete time $\Delta$. Additionally, we will consider the network delay to be precisely $\Delta$. This implies that any message broadcast by an honest party at some point during the round $r$ will be received by \textbf{every honest party} at the start of round $r+1$, all at exactly the same moment.
+Until now, we considered time as continuous. We will now follow a synchronous model where time is broken
+up into rounds, each round lasting a discrete time $\Delta$. Additionally, we will consider the network
+delay to be precisely $\Delta$. This implies that any message broadcast by an honest party at some point
+during the round $r$ will be received by \textbf{every honest party} at the start of round $r+1$, all at
+exactly the same moment.
 
-This model synchronizes the arrival of messages such that they all arrive at the boundary of each round, and let's us discretize time by eliminating complexities of network distance and speed. Further, the execution of our network entities is simplified to a ``lockstep execution'' model, where we can easily predict when any node will receive a given message, which will be precisely one round after it was broadcast.
+This model synchronizes the arrival of messages such that they all arrive at the boundary of each round,
+and lets us discretize time by eliminating complexities of network distance and speed. Furthermore, the execution
+of our network entities is simplified to a ``lockstep execution'' model, where we can easily predict when
+any node will receive a given message, which will be precisely one round after it was broadcast.
 
 \section{The Simulation Environment}
 In order to rigorously define properties of our blockchain and give security proofs, we need to precisely define how we will simulate our environment: the setup and how each round happens.

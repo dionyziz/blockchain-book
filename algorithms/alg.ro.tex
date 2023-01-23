@@ -1,0 +1,13 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.ro} The Random Oracle model.}
+    \begin{algorithmic}[1]
+        \Let{\mathcal{T}}{\{\,\}}
+        \Function{$H$}{$B$}
+            \If{$B \not \in \mathcal{T}$}
+                \State $y \getsrandomly \{0, 1\}^\kappa$
+                \Let{\mathcal{T}[B]}{y}
+            \EndIf
+            \State\Return{$\mathcal{T}[B]$}
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
