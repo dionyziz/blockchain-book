@@ -85,10 +85,20 @@ We have lost consensus on \emph{who owns what}.
     \label{fig.double-spend}
 \end{figure}
 
-\section{Simple Ideas Don't Work}
+\section{Simple Ideas Don't Work}\label{sec:simple-ideas}
 
 Let us consider three simple ideas to resolve the double spending problem that first come to mind.
 Sadly, these ideas won't work.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4 \columnwidth,keepaspectratio]{figures/simple-idea-1.pdf}
+    \caption{The first idea is unviable because it allows the
+    adversary to retroactively invalidate an earlier transaction much later. Here, $\tx_2'$
+    is initially withheld, but broadcast much later, causing an invalidation to the earlier
+    $\tx_2$ transaction.}
+    \label{fig.simple-idea-1}
+\end{figure}
 
 \noindent
 \textbf{Idea 1: Reject double spends altogether.} Honest parties never double spend. Since the adversary is the only one
@@ -112,12 +122,11 @@ adopt this construction.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.4 \columnwidth,keepaspectratio]{figures/simple-idea-1.pdf}
-    \caption{The first idea is unviable because it allows the
-    adversary to retroactively invalidate an earlier transaction much later. Here, $\tx_2'$
-    is initially withheld, but broadcast much later, causing an invalidation to the earlier
-    $\tx_2$ transaction.}
-    \label{fig.simple-idea-1}
+    \includegraphics[width=0.325 \columnwidth,keepaspectratio]{figures/simple-idea-2.pdf}
+    \caption{The second idea is unviable because parties
+    have views in disagreement about transaction order. Here, Charlie believes $\tx_2$
+    precedes $\tx_2'$, whereas Dave believes $\tx_2'$ precedes $\tx_2$.}
+    \label{fig.simple-idea-2}
 \end{figure}
 
 \noindent
@@ -140,11 +149,12 @@ simple for an adversary to do, so we cannot adopt this construction either.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.325 \columnwidth,keepaspectratio]{figures/simple-idea-2.pdf}
-    \caption{The second idea is unviable because parties
-    have views in disagreement about transaction order. Here, Charlie believes $\tx_2$
-    precedes $\tx_2'$, whereas Dave believes $\tx_2'$ precedes $\tx_2$.}
-    \label{fig.simple-idea-2}
+    \includegraphics[width=0.45 \columnwidth,keepaspectratio]{figures/simple-idea-3.pdf}
+    \caption{The third idea is unviable because parties
+    disagree about whether $\tx_2$ and $\tx_2'$ have arrived within time $u$,
+    and follow different policies. Here, Charlie rejects both transactions, whereas
+    Dave accepts $\tx_2$ and rejects $\tx_2'$.}
+    \label{fig.simple-idea-3}
 \end{figure}
 
 \noindent
@@ -178,23 +188,132 @@ time $u$ has passed, and Dave accepts $\tx_2$. When $\tx_2'$ arrives on Dave's e
 already accepted $\tx_2$ and now rejects $\tx_2'$. Now Charlie and Dave are in disagreement:
 Dave thinks $\tx_2$ is valid, whereas Charlie thinks $\tx_2$ is invalid.
 
+Such simple ideas won't work. We'll need to invent heavier artillery to attack this
+problem.
+
+\section{Ledgers}
+
+Even though honest parties receive transactions in a different order on the network,
+we would like to have them coordinate with one another to report them in the same
+order. Each honest party will report a \emph{ledger}, an ordered sequence of transactions.
+This ledger will not necessarily contain the transactions in the order they were
+received from the network. It may also not immediately report some transaction as
+soon as it is received from the network, but, akin to Idea 3 of Section~\ref{sec:simple-ideas},
+it may need to delay reporting it on its ledger for a bit.
+By reading that ledger reported by an honest party one transaction at a time from left to right,
+we can reconstruct the transaction graph and arrive at the UTXO set. If the honest parties
+agree on their reported ledgers, they will agree on the UTXO set. We'll therefore concern
+ourselves with the question on whether we can achieve consensus among the ledgers reported
+by honest parties.
+
+We will soon figure out what each honest party should do internally in order to produce
+a ledger that is consistent with every other honest party, but before we get to \emph{how}
+to do that, let us first more clearly articulate what exactly it is that we want to achieve.
+
+We wish to build an honest party construction $\Pi$ which we call the \emph{full node}\index{Full node}.
+This will be a piece of code which will be identically executed by all honest parties.
+It will implement peer discovery, the
+gossiping network communication to exchange messages on the network, and so on. In
+addition, we'll make $\Pi$ expose two functionalities: A
+\emph{write} functionality, and a \emph{read} functionality. The \emph{write} functionality
+accepts a brand new transaction. This transaction is
+broadcast and gossiped to every other party on the network by the full node.
+The \emph{read} functionality returns a ledger of transactions.
+These functionalities are used by the \emph{wallet}. Together, the full node and
+the wallet constitute the software that is running on the human user's machine.
+The human user only interacts with the wallet, while the full node sits on the backend.
+
+The wallet is a piece of software that is capable of creating and signing
+new transactions to make payments as instructed by the user. The wallet also shows
+whether a payment was received, and displays the balance of the user. These functionalities
+are made possible by having access to the \emph{write} and \emph{read} functionalities
+exposed by the full node. The \emph{write} functionality is what the wallet uses to
+broadcast a new transaction into the network, whereas the \emph{read} functionality
+allows the wallet to obtain a ledger that it can then use to obtain the UTXO set
+in order to display whether a payment has been completed and to calculate the user
+balances. This architecture is illustrated in Figure~\ref{fig.wallet-fullnode-architecture}.
+
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.45 \columnwidth,keepaspectratio]{figures/simple-idea-3.pdf}
-    \caption{The third idea is unviable because parties
-    disagree about whether $\tx_2$ and $\tx_2'$ have arrived within time $u$,
-    and follow different policies. Here, Charlie rejects both transactions, whereas
-    Dave accepts $\tx_2$ and rejects $\tx_2'$.}
-    \label{fig.simple-idea-3}
+    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/wallet-fullnode-architecture.pdf}
+    \caption{The human user interacts with the wallet. The wallet interacts with the full node
+    by invoking its \emph{write} and \emph{read} functionalities. The full node interacts with the network.}
+    \label{fig.wallet-fullnode-architecture}
 \end{figure}
+
+We'll have more to say about the wallet portion in the next chapters. For now,
+let us focus on how to build the full node.
+
+Our goal will be to have all the honest full nodes agree on the ledgers they are reporting
+when their \emph{read} functionality is invoked. That way, everyone will arrive at the same
+UTXO set and agree \emph{who owns what}.
+
+\begin{definition}[Ledger]
+    A \emph{ledger} of an honest party $P$ reported at time $r$, denoted $L^P_r$ is
+    a finite \emph{sequence of transactions} returned when the honest party $P$ invokes
+    the \emph{read} functionality of its honest protocol $\Pi$.
+\end{definition}
+
+We take note here that ledgers are dependent on both $P$ and $r$. It is nonsensical to
+speak about ``the ledger'' without specifying \emph{who} and \emph{when}. While these
+parameters may sometimes be implicit, it is imperative that we understand what we are
+talking about. Ignoring the \emph{who} and the \emph{when} of the ledger, and speaking
+about ``the ledger'' as if it is a global view, is a common cause for confusion and
+misconception. As we saw in the previous section, the ledgers of different honest
+parties may be in disagreement, and there might not even be a well-defined global
+ledger.
+
+We want the ledgers reported by honest parties to have two \emph{virtues}. We give
+an intuitive definition of these virtues now, but we will return to define them
+more formally in Chapter~\ref{chapter:earnest2}.
+
+\begin{definition}[Safety]
+    For any two honest parties, their reported ledgers should be equal.
+\end{definition}
+
+\begin{definition}[Liveness]
+    If an honest party \emph{writes} a transaction into its ledger, then this
+    transaction appears in the ledgers of all honest parties ``soon''.
+\end{definition}
+
+Let us think what these virtues are saying. If a ledger has \emph{safety},
+then \emph{bad things don't happen}. We do not run into double-spend situations,
+or into disagreements about \emph{who owns what}. If a ledger has \emph{liveness},
+then \emph{good things happen}. When an honest party attempts to issue a transaction,
+this transaction actually does take place.
+
+It is easy to build a protocol that has \emph{safety} or \emph{liveness}, but not
+both together.
+
+\noindent
+\textbf{Safe but not live.} A safe but not live protocol acts as follows.
+Whenever the \emph{read} functionality is invoked, it returns the empty sequence of
+transactions as the ledger. Whenever the \emph{write} functionality is invoked, it
+ignores the transaction being written. It never reads or writes anything from the
+network. Because the \emph{read} functionality always returns the same thing,
+safety is trivially satisfied. Liveness, however, is not satisfied. When an honest
+party attempts to make a transaction, it is never reported in the ledgers of other
+honest parties.
+
+\noindent
+\textbf{Live but not safe.} A live but not safe protocol acts as follows.
+Each honest party begins with an empty initial ledger. Whenever the \emph{write}
+functionality is invoked with a transaction, this transaction is appended to the
+local ledger and broadcast to the network. When a new transaction is received from the
+network, it is gossiped to the rest of the network and appended to the local ledger.
+The \emph{read} functionality returns the local ledger. This protocol is live
+because every honest transaction makes it to the ledger of every honest party.
+However, it is not safe, because transactions are reported on the ledgers in the
+order they are received from the network, and this order may be different for
+different parties.
+
+Our design goal for the rest of this book will be to build protocols that
+are \emph{both} safe and live simultaneously.
+
+\section{Rare Events}
 
 \section{Blocks and Blockchains}
 \subsection{Virtues of Ledgers}
-There are two virtues of ledgers that should be satisfied:
-\begin{itemize}
-    \item \textbf{Safety:} honest parties should agree and achieve consensus.
-    \item \textbf{Liveness:} transactions created by honest parties are added to the ledgers of honest parties "soon".
-\end{itemize}
 
 As observed from previous examples, double spends occur because network delays can cause disagreements in the arrival time of different transactions. If somehow transactions could only be created in intervals greater than the network delay parameter $\Delta$, there would be no disagreements because each transaction would have already been broadcasted to all honest parties before the next one gets broadcasted. This gives rise to safety. However, requiring such a delay between transactions means that there will be less transactions being broadcasted every time period, and as such it may be the case that the liveness property is not satisfied. This presents a tradeoff between safety and liveness: as $\Delta$ increases, there is less certainty for liveness to be guaranteed.
 
