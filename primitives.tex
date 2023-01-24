@@ -1,4 +1,4 @@
-\chapter{Cryptographic Primitives}
+\chapter{Cryptographic Primitives}\label{chapter:primitives}
 
 \section{Hash Functions}\index{Hash Function}
 
@@ -126,8 +126,11 @@ reveals that hash, but not the object itself. Anyone who has the hash can verify
 the object is correct once the full object has been received, but it is useful that
 this is not possible when seeing only the hash: It should be difficult to find the
 \emph{preimage} of a hash given its image. Of course, the preimage of a hash can
-be found by performing an exhaustive search in a similar fashion to
-Algorithm~\ref{alg.hash-collision}, but this will take exponential time.
+be found by performing an exhaustive search as illustrated in Algorithm~\ref{alg.hash-preimage},
+but this will take exponential time.
+
+\import{./}{algorithms/alg.hash-preimage}
+
 Naturally, we can define the property of \emph{preimage resistance} using a
 cryptographic game.\index{Preimage Resistance}
 

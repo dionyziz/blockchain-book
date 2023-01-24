@@ -1,0 +1,15 @@
+\begin{algorithm}[H]
+    \caption{\label{alg.hash-preimage} An exponential search for a preimage in a hash function
+    that \emph{certainly} finds the preimage.}
+    \begin{algorithmic}[1]
+        \Function{\textsf{preimage-search}$_H$}{$h$}
+            \Let{\ctr}{0}
+            \While{$\true$}
+                \If{$H(\ctr) = h$}
+                    \State\Return{$\ctr$}
+                \EndIf
+                \Let{\ctr}{\ctr + 1}
+            \EndWhile
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
