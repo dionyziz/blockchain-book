@@ -4,9 +4,9 @@ We have spent the previous chapters developing our intuition about blockchain sy
 they work. In this chapter and the next couple of chapters, we will formalize the notion of
 security and prove that blockchains are secure. We start by making a few things more precise,
 beginning with our hash function and the notion of time. Once we have specified these, we
-will precisely identify the environment that the parties operate in. This will make precise
+will describe the environment that the parties operate in. This will make precise
 the concept of a Sybil adversary and the non-eclipsing assumption, among other things.
-Next, we will precisely write out the protocol of the honest parties.
+Next, we will write out the protocol of the honest parties as exact pseudocode.
 We will move on to formally prove the three chain virtues we explored intuitively:
 Chain Growth, Common Prefix, and Chain Quality.
 Finally, we will formally show that ledger virtues follow from chain virtues.
@@ -16,15 +16,19 @@ In Chapter~\ref{chapter:blocks}, we argued that the hash function behaves like a
 oracle and that $Pr[H(B) \leq T] = p = \frac{T}{2^k}$. Let us now make the random oracle
 model more precise. We want the hash function to return a uniformly randomly chosen $\kappa$-bit
 value whenever it is invoked with a fresh input. However, in order for it to be a function,
-we want it to return the \emph{same} value when it is invoked again with the same input. The
-random oracle is a shared functionality among all honest parties: If two different parties
+we want it to return the \emph{same} value when it is invoked again with the same input.
+The random oracle is a shared functionality among all honest parties: If two different parties
 invoke it, the oracle must answer consistently. This is illustrated in Algorithm~\ref{alg.ro}.
+This consistency between different parties and multiple queries is necessary so that if
+a party successfully mines a block, every other party will be able to verify that this
+mining was successful.
 
 \import{./}{algorithms/alg.ro}
 
 The oracle keeps track of the randomnesses it has generated in a dictionary $\mathcal{T}$. If
 the key $B$ queried has been queried before, the random oracle returns the cached value $\mathcal{T}[B]$.
-Otherwise, the oracle generates a uniformly random $\kappa$-bit string.
+Otherwise, the oracle generates a uniformly random $\kappa$-bit string, caches it in the $\mathcal{T}$
+dictionary for future use, and returns it.
 
 \section{Synchrony}
 Until now, we considered time as continuous. We will now follow a synchronous model where time is broken
@@ -289,3 +293,12 @@ if the adversary wants to displace block $B$, she has to pay for it by mining $B
 
 \section{Honest Majority Assumption (\texorpdfstring{$n, t, \delta$}{Lg})}
 We will now give a new definition of the honest majority assumption by introducing the honest advantage parameter $\delta$ . We will see in the next lecture that we need this parameter in order the chain virtues hold for Bitcoin. We say that the honest majority assumption holds if $t < (1 - \delta)(n - t)$.
+
+\section{Further Reading}
+Even though Satoshi Nakamoto developed the first blockchain and wrote the paper about it, he did
+not prove that blockchains are secure against \emph{all} adversaries within that paper. Instead,
+he showed that Bitcoin is secure against the \emph{specific} Nakamoto adversary which we studied
+in the previous chapters. At a later time, Juan Garay, Aggelos Kiayias, and Nikos Leonardos
+wrote the \emph{Bitcoin Backbone} paper~\cite{backbone}.
+The Bitcoin Backbone paper formalizes and proves that blockchains that use Proof-of-Work
+are secure.
