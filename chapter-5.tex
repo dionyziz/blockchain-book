@@ -269,11 +269,12 @@ We want the ledgers reported by honest parties to have two \emph{virtues}. We gi
 an intuitive definition of these virtues now, but we will return to define them
 more formally in Chapter~\ref{chapter:earnest2}.
 
-\begin{definition}[Safety]
-    For any two honest parties, their reported ledgers should be equal.
+\begin{definition}[Safety (informal)]
+    For any two honest parties, their reported ledgers at any point in time
+    should be equal.
 \end{definition}
 
-\begin{definition}[Liveness]
+\begin{definition}[Liveness (informal)]
     If an honest party \emph{writes} a transaction into its ledger, then this
     transaction appears in the ledgers of all honest parties ``soon''.
 \end{definition}
@@ -315,6 +316,75 @@ are \emph{both} safe and live simultaneously.
 \section{Rare Events}
 
 \section{The Block}
+We previously determined that the root cause of double spending transactions being problematic
+is because the adversary can issue them in short succession, and in particular within time
+$\Delta$. It would be useful to enforce that the adversary issues transactions at a slower
+rate. We'd like to limit the rate at which the adversary can issue transactions at
+once every $\Delta$. If transactions are spaced apart by $\Delta$ time, then no harm
+can come from double spends. We can simply adopt the strategy of accepting the first
+among multiple double spending transactions, and ignoring subsequent double spends.
+
+To force the adversary to issue transactions $\Delta$ apart, we'd like to require her
+to obtain a \emph{ticket} before she can issue a transaction, and each of these tickets
+should be obtained every $\Delta$ time. Then, when she issues a transaction, the adversary
+will be required to associate the transaction with the ticket, and that will cause the
+ticket to be expended. The same ticket cannot be used for multiple transactions. Of course,
+our protocol does not know who is adversarial and who is honest and must treat everyone
+equally, so the ticket system applies to honest and adversarial parties alike.
+
+If our tickets are issued more often than $\Delta$ apart, this will not be a good protocol,
+as double spends will still be possible, harming safety. On the contrary, if our tickets
+are issued much longer than $\Delta$ apart, the honest parties will take a long time to issue
+transactions, and liveness will deteriorate. The choice of how often to allow tickets to be
+issued highlights a theme that we will keep returning to throughout this book: A trade-off
+between safety and liveness. This trade-off is illustrated in Figure~\ref{fig.time-tickets}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8 \columnwidth,keepaspectratio]{figures/time-tickets.pdf}
+    \caption{Positioning tickets in time. Tickets spread apart by slightly more than $\Delta$ (top)
+             achieve good safety and liveness. Tickets spread apart less than $\Delta$ (middle)
+             can cause safety violations. Tickets spread apart much more than $\Delta$ (bottom)
+             cause liveness to deteriorate.}
+    \label{fig.time-tickets}
+\end{figure}
+
+These tickets are wishful thinking. How can we get them to behave this way in a permissionless
+world, where there is no authority to issue these tickets and ensure they are spread $\Delta$
+apart?
+
+\section{Proof-of-Work}
+
+There is a natural candidate for creating rare events like the tickets we need in a permissionless
+world. When we introduced hashes in Chapter~\ref{chapter:primitives}, we gave a brute-force algorithm
+(Algorithm~\ref{alg.hash-preimage})
+that breaks the preimage property of a hash, but takes exponential time. However, we can tweak
+the problem of finding a preimage so that it is not an \emph{exact} preimage, but a ``close enough''
+solution. This will allow us to create a problem that is \emph{moderately hard}; it is not \emph{hard}
+in the computational sense, but we can tweak how long it takes to solve it. We are interested in
+``close enough'' hash preimages of the image $h = 0$; that is, we want inputs $\ctr$ to the hash function
+$H$, so that $H(\ctr)$ is a small enough number. \emph{How close} is defined by the value $T$, the
+\glsxtrnewsymbol[description={target}]{target}{$T$}\glsadd{target}
+\emph{target}\index{Target}. We write this requirement in the form of an
+inequality:
+
+\[
+    H(\ctr) \leq T
+\]
+
+The problem is to find the unknown value $\ctr$ so that the inequality is satisfied. Of course,
+there will be multiple $\ctr$ values that satisfy this inequality. Upon solving this inequality,
+one obtains a ticket to issue a transaction. While solving the inequality is moderately hard,
+and requires many trial-and-error invocations of the hash function, verifying that the particular
+$\ctr$ satisfies the equation is very easy: It requires just one hash invocation.
+
+The larger we make the target $T$, the easier it is to solve the inequality. The smaller we make
+the target $T$, the more difficult it becomes. That's why we call the value $\frac{1}{T}$ the
+\emph{difficulty}\index{Difficulty}: The larger the difficulty, the more difficult it is to
+find a solution to the inequality.
+
+\section{Blocks and Blockchains}
+\subsection{Virtues of Ledgers}
 
 We have introduced a moderately hard problem that forces the adversary to spread out her
 tickets in time by more than $\Delta$. But how do we associate tickets with transactions?
@@ -343,7 +413,7 @@ this will take a long time, and liveness will deteriorate. In order to solve thi
 transactions together into a sequence $\overline{x} = (\tx_1, \tx_2, \ldots, \tx_n)$, and place
 this within the ticket, setting $B = \overline{x} \conc \ctr$.
 Instead of each ticket being associated with \emph{one} transaction, each ticket
-is now associated with multiple. Such a ticket is known as a \emph{block}~\index{Block}. 
+is now associated with multiple. Such a ticket is known as a \emph{block}~\index{Block}.
 The modified mining algorithm is illustrated in Algorithm~\ref{alg.mine-xbar}. Here,
 we've just replaced $\tx$ with $\overline{x}$. Now each honest party can issue as many transactions
 as he wants in one go, as long as he is able to mine one block.
