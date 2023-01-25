@@ -188,8 +188,10 @@ time $u$ has passed, and Dave accepts $\tx_2$. When $\tx_2'$ arrives on Dave's e
 already accepted $\tx_2$ and now rejects $\tx_2'$. Now Charlie and Dave are in disagreement:
 Dave thinks $\tx_2$ is valid, whereas Charlie thinks $\tx_2$ is invalid.
 
-Such simple ideas won't work. We'll need to invent heavier artillery to attack this
-problem.
+Try to think of more simple ideas to resolve this ordering issue. You'll see that
+none of them will work. For example, placing a timestamp within a transaction to ensure
+that every honest party simultaneously applies a transaction doesn't work, either (why?).
+We'll need to invent heavier artillery to attack this problem.
 
 \section{Ledgers}
 
@@ -312,104 +314,96 @@ are \emph{both} safe and live simultaneously.
 
 \section{Rare Events}
 
-\section{Blocks and Blockchains}
-\subsection{Virtues of Ledgers}
+\section{The Block}
 
-As observed from previous examples, double spends occur because network delays can cause disagreements in the arrival time of different transactions. If somehow transactions could only be created in intervals greater than the network delay parameter $\Delta$, there would be no disagreements because each transaction would have already been broadcasted to all honest parties before the next one gets broadcasted. This gives rise to safety. However, requiring such a delay between transactions means that there will be less transactions being broadcasted every time period, and as such it may be the case that the liveness property is not satisfied. This presents a tradeoff between safety and liveness: as $\Delta$ increases, there is less certainty for liveness to be guaranteed.
+We have introduced a moderately hard problem that forces the adversary to spread out her
+tickets in time by more than $\Delta$. But how do we associate tickets with transactions?
+We cannot just require the adversary to send a ticket together with a transaction.
+The adversary may reuse a ticket multiple times, or may use a ticket together with one transaction
+when communicating with one party and the same ticket with another transaction when
+communicating with another party. We need to somehow tie the ticket together with a
+transaction so that a ticket is only usable for a particular transaction.
+To do this, we set $B = \tx \conc \ctr$ and require the ticket to satisfy $H(B) \leq T$,
+as before, where $\tx$ is the transaction we want the ticket to be tied to.
+The revised mining process is illustrated in Algorithm~\ref{alg.mine-tx}.
+Now, upon receiving a transaction/ticket pair, we can check that the ticket corresponds
+to the particular transaction. Furthermore, if the adversary attempts to replace the
+transaction within $B$ with a different one, then this will cause $H(B)$ to change.
+The value $H(B)$ is \emph{committing} to a particular transaction; changing the transaction
+changes the value $H(B)$ in a way that cannot be predicted. If she changes the transaction,
+this will invalidate the proof-of-work and the adversary will have to perform yet another
+exhaustive search to find a new ticket.
+
+\import{./}{algorithms/alg.mine-tx}
+
+We've solved one problem, but have introduced another: If we require one ticket per transaction
+for the adversary, then we must do the same for the honest parties. This means that at most one
+transaction can be executed every $\Delta$. If the honest party wants to issue multiple transactions,
+this will take a long time, and liveness will deteriorate. In order to solve this, we will \emph{bundle}
+transactions together into a sequence $\overline{x} = (\tx_1, \tx_2, \ldots, \tx_n)$, and place
+this within the ticket, setting $B = \overline{x} \conc \ctr$.
+Instead of each ticket being associated with \emph{one} transaction, each ticket
+is now associated with multiple. Such a ticket is known as a \emph{block}~\index{Block}. 
+The modified mining algorithm is illustrated in Algorithm~\ref{alg.mine-xbar}. Here,
+we've just replaced $\tx$ with $\overline{x}$. Now each honest party can issue as many transactions
+as he wants in one go, as long as he is able to mine one block.
+
+\import{./}{algorithms/alg.mine-xbar}
+
+A natural question now arises: If we've bundled multiple transations together into one block,
+hasn't the double spending problem resurfaced? The answer is \emph{no}, because, in order to
+verify a block, all the transactions must be sent together in the bundle. As part of our block
+validation rule, we will require that there are no conflicting transactions within the payload
+$\overline{x}$ of a block. If $\overline{x}$ contains two mutually double spending transactions,
+the whole block will be rejected. Blocks are either accepted or rejected as a whole. We will not
+partially accept transactions within a block.
+
+Double spending transactions can still appear in different blocks, but the moderate difficulty
+of the proof-of-work puzzle ensures that blocks are produced sufficiently far apart. Like
+transactions, blocks are gossiped over the network. If two blocks are transmitted at least
+$\Delta$ time apart, then the first will arrive at the doorstep of every honest party before
+the second. The second block, containing a transaction that double spends a transaction in the
+first block, can then be rejected by all honest parties. Again, here, the whole block will be
+rejected, not just the particular pathological transaction.
+
+\section{The Mempool}
+
+Even though we allow each mining party to include many transactions into their own blocks,
+honest parties are still encumbered with the responsibility to mine a block before they can
+get their transactions accepted by others. This wait time may still be long and this scheme
+is not very good for liveness. Worse yet, some honest parties may have large computational
+power, while other honest parties may have smaller computational power, and so the block
+generation for each honest party might be vastly different. It would be nice if we didn't
+tie the liveness of each honest party to that particular party's computational power.
+
+Towards that purpose, we design the system as follows: A transaction can still be issued
+independently of a block and broadcast to the network. The transaction is gossiped until
+it reaches everyone on the network as usual. However, the transaction is placed into a
+temporary waiting area called the \emph{mempool}~\index{Mempool}, ensuring double spends are
+resolved one way or another (any of the simple ideas we discussed previously can be used as
+strategies to resolve double spends).
+Each honest party maintains their own mempool of transactions that are still in limbo.
+Because the double spending problem has not yet been solved by finding a block, different
+honest parties may disagree about what their mempool looks like.
+However, each mempool is independently locally consistent.
+When an honest party tries to mine a block,
+he includes all the transactions in his mempool into this block. This has the benefit
+that, whenever \emph{any} honest party finds a block, \emph{all} pending honest tranasctions
+are included in that block, as long as they have been issued more than $\Delta$ time ago.
+
+When a transaction makes it into a block, we term the transaction
+\emph{confirmed}~\index{Confirmation}. An honest party invokes the \emph{read} functionality
+of its ledger, only confirmed transactions are reported. This ensures that ledgers
+are consistent, salvaging safety.
+
+\section{Blocks and Blockchains}
 
 \subsection{Blocks}
 
-One way to satisfy both the virtues of safety and liveness is to group multiple transactions together and then broadcast them as "blocks", rather than individually. Each block, denoted $\Bar{x} = (tx_1, tx_2, \dots)$, contains a sequence of transactions in any order that respects the topological sorting of the corresponding UTXO graph.
-
-In this model, double spends can only occur if the two transactions that creates the double spend exist in 2 different blocks that arrives in different order to different honest parties, similar to the previous example with transactions. If the two double spending transactions appeared within the same block, then there is no valid UTXO graph for the transactions of that block, and so the entire block is invalid. If the two double spending transactions appear in two blocks that are further than $\Delta$ apart, then the first transaction would have been validated by all honest parties, and so the second transaction fails to double spend.
-
-Hence, all we need to do to ensure protection against double spending is to ensure that each  \textbf{block}—rather than each transaction—is rare, which preserves safety  while ensuring a higher level of liveness.
-
-\begin{figure}[H]
-    \centering
-    \pgfplotsset{compat=1.15}
-
-
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9017954087564621]
-\draw    (97,110.2) -- (578,110.2) ;
-\draw [shift={(580,110.2)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da09295967444550124]
-\draw    (160.73,99.83) -- (160.73,119.83) ;
-%Straight Lines [id:da22506827825676345]
-\draw    (199.73,99.83) -- (199.73,119.83) ;
-%Straight Lines [id:da6864589596901391]
-\draw    (239.73,99.83) -- (239.73,119.83) ;
-%Straight Lines [id:da3375627515094475]
-\draw    (280.73,99.83) -- (280.73,119.83) ;
-%Straight Lines [id:da2711314265282385]
-\draw    (320.73,99.83) -- (320.73,119.83) ;
-%Straight Lines [id:da9006595698348807]
-\draw    (359.73,99.83) -- (359.73,119.83) ;
-%Straight Lines [id:da2941667702377173]
-\draw    (399.73,99.83) -- (399.73,119.83) ;
-%Straight Lines [id:da4637768077817921]
-\draw    (440.73,99.83) -- (440.73,119.83) ;
-%Straight Lines [id:da15003143298927957]
-\draw    (480.73,99.83) -- (480.73,119.83) ;
-%Straight Lines [id:da7785431556267932]
-\draw    (520.73,99.83) -- (520.73,119.83) ;
-%Straight Lines [id:da07195865234652721]
-\draw    (259.29,129.83) -- (278.29,129.83) ;
-\draw [shift={(280.29,129.83)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da13395559951976144]
-\draw    (259.29,129.83) -- (240.29,129.83) ;
-\draw [shift={(238.29,129.83)}, rotate = 360] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da3690305468137254]
-\draw    (301.29,129.83) -- (320.29,129.83) ;
-\draw [shift={(322.29,129.83)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da6757384410639338]
-\draw    (301.29,129.83) -- (282.29,129.83) ;
-\draw [shift={(280.29,129.83)}, rotate = 360] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da008698697312877313]
-\draw    (340.29,129.83) -- (359.29,129.83) ;
-\draw [shift={(361.29,129.83)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da5776529929797669]
-\draw    (340.29,129.83) -- (321.29,129.83) ;
-\draw [shift={(319.29,129.83)}, rotate = 360] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (253,134.4) node [anchor=north west][inner sep=0.75pt]    {$\Delta $};
-% Text Node
-\draw (295,134.4) node [anchor=north west][inner sep=0.75pt]    {$\Delta $};
-% Text Node
-\draw (334,134.4) node [anchor=north west][inner sep=0.75pt]    {$\Delta $};
-% Text Node
-\draw (270,78.4) node [anchor=north west][inner sep=0.75pt]    {$tx_{1}$};
-% Text Node
-\draw (309,78.4) node [anchor=north west][inner sep=0.75pt]    {$tx_{2}$};
-
-
-\end{tikzpicture}
-
-    \caption{In an ideal scenario, each blocks are broadcasted exactly $\Delta$ away from each other, so in a double spend we can always accept $tx_1$ and reject $tx_2$}
-    \label{fig:my_label}
-\end{figure}
-
 \subsection{Proof of Work and Mining}
-To ensure that the ability to create blocks is rare (i.e. that one can only be created after $\Delta$ has passed since the last block), we devise a scheme to issue rare tickets for creating a block. To do so, we will introduce the concept of Proof of Work.
-
-% \subsection{Blocks and Proof of Work}
-
-% There are two virtues of ledgers. The first is safety, which means that ledgers of honest parties should agree and reach consensus. The second is liveness, which means a transaction issued by an honest party should make it into honest ledgers soon.
-
-% As observed from previous examples, a reason why double spends are difficult to deal with is because two transactions can be broadcasted within a short time span. If only one transaction can be broadcasted every $\Delta$, then the problem of double spends is easy to deal with because each node would receive transactions in the same order. However, the tradeoff in this case would slow throughput which can prevent the liveness property from being satisfied.
-
-% This motivates the use of blocks to store transactions. A block stores a bundled sequence of transactions, denoted as $\Bar{x}$. We want one new block to be broadcasted roughly every $\Delta$. To ensure this time span, we will introduce the Proof-of-Work Equation.
 
 \begin{definition}[Proof-of-Work Equation]
   $H(B) \leq T$
-  \footnote{This scheme was derived in 1993 by Cynthia Dwork and Moni Naor in the seminal paper "Pricing via Processing
-or Combatting Junk Mail".}
 \end{definition}
 
 Here, $T$ is called the target. In order to solve the Proof-of-Work equation, one would have to find a value of $B$ such that $H(B) \leq T$.
@@ -486,4 +480,11 @@ The Genesis Block is the first block in a blockchain. It contains real world dat
 
 Putting it all together, an honest party (which we can assume to be every honest node in the network for now) follows the following algorithm to create a valid block. First, it collects any amount of transactions from the network and add them to a mempool, which is a set of validated but unconfirmed transactions \footnote{The number of transactions it collects will be formalized later}. Then, it writes $B = \delta||\Bar{x}||ctr$, and then solves the Proof-of-Work Equation. In other words, it finds a value of ctr (which is also known as the nonce) such that $H(B) \leq T$. If the honest party is successful, it will broadcast the mined block to the network. Otherwise, if another block has been found and received by the honest party first, it will validate the new block, update it's UTXO by removing all the transactions that were spent in the newest block, and update the freshest block in its memory. As such, $B$ would necessarily change, and the honest party will have to solve a new Proof-of-Work equation.
 
-%TODO: maybe rewrite using algorithms package?
+\section{Problems}
+TBD
+
+\section{Further Reading}
+
+Proof-of-Work was invented long before blockchains, in 1992, by Cynthia Dwork and Moni Naor
+in their seminal paper \emph{Pricing via Processing or Combatting Junk Mail}~\cite{pow} published
+in CRYPTO '92.

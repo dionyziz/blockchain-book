@@ -1,0 +1,15 @@
+\begin{algorithm}[H]
+  \caption{\label{alg.mine-tx} An algorithm that mines a ticket associated with one transaction.}
+  \begin{algorithmic}[1]
+    \Function{\textsf{PoW}$_{H,T}$}{$\tx$}
+      \Let{\ctr}{0}
+      \While{$\true$}
+        \Let{B}{\tx \concat \ctr}
+        \If{$H(B) \leq T$}
+          \State\Return{B}
+        \EndIf
+        \Let{\ctr}{\ctr + 1}
+      \EndWhile
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}

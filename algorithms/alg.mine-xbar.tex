@@ -1,0 +1,15 @@
+\begin{algorithm}[H]
+  \caption{\label{alg.mine-xbar} Then algorithm that mines a block associated with multiple transactions.}
+  \begin{algorithmic}[1]
+    \Function{\textsf{PoW}$_{H,T}$}{$\overline{x}$}
+      \Let{\ctr}{0}
+      \While{$\true$}
+        \Let{B}{\overline{x} \concat \ctr}
+        \If{$H(B) \leq T$}
+          \State\Return{B}
+        \EndIf
+        \Let{\ctr}{\ctr + 1}
+      \EndWhile
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
