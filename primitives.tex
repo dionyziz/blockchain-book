@@ -159,7 +159,7 @@ without any input from the challenger. The preimage adversaries seem stronger: I
 an adversary who can produce a preimage, we can use her to create a collision. Collisions require
 that $x_1 \neq x_2$. We now show that preimage resistance implies collision resistance.
 
-\begin{theorem}[Collision Resistance $\implies$ Preimage Resistance]
+\begin{theorem}[Collision Resistance $\implies$ 2nd Preimage Resistance]
   \label{thm.collision-2preimage}
   If a hash function $H$ is collision resistant, then it is 2nd preimage resistant.
 \end{theorem}
@@ -173,12 +173,12 @@ that $x_1 \neq x_2$. We now show that preimage resistance implies collision resi
   If the adversary $\mathcal{A}$ is successful in breaking the 2nd preimage game, then $\mathcal{A}'$ will be successful in breaking the collision game:
 
   \[
-    \Pr[\textsf{preimage-game}_\mathcal{A}(\kappa)]
+    \Pr[\textsf{2nd-preimage-game}_\mathcal{A}(\kappa)]
     =
     \Pr[\textsf{collision-game}_{\mathcal{A}'}(\kappa)]
   \]
 
-  Since $\Pr[\textsf{preimage-game}_\mathcal{A}(\kappa)]$ is non-negligible, then so is $\Pr[\textsf{collision-game}_{\mathcal{A}'}(\kappa)]$.
+  Since $\Pr[\textsf{2nd-preimage-game}_\mathcal{A}(\kappa)]$ is non-negligible, then so is $\Pr[\textsf{collision-game}_{\mathcal{A}'}(\kappa)]$.
 
   Furthermore, the adversary $\mathcal{A}'$ works in polynomial time, and so is also PPT. This contradicts the assumption that $H$ is collision resistant.
 \end{proof}
@@ -186,7 +186,7 @@ that $x_1 \neq x_2$. We now show that preimage resistance implies collision resi
 % TODO: Redraw and improve this figure (in PDF format)
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.6]{figures/2pre.png}
+    \includegraphics[scale=0.65]{figures/2pre-collision.pdf}
     \caption{A visualization of Theorem~\ref{thm.collision-2preimage}.}
     \label{fig:2pre_viz}
 \end{figure}
@@ -230,7 +230,7 @@ This is captured in the following theorem:
 
   Now that we have proven this claim, we can compare the probabilities of success of $\mathcal{A}$ and $\mathcal{A}'$. We will only consider the case where the uniform sampling of $x_1$ by the 2nd preimage challenger falls to the left of the dashed line. This happens with probability $\frac{1}{2}$. If this is the case, then there are at least $2^{\kappa}$ dots in the box of $H(x_1)$.
 
-  Therefore, \emph{conditioned} on the fact that $\mathcal{A}$ is successful and that we have landed to the left of the dashed line, the probability of success of $\mathcal{A}'$ is $1 - 2^{\kappa}$. The overall probability of success of $\mathcal{A}'$ is
+  Therefore, \emph{conditioned} on the fact that $\mathcal{A}$ is successful and that we have landed to the left of the dashed line, the probability of success of $\mathcal{A}'$ is $1 - 2^{-\kappa}$. The overall probability of success of $\mathcal{A}'$ is
 
   \[
     \Pr[\textsf{2nd-preimage-game}_{\mathcal{A}'}(\kappa)] \geq \frac{1}{2} (1 - 2^{-\kappa}) \Pr[\textsf{preimage-game}_\mathcal{A}(\kappa)]\,.
@@ -466,7 +466,8 @@ schemes}\index{Existential Unforgeability}.
 
 Since the hash of a message is a unique identifier for it, it is sufficient that
 the hash of a message is signed instead of the message itself. This is often done
-in practice since it simplifies the implementation of signature schemes.
+in practice since it simplifies the implementation of signature schemes (libraries that implement
+signatures will do this for you).
 One class of secure signature schemes is called
 \texttt{ECDSA}\index{ECDSA} and is based on the mathematical structure of \emph{elliptic curves}\index{Elliptic Curve}.
 These curves define how public keys are structured, and they involve some algebra
@@ -523,6 +524,11 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
   \item What is an example of a hash function that is not collision resistant, nor preimage resistant, nor
         2nd preimage resistant?
   \item The proof of Theorem~\ref{thm.2preimage-preimage} is a proof with reference to the illustration. Make it rigorous so that it doesn't speak of images, boxes, and dashed lines. Instead, use exact counting formulas and define appropriate notation to represent the boxes as equivalence classes.
+  \item In the proof of Theorem~\ref{thm.2preimage-preimage}, the probabilities 
+    \[
+      \Pr[\textsf{2nd-preimage-game}_{\mathcal{A}'}(\kappa)] \geq \frac{1}{2} (1 - 2^{-\kappa}) \Pr[\textsf{preimage-game}_\mathcal{A}(\kappa)]
+    \]
+    are compared by $\leq$. Why are they not exactly equal?
   \item Give a simpler proof of Theorem~\ref{thm.2preimage-preimage}.
   \item Combine Theorems~\ref{thm.collision-2preimage} and~\ref{thm.2preimage-preimage} to
         directly show that collision resistance implies preimage resistance.
