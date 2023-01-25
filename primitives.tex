@@ -535,12 +535,11 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
   \item Give a simpler proof of Theorem~\ref{thm.2preimage-preimage}.
   \item Combine Theorems~\ref{thm.collision-2preimage} and~\ref{thm.2preimage-preimage} to
         directly show that collision resistance implies preimage resistance.
-  \item You are given a pre-image adversary $\mathcal{A}$ for a hash function $H$ that \emph{always}
-        succeeds. Can you create a \emph{collision} adversary $\mathcal{A}^*$ against $H$
-        that succeeds often?
+  \item Given a collision resistant hash function $H$, construct a preimage and 2nd preimage resistant hash
+        function $G$ which is not collision resistant. Prove these properties of $G$.
   \item Given a collision resistant hash function $H$,
-        make a collision resistant hash function $H'$ whose first bit is reliably predictable
-        and prove that it is collision resistant.
+        make a collision resistant hash function $G$ whose first bit is reliably predictable
+        and prove that it is collision resistant. Prove these properties of $G$.
   \item Construct a correct but insecure signature scheme.
   \item Let $H:\{0,1\}^* \to \{0,1\}^{\kappa}$ be a collision-resistant hash function and define
         $G(x) = H(H(x))$. Show that $G$ is a collision-resistant hash function.
