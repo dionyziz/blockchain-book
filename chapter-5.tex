@@ -601,6 +601,14 @@ of \emph{premining attacks}\index{Premining}, situations in which the protocol i
 is adversarial and has mined blocks prior to making the protocol public. The genesis
 block is denoted $\mathcal{G}$.
 \glsxtrnewsymbol[description={genesis}]{genesis}{$\mathcal{G}$}\glsadd{genesis}
+A blockchain beginning with the genesis block is illustrated in Figure~\ref{fig.genesischain}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7 \columnwidth,keepaspectratio]{figures/genesis-chain.pdf}
+    \caption{A blockchain beginning from genesis.}
+    \label{fig.genesischain}
+\end{figure}
 
 The Bitcoin genesis block was mined on January 3rd, 2009 and contains the following quote:
 
@@ -633,10 +641,10 @@ The steps that an honest miner follows are as follows:
 The honest parties keep mining even if their mempool is empty. This means that the blockchain
 might consist even of empty blocks.
 
-\section{Problems}
+\section*{Problems}
 TBD
 
-\section{Further Reading}
+\section*{Further Reading}
 
 Proof-of-Work was invented long before blockchains, in 1992, by Cynthia Dwork and Moni Naor
 in their seminal paper \emph{Pricing via Processing or Combatting Junk Mail}~\cite{pow} published
