@@ -1,0 +1,17 @@
+\begin{algorithm}[H]
+  \caption{\label{alg.mine-block}
+  The mining algorithm for a block associated with multiple transactions $\overline{x}$
+  and a previous blockid $s$.}
+  \begin{algorithmic}[1]
+    \Function{\textsf{PoW}$_{H,T}$}{$s, \overline{x}$}
+      \State{$\ctr \getsrandomly \{0, 1\}^\kappa$}
+      \While{$\true$}
+        \Let{B}{s \concat \overline{x} \concat \ctr}
+        \If{$H(B) \leq T$}
+          \State\Return{B}
+        \EndIf
+        \Let{\ctr}{\ctr + 1}
+      \EndWhile
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}

@@ -1,10 +1,10 @@
 \begin{algorithm}[H]
-  \caption{\label{alg.mine-tx} An algorithm that mines a ticket associated with one transaction.}
+  \caption{\label{alg.proof-of-work} The proof-of-work algorithm.}
   \begin{algorithmic}[1]
-    \Function{\textsf{PoW}$_{H,T}$}{$\tx$}
-      \Let{\ctr}{0}
+    \Function{\textsf{PoW}$_{H,T}$}{}
+      \State{$\ctr \getsrandomly \{0, 1\}^\kappa$}
       \While{$\true$}
-        \Let{B}{\tx \concat \ctr}
+        \Let{B}{\ctr}
         \If{$H(B) \leq T$}
           \State\Return{B}
         \EndIf

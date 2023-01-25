@@ -1,4 +1,4 @@
-\chapter{Blocks and Chains \small{\textsf{DRAFT}}}\label{chapter:blocks}
+\chapter{Blocks}\label{chapter:blocks}
 
 \section{The Network Delay}
 
@@ -25,6 +25,7 @@ Chapter~\ref{chapter.untrusty-world}. To make our intuition more precise, let us
 long it takes for a message to reach the whole network when it is broadcast by any party.
 We call this the \emph{network delay parameter}.
 
+% TODO: Explain \Delta with reference to the network topology / network diameter
 \glsxtrnewsymbol[description={network delay}]{delay}{$\Delta$}\glsadd{delay}
 \begin{definition}[Network Delay]\index{Network Delay}
   The \emph{network delay parameter} $\Delta$ measures the maximum time it takes
@@ -60,7 +61,7 @@ but have not yet received either of $\tx_2$ or $\tx_2'$. If Charlie receives $\t
 will accept this transaction as valid. The transaction's input contains an outpoint that
 points to an element of the UTXO set in his view, since the output of $\tx_1$ has not been
 previously spent. Furthermore, the transaction contains a valid signature by Eve created
-with the correct public key, and it satisfies the Conservation Law. Upon accepting $\tx_2$,
+with the correct secret key, and it satisfies the Conservation Law. Upon accepting $\tx_2$,
 Charlie updates his UTXO set, removing the output of $\tx_1$ and adding the output of
 $\tx_2$ to it. If Charlie now receives $\tx_2'$, he will reject this transaction, as
 it is spending from an output that is not in the UTXO set in his view.
@@ -130,7 +131,7 @@ adopt this construction.
 \end{figure}
 
 \noindent
-\textbf{Idea 2: Accept the first transaction seen.} As we saw, two different honest parties can disagree in
+\textbf{Idea 2: Accept the first transaction seen.} As we saw, two different honest parties can disagree on
 the order in which two transactions arrived on the network. The situation is illustrated in
 Figure~\ref{fig.simple-idea-2}. Therefore, the following simple construction does not work:
 
@@ -176,7 +177,7 @@ The adversary cannot walk away as she did against Idea 1. If the adversary broad
 transactions within $\Delta$ time, as she did against Idea 2, they will both be rejected. It won't matter
 that different parties saw them in different order.
 
-Sadly, on closer inspection, this idea does not work,
+Sadly, upon closer inspection, this idea does not work,
 either. The strategy of the adversary is now to cause disagreement between Charlie and Dave with
 regards to \emph{whether or not} the two transactions appeared within time $u$. The problematic situation
 is illustrated in Figure~\ref{fig.simple-idea-3}. The adversary initially broadcasts $\tx_2$
@@ -191,7 +192,12 @@ Dave thinks $\tx_2$ is valid, whereas Charlie thinks $\tx_2$ is invalid.
 Try to think of more simple ideas to resolve this ordering issue. You'll see that
 none of them will work. For example, placing a timestamp within a transaction to ensure
 that every honest party simultaneously applies a transaction doesn't work, either (why?).
-We'll need to invent heavier artillery to attack this problem.
+Neither does the policy of accepting the transaction with the smallest $\txid$ among
+double spends (why?).
+We'll need to invent heavier artillery to attack this problem. Over the next few
+sections, we'll gradually derive the concepts of a \emph{block} and a \emph{chain}.
+While we do this, we will find issues with our scheme and keep augmenting it until
+we arrive at a fully working safe and live protocol.
 
 \section{Ledgers}
 
@@ -205,7 +211,7 @@ it may need to delay reporting it on its ledger for a bit.
 By reading that ledger reported by an honest party one transaction at a time from left to right,
 we can reconstruct the transaction graph and arrive at the UTXO set. If the honest parties
 agree on their reported ledgers, they will agree on the UTXO set. We'll therefore concern
-ourselves with the question on whether we can achieve consensus among the ledgers reported
+ourselves with the question of whether we can achieve consensus among the ledgers reported
 by honest parties.
 
 We will soon figure out what each honest party should do internally in order to produce
@@ -245,7 +251,6 @@ balances. This architecture is illustrated in Figure~\ref{fig.wallet-fullnode-ar
 
 We'll have more to say about the wallet portion in the next chapters. For now,
 let us focus on how to build the full node.
-
 Our goal will be to have all the honest full nodes agree on the ledgers they are reporting
 when their \emph{read} functionality is invoked. That way, everyone will arrive at the same
 UTXO set and agree \emph{who owns what}.
@@ -271,7 +276,7 @@ more formally in Chapter~\ref{chapter:earnest2}.
 
 \begin{definition}[Safety (informal)]
     For any two honest parties, their reported ledgers at any point in time
-    should be equal.
+    are be equal.
 \end{definition}
 
 \begin{definition}[Liveness (informal)]
@@ -314,15 +319,14 @@ Our design goal for the rest of this book will be to build protocols that
 are \emph{both} safe and live simultaneously.
 
 \section{Rare Events}
-
-\section{The Block}
 We previously determined that the root cause of double spending transactions being problematic
 is because the adversary can issue them in short succession, and in particular within time
 $\Delta$. It would be useful to enforce that the adversary issues transactions at a slower
 rate. We'd like to limit the rate at which the adversary can issue transactions at
-once every $\Delta$. If transactions are spaced apart by $\Delta$ time, then no harm
-can come from double spends. We can simply adopt the strategy of accepting the first
-among multiple double spending transactions, and ignoring subsequent double spends.
+once every $\Delta$, with \emph{periods of silence} in between. If transactions are
+spaced apart by $\Delta$ time, then no harm can come from double spends. We can simply
+adopt the strategy of accepting the first among multiple double spending transactions,
+and ignoring subsequent double spends.
 
 To force the adversary to issue transactions $\Delta$ apart, we'd like to require her
 to obtain a \emph{ticket} before she can issue a transaction, and each of these tickets
@@ -349,7 +353,7 @@ between safety and liveness. This trade-off is illustrated in Figure~\ref{fig.ti
     \label{fig.time-tickets}
 \end{figure}
 
-These tickets are wishful thinking. How can we get them to behave this way in a permissionless
+But how can we create such a ticketing system? How can we get them to behave this way in a permissionless
 world, where there is no authority to issue these tickets and ensure they are spread $\Delta$
 apart?
 
@@ -362,29 +366,55 @@ that breaks the preimage property of a hash, but takes exponential time. However
 the problem of finding a preimage so that it is not an \emph{exact} preimage, but a ``close enough''
 solution. This will allow us to create a problem that is \emph{moderately hard}; it is not \emph{hard}
 in the computational sense, but we can tweak how long it takes to solve it. We are interested in
-``close enough'' hash preimages of the image $h = 0$; that is, we want inputs $\ctr$ to the hash function
-$H$, so that $H(\ctr)$ is a small enough number. \emph{How close} is defined by the value $T$, the
-\glsxtrnewsymbol[description={target}]{target}{$T$}\glsadd{target}
-\emph{target}\index{Target}. We write this requirement in the form of an
+``close enough'' hash preimages of the image $h = 0$; that is, we want an input $B$ to the hash function
+$H$, so that $H(B)$ is a small enough number. \emph{How close} is defined by the value $T$, the
+\glsxtrnewsymbol[description={target}]{target}{$T$}\glsadd{target}\emph{target}\index{Target}.
+We write this requirement in the form of an
 inequality:
 
 \[
-    H(\ctr) \leq T
+    H(B) \leq T
 \]
 
-The problem is to find the unknown value $\ctr$ so that the inequality is satisfied. Of course,
-there will be multiple $\ctr$ values that satisfy this inequality. Upon solving this inequality,
+This inequality is known as the \emph{proof-of-work inequality}\index{Proof-of-Work}. Finding
+a $B$ that satisfies this equality is known as \emph{performing work}.
+Remember
+that the output of the hash function $H(B)$ is a $\kappa$-bit binary number. We are comparing
+this number against the value $T$, another number. The inequality is satisfied if $H(B)$, treated
+numerically, is not larger than the number $T$.
+
+The challenge is to find the unknown value $B$ so that the inequality is satisfied. Of course,
+there will be multiple $B$ values that satisfy this inequality. Upon solving this inequality,
 one obtains a ticket to issue a transaction. While solving the inequality is moderately hard,
 and requires many trial-and-error invocations of the hash function, verifying that the particular
-$\ctr$ satisfies the equation is very easy: It requires just one hash invocation.
+$B$ satisfies the equation is very easy: It requires just one hash invocation.
+
+\import{./}{algorithms/alg.proof-of-work}
+
+To find a ticket, one can execute a strategy similar to the exhaustive search for finding a
+preimage. We start at a random $B = \ctr$ and keep looking for a $\ctr$ that satisfies the
+proof-of-work inequality by incrementing $\ctr$ and checking whether the equation is satisfied.
+This is illustrated in Algorithm~\ref{alg.proof-of-work} and is known
+as \emph{mining}\index{Mining}. The value $\ctr$ is known as the
+\emph{nonce}\index{Nonce}\glsxtrnewsymbol[description={nonce}]{nonce}{$\ctr$}\glsadd{nonce},
+and has no significance beyond ensuring that the proof-of-work inequality is satisfied.
+Once a party finds a ticket $B$, this ticket can be gossiped
+to the network and relayed by others. Any party can check that the ticket has a valid proof-of-work,
+without performing the exhaustive search again. Intermediary nodes on the gossip network cannot
+modify the contents of a ticket in transit, as this will invalidate the proof-of-work, and they
+would have to mine a new ticket.
 
 The larger we make the target $T$, the easier it is to solve the inequality. The smaller we make
 the target $T$, the more difficult it becomes. That's why we call the value $\frac{1}{T}$ the
 \emph{difficulty}\index{Difficulty}: The larger the difficulty, the more difficult it is to
-find a solution to the inequality.
+find a solution to the inequality. By increasing $T$, we space tickets closer together.
+By decreasing $T$, we space tickets further apart from each other. At the extremes,
+setting $T = 0$ makes the proof-of-work problem equivalent to finding the hash preimage of
+$0$, which needs exponential time. On the other end of the spectrum, setting $T = 2^\kappa$
+makes the proof-of-work problem trivial, because every hash satisfies the inequality
+$H(B) \leq 2^\kappa$.
 
-\section{Blocks and Blockchains}
-\subsection{Virtues of Ledgers}
+\section{The Block}
 
 We have introduced a moderately hard problem that forces the adversary to spread out her
 tickets in time by more than $\Delta$. But how do we associate tickets with transactions?
@@ -395,7 +425,9 @@ communicating with another party. We need to somehow tie the ticket together wit
 transaction so that a ticket is only usable for a particular transaction.
 To do this, we set $B = \tx \conc \ctr$ and require the ticket to satisfy $H(B) \leq T$,
 as before, where $\tx$ is the transaction we want the ticket to be tied to.
-The revised mining process is illustrated in Algorithm~\ref{alg.mine-tx}.
+The notation $\conc$ denotes the concatenation of two strings (separating them appropriately
+so that they don't accidentally mix with each other by using an appropriate encoding such
+as JSON).
 Now, upon receiving a transaction/ticket pair, we can check that the ticket corresponds
 to the particular transaction. Furthermore, if the adversary attempts to replace the
 transaction within $B$ with a different one, then this will cause $H(B)$ to change.
@@ -404,8 +436,6 @@ changes the value $H(B)$ in a way that cannot be predicted. If she changes the t
 this will invalidate the proof-of-work and the adversary will have to perform yet another
 exhaustive search to find a new ticket.
 
-\import{./}{algorithms/alg.mine-tx}
-
 We've solved one problem, but have introduced another: If we require one ticket per transaction
 for the adversary, then we must do the same for the honest parties. This means that at most one
 transaction can be executed every $\Delta$. If the honest party wants to issue multiple transactions,
@@ -413,12 +443,11 @@ this will take a long time, and liveness will deteriorate. In order to solve thi
 transactions together into a sequence $\overline{x} = (\tx_1, \tx_2, \ldots, \tx_n)$, and place
 this within the ticket, setting $B = \overline{x} \conc \ctr$.
 Instead of each ticket being associated with \emph{one} transaction, each ticket
-is now associated with multiple. Such a ticket is known as a \emph{block}~\index{Block}.
-The modified mining algorithm is illustrated in Algorithm~\ref{alg.mine-xbar}. Here,
-we've just replaced $\tx$ with $\overline{x}$. Now each honest party can issue as many transactions
+Such a ticket is known as a \emph{block}\index{Block}.
+Now each honest party can issue as many transactions
 as he wants in one go, as long as he is able to mine one block.
-
-\import{./}{algorithms/alg.mine-xbar}
+From now on, we will no longer speak of tickets, but will speak of blocks,
+even if a block contains just one transaction.
 
 A natural question now arises: If we've bundled multiple transations together into one block,
 hasn't the double spending problem resurfaced? The answer is \emph{no}, because, in order to
@@ -443,8 +472,9 @@ honest parties are still encumbered with the responsibility to mine a block befo
 get their transactions accepted by others. This wait time may still be long and this scheme
 is not very good for liveness. Worse yet, some honest parties may have large computational
 power, while other honest parties may have smaller computational power, and so the block
-generation for each honest party might be vastly different. It would be nice if we didn't
-tie the liveness of each honest party to that particular party's computational power.
+generation time for each honest party might be vastly different. It would be nice if we didn't
+tie the liveness of each honest party to that particular party's computational power, but
+instead allowed the honest parties to work together to confirm each others' transactions.
 
 Towards that purpose, we design the system as follows: A transaction can still be issued
 independently of a block and broadcast to the network. The transaction is gossiped until
@@ -452,103 +482,156 @@ it reaches everyone on the network as usual. However, the transaction is placed 
 temporary waiting area called the \emph{mempool}~\index{Mempool}, ensuring double spends are
 resolved one way or another (any of the simple ideas we discussed previously can be used as
 strategies to resolve double spends).
-Each honest party maintains their own mempool of transactions that are still in limbo.
+Each honest party maintains their own mempool $\overline{x}$ of transactions that are still in limbo.
 Because the double spending problem has not yet been solved by finding a block, different
 honest parties may disagree about what their mempool looks like.
 However, each mempool is independently locally consistent.
-When an honest party tries to mine a block,
+
+\begin{definition}[Mempool]
+    The \emph{mempool} $\overline{x}$ of an honest party $P$ at time $r$ is the sequence of transactions
+    that have been received and validated, but have not yet been included in a block.
+\end{definition}
+
+Upon receiving a transaction from the network, an honest party performs the usual transaction
+validation checks on it before adding the transaction to its own mempool, so the mempool
+does not contain double spends. Of course, the mempool of one honest party may contain a
+transaction which conflicts another transaction in the mempool of another honest party.
+As honestly generated transactions can always be appended to the transaction graph,
+the mempool of every honest party will contain every honestly generated transaction
+that has not yet made it into a block, as long as that transaction was broadcasted
+at least $\Delta$ ago. When an honest party tries to mine a block,
 he includes all the transactions in his mempool into this block. This has the benefit
-that, whenever \emph{any} honest party finds a block, \emph{all} pending honest tranasctions
+that, whenever \emph{any} honest party finds a block, \emph{all} pending honest transactions
 are included in that block, as long as they have been issued more than $\Delta$ time ago.
+The transactions in the mempool are ordered, and so are transactions within a block.
+
+We illustrate a block in Figure~\ref{fig.block}. We'll follow the convention of drawing
+a block as a rectangle and a transaction as a circle.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5 \columnwidth,keepaspectratio]{figures/block.pdf}
+    \caption{A block containing ordered transactions. We will draw a block using a rectangle
+             and a transaction using a circle.}
+    \label{fig.block}
+\end{figure}
 
 When a transaction makes it into a block, we term the transaction
 \emph{confirmed}~\index{Confirmation}. An honest party invokes the \emph{read} functionality
 of its ledger, only confirmed transactions are reported. This ensures that ledgers
-are consistent, salvaging safety.
+are consistent, salvaging safety. Liveness is guaranteed from the fact that an honest
+block will eventually appear, and this will cause all the transactions in the mempool to
+become confirmed.
 
-\section{Blocks and Blockchains}
+\section{Chain of Blocks}
 
-\subsection{Blocks}
+Similar to transactions, we give blocks identifiers, which are the hashes of their contents.
+A blockid of block $B$ is the value $H(B)$. Contrary to transactions, these blockids will
+generally be a small value, because they all satisfy the proof-of-work equation. Therefore,
+these hashes will begin with a run of $0$s.
 
-\subsection{Proof of Work and Mining}
+At this point, we have introduced blocks that function as tickets to allow for the spaced-out
+broadcasting of transactions. However, our system is not yet safe. There's a problem: While
+the proof-of-work process ensures that the adversary gets a block in regular spaced out
+intervals, the adversary is not guaranteed to use these block at the time of issuance.
+Instead, the adversary could \emph{withhold} a couple of blocks and broadcast them all later
+in close succession, and in particular closer than $\Delta$ apart in time. This defeats the
+purpose we set to achieve. The attack stems from the ability of the adversary to use blocks
+that are stale and have been set aside for long. We can resolve the issue by requiring
+each block to be \emph{fresh}. We can do this by having the block include, in addition to
+its transactions, a pointer to a previous recent block. This pointer, denoted by $s$,
+is the blockid of the previous block known to the miner, and is known as the \emph{previd}\index{previd}.
+Our modified block format is now $B = s \concat \overline{x} \concat \ctr$. Note that,
+similarly to before, the adversary cannot retroactively change $s$ after mining a block,
+because this will invalidate the proof-of-work. This helps with freshness: If a block $B$ is
+old and includes a pointer $s$ to an even older block, this $s$ cannot be retroactively
+chnaged to point to a newer block to make $B$ appear fresh. The final proof-of-work algorithm
+illustrated in Algorithm~\ref{alg.mine-block}.
+accepts both $s$ and $\overline{x}$ as parameters and tries to find a $\ctr$ that
+satisfies the proof-of-work equation.
 
-\begin{definition}[Proof-of-Work Equation]
-  $H(B) \leq T$
-\end{definition}
+\import{./}{algorithms/alg.mine-block}
 
-Here, $T$ is called the target. In order to solve the Proof-of-Work equation, one would have to find a value of $B$ such that $H(B) \leq T$.
+Because each block points to a previous block, the blocks form a chain. This is known
+as the \emph{blockchain}\index{Blockchain} and is illustrated in Figure~\ref{fig.chain}.
+The arrows follow the direction of the pointers, pointing from one block to the block
+it refers to. While the pointers have a right-to-left direction, the blockchain was
+produced from left-to-right. From now on, we will draw blocks as simple squares,
+omitting the respective transactions inside for brevity.
 
-\begin{definition}[Random Oracle Model]
-  Output of $H$ is distributed uniformly at random.
-\end{definition}
-
-Under the Random Oracle Assumption, notice that the time it would take to find a bruteforce solution to a Proof-of-Work equation depends on the value of $T$. When $T$ is larger, it would be easier to find $B$ such that $H(B) \leq T$, and vice versa. In particular, $Pr[H(B) \leq T] = \frac{T}{2^{\kappa}}$ for any arbitrary $B$.
-
-In the network, $T$ is fixed and hard-coded for honest parties. The value is chosen such that the time it takes for a node in the network to find a solution to the Proof-of-Work equation is around $\Delta$.
-
-Now, notice that if we allow honest parties to pick whatever $B$ they want, then as soon as the first valid value of $B$ is found, each node can just trivially reuse that value instantaneously, and safety is lost again. As such, in the network, we require that $B = \delta||\Bar{x}||ctr$, where $||$ means concatenation and where $\delta$ is the hash of the previous block $H(B')$. Both $\delta$ and $\Bar{x}$ are fixed, and $ctr$ is a number to be found that solves the Proof-of-Work equation. In other words, when nodes are trying to solve the Proof-of-Work equation, they are trying different values of $ctr$ until finding a satisfactory one. The time it takes the first node to find a satisfactory $ctr$ for their block will be around $\delta$. The process of finding a bruteforce solution to the Proof-of-Work equation is called mining.
-
-\subsection{Blockchains}
-
-The previous block hash, $\delta$, is a part of $B$ because we want to ensure "freshness", which means that only blocks that are recently created should be able to be broadcasted. Consider the scenario where an adversary mines multiple blocks, but does not broadcast them immediately. Then, at a later point in time, the adversary broadcast all of these blocks at the same time. Since there is not a $\Delta$ interval between the time these blocks are broadcasted, the problem of double spend arises again. There could be disagreements in the ledgers of the honest nodes. In order to prevent this, we require each block to point to the most recent known block. By including $\delta$ as a part of $B$, we ensure that blocks that were mined beforehand are no longer valid, since the adversary could not have predicted $\delta$ before the most recent block was broadcasted. As a result, we can guarantee that blocks will be roughly be broadcasted in regular time intervals. Since blocks are all connected to each other in this way, this chain of block is called the \emph{blockchain}.
-
-
-\subsection{Genesis Block}
-
-The Genesis Block is the first block in a blockchain. It contains real world data to anchor time, in order to ensure that it is impossible to pre-mine. If the hash of the Genesis Block is known before it is broadcasted, then the adversary could pre-mine multiple blocks beforehand (before the network is even available to the rest of the world). Then, when the Genesis Block is broadcasted, the adversary would be able to broadcast multiple blocks within a short time span. Hence, it is necessary for the Genesis Block to contain real world data to anchor time. For example, Bitcoin genesis block quotes the January 3  2009 The Times headline.
-
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    \pgfplotsset{compat=1.15}
-
-
-
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,165); %set diagram left start at 0, and has height of 165
-
-%Shape: Rectangle [id:dp6459725379232777]
-\draw  [fill={rgb, 255:red, 255; green, 183; blue, 183 }  ,fill opacity=1 ] (132,36) -- (172.53,36) -- (172.53,80.09) -- (132,80.09) -- cycle ;
-%Shape: Rectangle [id:dp7451543919622989]
-\draw  [fill={rgb, 255:red, 255; green, 183; blue, 183 }  ,fill opacity=1 ] (222,36) -- (262.53,36) -- (262.53,80.09) -- (222,80.09) -- cycle ;
-%Shape: Rectangle [id:dp4942977774139823]
-\draw  [fill={rgb, 255:red, 255; green, 183; blue, 183 }  ,fill opacity=1 ] (312,35) -- (352.53,35) -- (352.53,79.09) -- (312,79.09) -- cycle ;
-%Shape: Rectangle [id:dp8525801453597799]
-\draw  [fill={rgb, 255:red, 255; green, 183; blue, 183 }  ,fill opacity=1 ] (402,36) -- (442.53,36) -- (442.53,80.09) -- (402,80.09) -- cycle ;
-%Shape: Rectangle [id:dp16781400895186005]
-\draw  [fill={rgb, 255:red, 255; green, 183; blue, 183 }  ,fill opacity=1 ] (492,36) -- (532.53,36) -- (532.53,80.09) -- (492,80.09) -- cycle ;
-%Straight Lines [id:da27296871485376917]
-\draw    (172.73,56.09) -- (219.73,56.09) ;
-\draw [shift={(221.73,56.09)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da8965885073779516]
-\draw    (262.73,56.09) -- (309.73,56.09) ;
-\draw [shift={(311.73,56.09)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da16101344176853494]
-\draw    (352.73,55.09) -- (399.73,55.09) ;
-\draw [shift={(401.73,55.09)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da6603043582779935]
-\draw    (442.73,54.09) -- (489.73,54.09) ;
-\draw [shift={(491.73,54.09)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (132,83.09) node [anchor=north west][inner sep=0.75pt]   [align=left] {{\scriptsize Genesis}};
-% Text Node
-\draw (404,83.09) node [anchor=north west][inner sep=0.75pt]   [align=left] {{\scriptsize Block B'}};
-% Text Node
-\draw (494,83.09) node [anchor=north west][inner sep=0.75pt]   [align=left] {{\scriptsize Block B}};
-
-
-\end{tikzpicture}
-
-    \caption{To mine block B, the miner runs the Proof of Work Equation with B = $H(B')||\Bar{x}||ctr$}
-    \label{fig:my_label}
+    \includegraphics[width=1 \columnwidth,keepaspectratio]{figures/the-chain.pdf}
+    \caption{A chain of blocks. The blocks were mined from left to right.}
+    \label{fig.chain}
 \end{figure}
 
+Because the hash
+of a block cannot be predicted prior to the proof-of-work actually taking place (otherwise
+proof-of-work would be solvable by a faster algorithm than exhaustive search), the value
+$s$ of the previd must be computed prior to the value $H(s \concat \overline{x} \concat \ctr)$.
+In other words, the previd $s$ must already be known when mining for a new block that includes
+$s$ as its previd. Blocks are mined in the order they appear. The pointers between blocks
+in the chain are \emph{causality links}. They point backwards in time. The blockchain grows
+forward in time and defines an \emph{arrow of time}. When we observe a blockchain, we can
+deduce that all of its blocks were mined one after the other in the order that we observe
+them.
 
-\subsection{Honest Party Block Generation Algorithm}
+% In particular, $Pr[H(B) \leq T] = \frac{T}{2^{\kappa}}$ for any arbitrary $B$.
+% In the network, $T$ is fixed and hard-coded for honest parties. The value is chosen such that the time it takes for a node in the network to find a solution to the Proof-of-Work equation is around $\Delta$.
 
-Putting it all together, an honest party (which we can assume to be every honest node in the network for now) follows the following algorithm to create a valid block. First, it collects any amount of transactions from the network and add them to a mempool, which is a set of validated but unconfirmed transactions \footnote{The number of transactions it collects will be formalized later}. Then, it writes $B = \delta||\Bar{x}||ctr$, and then solves the Proof-of-Work Equation. In other words, it finds a value of ctr (which is also known as the nonce) such that $H(B) \leq T$. If the honest party is successful, it will broadcast the mined block to the network. Otherwise, if another block has been found and received by the honest party first, it will validate the new block, update it's UTXO by removing all the transactions that were spent in the newest block, and update the freshest block in its memory. As such, $B$ would necessarily change, and the honest party will have to solve a new Proof-of-Work equation.
+\section{Genesis}
+
+We've added pointers between blocks to ensure freshness, and each block attests about
+its freshness by a pointer to a recent block. But what about the freshness of the first
+block on the chain? That first block cannot have a pointer to a parent block. How do we
+ensure its freshness? In particular, how do we prevent an adversary from having produced
+many blocks in secret prior to the blockchain protocol even being announced, anticipating
+its announcement, perhaps in collusion with the creator of the protocol? To prove the
+freshness of the first block, the first block contains a reference which ties the theoretical
+and mathematical world of the blockchain with real world events. The first block, known as
+the \emph{genesis block}\index{Genesis}, or simply \emph{genesis}, contains in its metadata
+the headline of a recent newspaper describing impactful and unpredictable world events.
+Because these data are committed into the proof-of-work of the genesis block, similarly
+to the values $s$ and $\ctr$, they cannot be retroactively changed without invalidating
+the proof-of-work. This is the way of the protocol creator indicating there's
+\emph{nothing up his sleeve}, and that the genesis block was produced \emph{after}
+a certain point in time. This is an \emph{anchor in time} and guards against the fear
+of \emph{premining attacks}\index{Premining}, situations in which the protocol inventor
+is adversarial and has mined blocks prior to making the protocol public. The genesis
+block is denoted $\mathcal{G}$.
+\glsxtrnewsymbol[description={genesis}]{genesis}{$\mathcal{G}$}\glsadd{genesis}
+
+The Bitcoin genesis block was mined on January 3rd, 2009 and contains the following quote:
+
+\begin{quote}
+  The Times 03/Jan/2009 Chancellor on brink of second bailout for banks
+\end{quote}
+
+The quote is both an anchor in time and a political message by Satoshi Nakamoto. The
+frontpage of The Times newspaper of that day appears in Figure~\ref{fig.thetimes}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1 \columnwidth,keepaspectratio]{figures/thetimes.jpg}
+    \caption{The genesis block contains metadata with a time anchor to real-world events.}
+    \label{fig.thetimes}
+\end{figure}
+
+\section{Mining}
+
+Honest parties \emph{constantly} attempt to mine blocks by following the mining algorithm.
+The steps that an honest miner follows are as follows:
+
+\begin{enumerate}
+  \item Maintain a consistent local mempool $\overline{x}$ of transactions.
+  \item Attempt to mine a block $B = s \conc \overline{x} \conc \ctr$ by finding a $\ctr$ that satisfies $H(B) \leq T$.
+  \item If mining is successful, broadcast the newly created block $B$.
+  \item Otherwise, keep mining.
+\end{enumerate}
+
+The honest parties keep mining even if their mempool is empty. This means that the blockchain
+might consist even of empty blocks.
 
 \section{Problems}
 TBD
@@ -557,4 +640,4 @@ TBD
 
 Proof-of-Work was invented long before blockchains, in 1992, by Cynthia Dwork and Moni Naor
 in their seminal paper \emph{Pricing via Processing or Combatting Junk Mail}~\cite{pow} published
-in CRYPTO '92.
+in CRYPTO '92. Satoshi Nakamoto invented the blockchain by using proof-of-work as a building block.
