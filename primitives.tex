@@ -145,15 +145,16 @@ As there are other inputs that produce the same $H(x)$,
 we ask her to produce some $x'$ (equal or different from $x$) that has the same hash value
 as $x$.
 
+\import{./}{algorithms/alg.2preimage-game}
+
 But, perhaps, we are simply asking too much of this adversary. It would already be a big problem
 for us if the adversary, given some $x_1$, can find a \emph{different} $x_2$ that hashes to the same
 value. We call this property \emph{second primage resistance}, and it is defined through the following
 game.\index{2nd Preimage Resistance}
 
-\import{./}{algorithms/alg.2preimage-game}
-
-In this game, the adversary is given a randomly sampled $(2\kappa+1)$-bit string input $x_1$ by the challenger .
-The adversary is successful if she can come up with an $x_2 \neq x_1$ that hashes to the same value as $x_1$
+In this game, the adversary is given a randomly sampled $(2\kappa+1)$-bit string input $x_1$ by the challenger.
+The adversary is successful if she can come up with an $x_2 \neq x_1$ that hashes to the same value as $x_1$,
+as illustrated in Algorithm~\ref{alg.2preimage-game}.
 
 It seems that all three properties, collision resistance, preimage resistance, and second preimage
 resistance, are desirable. Let us examine whether some of these properties are stronger than the other.
@@ -171,7 +172,16 @@ that $x_1 \neq x_2$. We now show that preimage resistance implies collision resi
   Then, there exists an adversary $\mathcal{A}$ that can win the 2nd preimage game with non-negligible probability $Pr_\mathcal{A}$. We will construct an adversary $\mathcal{A}'$ against the
   collision challenger which uses $\mathcal{A}$ as a black box.
 
-  The adversary $\mathcal{A}'$ works as illustrated in Algorithm~\ref{alg.collision-2preimage}. She first chooses an $x_1$ uniformly at random from the message space. She then hands this $x_1$ to $\mathcal{A}$, who, hopefully, produces an $x_2$ such that $x_1 \neq x_2$ and $H(x_1) \neq H(x_2)$. The adversary $\mathcal{A}'$ outputs the pair $(x_1, x_2)$.
+  The adversary $\mathcal{A}'$ works as illustrated in Algorithm~\ref{alg.collision-2preimage} and Figure~\ref{fig:2pre-collision}. She first chooses an $x_1$ uniformly at random from the message space. She then hands this $x_1$ to $\mathcal{A}$, who, hopefully, produces an $x_2$ such that $x_1 \neq x_2$ and $H(x_1) \neq H(x_2)$. The adversary $\mathcal{A}'$ outputs the pair $(x_1, x_2)$.
+
+  \begin{figure}[H]
+      \centering
+      \includegraphics[scale=0.65]{figures/2pre-collision.pdf}
+      \caption{A visualization of Theorem~\ref{thm.collision-2preimage}.}
+      \label{fig:2pre-collision}
+  \end{figure}
+
+  \import{./}{algorithms/alg.collision-2preimage}
 
   If the adversary $\mathcal{A}$ is successful in breaking the 2nd preimage game, then $\mathcal{A}'$ will be successful in breaking the collision game:
 
@@ -186,16 +196,6 @@ that $x_1 \neq x_2$. We now show that preimage resistance implies collision resi
   Furthermore, the adversary $\mathcal{A}'$ works in polynomial time, and so is also PPT. This contradicts the assumption that $H$ is collision resistant.
 \end{proof}
 
-% TODO: Redraw and improve this figure (in PDF format)
-\begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.65]{figures/2pre-collision.pdf}
-    \caption{A visualization of Theorem~\ref{thm.collision-2preimage}.}
-    \label{fig:2pre_viz}
-\end{figure}
-
-\import{./}{algorithms/alg.collision-2preimage}
-
 In addition, an adversary who breaks preimage resistant is stronger than an adversary who breaks 2nd preimage resistant. This is not surprising. An adversary who works towards finding a second preimage already has a first preimage, whereas an adversary who attempts to break preimage resistance only has an image.
 
 This is captured in the following theorem:
@@ -207,9 +207,16 @@ This is captured in the following theorem:
 \begin{proof}
   Consider a PPT adversary $\mathcal{A}$ against the preimage game.
   We will construct an adversary $\mathcal{A}'$ against the 2nd preimage game. The adversary $\mathcal{A}'$ is depicted
-  in Algorithm~\ref{alg.2preimage-preimage}. It is clear that $\mathcal{A}'$ is PPT because $\mathcal{A}$ is PPT.
+  in Algorithm~\ref{alg.2preimage-preimage} and Figure~\ref{fig.2preimage-preimage}. It is clear that $\mathcal{A}'$ is PPT because $\mathcal{A}$ is PPT.
 
   \import{./}{algorithms/alg.2preimage-preimage}
+
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3 \columnwidth,keepaspectratio]{figures/2pre-pre.pdf}
+    \caption{The reduction in the proof of Theorem~\ref{thm.2preimage-preimage}.}
+    \label{fig.2preimage-preimage}
+  \end{figure}
 
   Even though $\mathcal{A}$ could win the preimage game, this only guarantees that $H(x_1) = H(x_2)$.
   We need one additional property for $\mathcal{A}'$ to win the 2nd preimage game: It must hold that $x_1 \neq x_2$.
@@ -221,7 +228,7 @@ This is captured in the following theorem:
   \begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth,keepaspectratio]{figures/2preimage-preimage.pdf}
-    \caption{A visualization of Theorem~\ref{thm.collision-2preimage}.}
+    \caption{A visualization of the counting argument in Theorem~\ref{thm.2preimage-preimage}.}
     \label{fig.2preimage-preimage}
   \end{figure}
 
@@ -523,7 +530,7 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
 
 \section*{Problems}
 
-\begin{enumerate}
+\begin{problems}
   \item What is an example of a hash function that is not collision resistant, nor preimage resistant, nor
         2nd preimage resistant?
   \item The proof of Theorem~\ref{thm.2preimage-preimage} is a proof with reference to the illustration. Make it rigorous so that it doesn't speak of images, boxes, and dashed lines. Instead, use exact counting formulas and define appropriate notation to represent the boxes as equivalence classes.
@@ -539,13 +546,13 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
         function $G$ which is not collision resistant. Prove these properties of $G$.
   \item Given a collision resistant hash function $H$,
         make a collision resistant hash function $G$ whose first bit is reliably predictable
-        and prove that it is collision resistant. Prove these properties of $G$.
+        and prove that it is collision resistant. Prove these properties of $G$.\label{problem:small-hash}
   \item Construct a correct but insecure signature scheme.
   \item Let $H:\{0,1\}^* \to \{0,1\}^{\kappa}$ be a collision-resistant hash function and define
         $G(x) = H(H(x))$. Show that $G$ is a collision-resistant hash function.
   \item Given a collision resistant hash function $H$, construct a preimage and 2nd preimage resistant hash
         function $G$ which is not collision resistant. Prove these properties.
-\end{enumerate}
+\end{problems}
 
 \section*{Further Reading}
 

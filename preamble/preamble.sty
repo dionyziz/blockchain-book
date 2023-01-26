@@ -60,3 +60,9 @@
 \newtheorem{remark}{Remark}
 
 \import{./}{macros.tex}
+
+\newlist{problems}{enumerate}{1}
+\setlist[problems]{leftmargin=*,label=\thechapter.\arabic*}
+
+\newlist{subproblems}{enumerate}{1}
+\setlist[subproblems]{leftmargin=*,label=\alph*.}

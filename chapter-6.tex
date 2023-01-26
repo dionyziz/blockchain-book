@@ -1,35 +1,28 @@
+\chapter{The Chain}
 \chapter{Proof-of-Work \small{\textsf{DRAFT}}}\label{chapter:pow}
 
-\section{Introduction}
+In the last chapter, we discussed the necessity for blocks as a mechanism to enforce \emph{periods of silence} so that double spends
+can be adequately separated in time.  We then linked blocks together into chains in order to ensure freshness so that an adversary cannot
+retroactively bring blocks mined and withheld in the old past. However, we left the notion of ``freshness'' and block validation
+undefined. In this chapter, we will fill in all the missing details of how blocks and chains are verified. By the end of this chapter,
+we will have a rudimentary, yet complete and secure, blockchain protocol.
 
-In this lecture, we will delve deeper into chains, resolve the last few problems with proof of work and the double-spending problem, explain how money is created, and describe how to update the UTXO. By the end of this lecture, while there will still be optimizations to be done, you will have all the necessary knowledge to implement a fully functional and secure blockchain.
+\section{The Target}
 
-\section{Target Parameter ($T$)}
+Previously, we designed the proof-of-work inequality $H(B) \leq T$ in order to create \emph{rare events} and \emph{periods of silence}
+as a moderately hard version of the exponentially hard hash preimage problem. In order to prevent double spends, we needed to ensure
+that blocks are spaced $\Delta$ apart. Let us now calculate the correct value of $T$ so that block production is spaced more than
+$\Delta$ time apart. To do this, we need to first find out when the proof-of-work inequality holds. If we start
+with a freshly generated $\ctr$ and place it into $B = s \conc \overline{x} \conc \ctr$, what is the probability that $H(B) \leq T$?
+This question is not straightforward to answer, because the output of a hash function may not be uniformly distributed (see also
+Problem~\ref{problem:small-hash}).
 
-In the previous lecture we spoke about the necessity of sending messages separated by time intervals, i.e. in the form of rare events. This is done to prevent adversaries from double spending by sending transactions from the same outpoint within a short period of time, thereby causing confusion about which transaction is valid.
-
-The time interval between sending messages should be such that it is greater than the network delay so that transactions are allowed to propagate to every node in the network thus preventing adversaries from double spending.
-
-In order to tie blocks to rare events, the protocol sets a target parameter $T$ such that a block $B$ is valid only if
-\begin{equation}
-    H(B) < T
-\end{equation}
-
-\section{Safety and Liveness}
-
-Increasing $T$ leads to a loss of safety. This means that there is an increased likelihood of honest nodes receiving conflicting transactions.
-Decreasing $T$ leads to a loss of liveness, this is because it takes longer to generate a valid hash that is below the threshold.
-Safety can be thought of as the honest ledgers being in agreement with each other.
-Liveness can be thought as the ledgers making progress by adding new transactions.
+\section{The Stochastic Nature of Work}
 
 \section{Freshness}
-To produce the hash of the block we run our hashing algorithm on $B = (s,\overline{x}, \mathrm{ctr})$ where
-$s$ is the hash of the previous block, $\overline{x}$ is the ordered set of transactions that are included in the block and $\mathrm{ctr}$ is a randomly chosen nonce. We include the set of transactions in the proof-of-work so that the adversary cannot reuse the same proof-of-work multiple times.
-
-The hash of the previous block is included in the new block we generate so as to maintain freshness. Freshness provides an arrow of time. Since each new block includes the hash of the previous block we can confidently say that the new block was produced after the previous block. This prevents adversaries from premining blocks and adding them when convenient because the adversary must include the hash of the previous block when producing the block that comes after that.
+Freshness provides an arrow of time. Since each new block includes the hash of the previous block we can confidently say that the new block was produced after the previous block. This prevents adversaries from premining blocks and adding them when convenient because the adversary must include the hash of the previous block when producing the block that comes after that.
 % In other words, proof-of-work combined with chaining gives an \textit{arrow of time}.
 
-Linking blocks to each other with the help of hashes forms a \textit{blockchain}. It is also known as a hash chain.
 This makes it impossible to go back and change a block without having to change all the blocks that came after that block as shown in Figure~\ref{fig:Blockchain}.
 
 \begin{figure}[H]
