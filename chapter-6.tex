@@ -1,5 +1,4 @@
-\chapter{The Chain}
-\chapter{Proof-of-Work \small{\textsf{DRAFT}}}\label{chapter:pow}
+\chapter{The Chain \small{\textsf{DRAFT}}}\label{chapter:chain}
 
 In the last chapter, we discussed the necessity for blocks as a mechanism to enforce \emph{periods of silence} so that double spends
 can be adequately separated in time.  We then linked blocks together into chains in order to ensure freshness so that an adversary cannot
@@ -16,6 +15,39 @@ $\Delta$ time apart. To do this, we need to first find out when the proof-of-wor
 with a freshly generated $\ctr$ and place it into $B = s \conc \overline{x} \conc \ctr$, what is the probability that $H(B) \leq T$?
 This question is not straightforward to answer, because the output of a hash function may not be uniformly distributed (see also
 Problem~\ref{problem:small-hash}).
+
+In fact, not all collision resistant hash functions are suitable for proof-of-work. We want to demand that, whenever the hash is queried with a fresh input, the output is uniformly distributed in $\{0,1\}^\kappa$. This extra assumption is known as the \emph{random oracle model} and we will return to it in Chapter~\ref{chapter:earnest1}. Using the random oracle model, we can calculate the probability that a particular nonce trial is successful:
+
+\glsxtrnewsymbol[description={successful query probability}]{successful query probability}{$p$}\glsadd{successful query probability}
+\[
+  p = \Pr[H(B) \leq T] = \frac{T}{2^\kappa}
+\]
+
+During the exhaustive search of proof-of-work, if a particular hash trial $H(B)$ is found to be $H(B) \leq T$, we call that hash function query a \emph{successful query}\index{Successful query}. Otherwise, if $H(B) > T$, we call the query \emph{unsuccessful}. The expected number of queries needed until a successful query is found is $\frac{1}{p} = \frac{2^\kappa}{T}$.
+
+As protocol designers, we need to set $T$ correctly so that blocks are produced at a rate smaller than once per $\Delta$. For this, we need to have an estimate of how fast the participating nodes on the network can compute hash queries. Let's start with some definitions. Suppose that a typical honest computer can process
+\glsxtrnewsymbol[description={compute}]{compute}{$q$}\glsadd{compute}
+$q \in \mathbb{N}$
+computations of $H$ during every unit of time. Let us also suppose that the total number of computers mining on the network is
+\glsxtrnewsymbol[description={total parties}]{total parties}{$n$}\glsadd{total parties}
+$n \in \mathbb{N}$
+and the adversary controls
+\glsxtrnewsymbol[description={adversarial parties}]{adversarial parties}{$t$}\glsadd{adversarial parties}
+$t \in \mathbb{N}$
+of them. Here, we are assuming that all computers have equal processing power, but if there is some computer on the network that has more processing power, we can just think about that powerful computer as a collection of smaller, less powerful computers, each of which has $q$ computational power. The model still works out. We will call each of these computers a
+\emph{party}\index{Party}.
+Each mining party will roughly correspond to a node on the network, but in practice these are not necessarily the same: A single network node can correspond to multiple parties if it is a powerful computer. On the other hand, because our system is permissionless, a party may spawn multiple nodes that all share the same computational power. Additionally, even though we are saying that the adversary is in control of $t$ adversarial parties, we are still considering the situation where the adversary is a ``puppet master'' who controls every adversarial party of the network by a central ``master plan'' $\mathcal{A}$. We say that such a party controlled by the adversary is \emph{adversarial}, \emph{corrupt}, or \emph{malicious}, and we will use these terms interchangably.
+
+The total number of hash queries that can be executed in the unit of time is $nq$.
+Since all parties are simultaneously trying to get a block all the time, the expected block generation
+time is $\frac{1}{pnq} = \frac{2^\kappa}{Tnq}$. If we want this value to be above $\Delta$ we must demand
+
+\[
+  \frac{2^\kappa}{Tnq} > \Delta \Rightarrow T < \frac{2^\kappa}{nq\Delta}\,.
+\]
+
+In a nutshell, the more computational power there is on the network, the larger we must make the difficulty.
+Also, the larger the network delay, the larger we must make the difficulty.
 
 \section{The Stochastic Nature of Work}
 
@@ -71,33 +103,6 @@ This makes it impossible to go back and change a block without having to change 
 	\caption{Chaining blocks prevents changing the old blocks as this would invalidate the proof-of-work equation for the blocks following it in the chain.}
 	\label{fig:Blockchain}  %Tag for referring to figure in text.
 \end{figure}
-
-\section{Determining the Target Parameter}
-For simplicity, consider that $B$ is randomly chosen in $\{0,1\}^\kappa$. Then,
-\begin{equation}
-    \Pr[H(B) \leq T] = {\frac{T}{2^\kappa}} = p
-\end{equation}
-\begin{itemize}
-\item $p$: Probability of successful query
-\item $q$: hash power of a single party
-\item $n$: number of parties participating in network
-\end{itemize}
-
-Here, we think of one party as one unit of computation. All parties in the network are simultaneously trying to create a block.
-
-The target variable $T$ should be chosen such that the time taken to generate a valid nonce ($B$) should be greater than the network delay.
-
-\begin{equation}
-    \frac{1}{pnq} = \Delta
-\end{equation}
-where $\Delta$ is the network delay.
-
-\begin{equation}
-    T = \frac{2^\kappa}{\Delta nq}
-\end{equation}
-
-Here, $qn$ is the total hashing power of the network. We can see that as $qn$ increases T should decrease. This means that it should become harder for each party to generate a valid nonce.
-Increasing the network delay will also similarly require $T$ to be decreased.
 
 \section{Accounting for Stochastic Nature of Proof of Work}
 
@@ -164,7 +169,6 @@ Ideally we would want that all blocks are produced with the same delay as decide
 \draw (190,12) node [anchor=north west][inner sep=0.75pt]   [align=left] {Convergence opportunity};
 % Text Node
 \draw (391,12) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,opacity=1 ] [align=left] {Conflicting blocks};
-
 
 \end{tikzpicture}
 	\caption{Block production during operation is a stochastic process}

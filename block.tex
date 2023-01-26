@@ -639,6 +639,7 @@ frontpage of The Times newspaper of that day appears in Figure~\ref{fig.thetimes
 Honest parties \emph{constantly} attempt to mine blocks by following the mining algorithm.
 The steps that an honest miner follows are as follows:
 
+% TODO: mempool figure with a blockchain and mempool "cloud" at the end
 \begin{enumerate}
   \item Maintain a consistent local mempool $\overline{x}$ of transactions.
   \item Attempt to mine a block $B = s \conc \overline{x} \conc \ctr$ by finding a $\ctr$ that satisfies $H(B) \leq T$.
@@ -650,7 +651,16 @@ The honest parties keep mining even if their mempool is empty. This means that t
 might consist even of empty blocks.
 
 \section*{Problems}
-TBD
+
+\begin{problems}
+  \item When mining in Algorithm~\ref{alg.mine-block}, an honest party begins their search at a
+        value of $\ctr$ which is initialized at a uniformly randomly chosen sample from $\{0, 1\}^\kappa$.
+        After this, the honest party searches sequentially by incrementing $\ctr$.
+        Consider the case when there is a constant number of parties, each of which is running for a
+        polynomial amount of time, and all of them are trying to mine with the same $s$ and $\overline{x}$.
+        Use a union bound to estimate whether the probability that any two honest parties will use
+        the same $\ctr$ when attempting to find proof-of-work is negligible or not.
+\end{problems}
 
 \section*{Further Reading}
 

@@ -1,4 +1,4 @@
-\chapter{Security in Earnest I \small{\textsf{DRAFT}}}
+\chapter{Security in Earnest I \small{\textsf{DRAFT}}}\label{chapter:earnest1}
 
 We have spent the previous chapters developing our intuition about blockchain systems and why
 they work. In this chapter and the next couple of chapters, we will formalize the notion of
@@ -11,7 +11,7 @@ We will move on to formally prove the three chain virtues we explored intuitivel
 Chain Growth, Common Prefix, and Chain Quality.
 Finally, we will formally show that ledger virtues follow from chain virtues.
 
-\section{Random Oracle}
+\section{Random Oracle}\index{Random Oracle}
 In Chapter~\ref{chapter:blocks}, we argued that the hash function behaves like a random
 oracle and that $Pr[H(B) \leq T] = p = \frac{T}{2^k}$. Let us now make the random oracle
 model more precise. We want the hash function to return a uniformly randomly chosen $\kappa$-bit
@@ -30,7 +30,7 @@ the key $B$ queried has been queried before, the random oracle returns the cache
 Otherwise, the oracle generates a uniformly random $\kappa$-bit string, caches it in the $\mathcal{T}$
 dictionary for future use, and returns it.
 
-\section{Synchrony}
+\section{Synchrony}\index{Synchrony Assumption}
 Until now, we considered time as continuous. We will now follow a synchronous model where time is broken
 up into rounds, each round lasting a discrete time $\Delta$. Additionally, we will consider the network
 delay to be precisely $\Delta$. This implies that any message broadcast by an honest party at some point
@@ -42,9 +42,10 @@ and lets us discretize time by eliminating complexities of network distance and 
 of our network entities is simplified to a ``lockstep execution'' model, where we can easily predict when
 any node will receive a given message, which will be precisely one round after it was broadcast.
 
-\section{The Simulation Environment}
+\section{The Simulation Environment}\index{Environment}
 In order to rigorously define properties of our blockchain and give security proofs, we need to precisely define how we will simulate our environment: the setup and how each round happens.
 
+\glsxtrnewsymbol[description={environment}]{environment}{$\mathcal{Z}$}\glsadd{environment}
 \begin{figure}[H]
 \begin{algorithm}[H]
     \caption{\label{alg.environment} The environment and network model running for a polynomial number of rounds $\textsf{poly}(\kappa)$.}
@@ -90,8 +91,7 @@ In order to rigorously define properties of our blockchain and give security pro
 \subsection{A Simplification: Quantize Time}
 Notice that we are running the simulation in rounds (line 12). In the real world, time is continuous, however by breaking down the simulation into short rounds, it makes it much easier to define and prove security properties of our blockchain. Furthermore, it makes it easier to define the properties of our adversary as seen below.
 
-
-\subsection{Rushing Adversary}
+\subsection{Rushing Adversary}\index{Rushing Adversary}
 In this environment, we are assuming a Rushing Adversary. This is because every round (lines 12-26), we first simulate the honest parties independently - they do not see the messages produced by each other that round - (lines 15-19), collect all the messages on the gossip network (line 17), then run the adversary with all the gossiped messages (line 20).
 
 \subsection{Sybil Adversary \& Non-Eclipsing Assumption}
