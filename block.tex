@@ -316,7 +316,13 @@ order they are received from the network, and this order may be different for
 different parties.
 
 Our design goal for the rest of this book will be to build protocols that
-are \emph{both} safe and live simultaneously.
+are \emph{both} safe and live simultaneously. Those protocols are called
+\emph{secure}.
+
+\begin{definition}[Security]\index{Security}
+    A protocol is called \emph{secure} if it produces ledgers that are both
+    \emph{safe} and \emph{live}.
+\end{definition}
 
 \section{Rare Events}
 We previously determined that the root cause of double spending transactions being problematic
