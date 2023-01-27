@@ -1,5 +1,22 @@
 \chapter{Chain Attacks \small{\textsf{DRAFT}}}\label{chapter:attacks}
 
+\section{Comparing Transactions and Blocks}
+
+Now that we understand how blocks and transactions work, it is worth drawing parallels between the two.
+\begin{center}
+\begin{tabular}{ |c|c|c| }
+  \hline
+  & \textbf{Transaction} & \textbf{Block} \\
+  \hline
+  \textbf{Inductive base} & Coinbase & Genesis \\
+  \hline
+  \textbf{Inductive hypothesis} & Outpoint UTXO & Previous ID ($s$) \\
+  \hline
+  \textbf{Inductive step} & \makecell{Consuming produced UTXO \\ Signatures \\ Conservation laws} & \makecell{Proof of Work \\ Causality \\ Transactions} \\
+  \hline
+\end{tabular}
+\end{center}
+
 \section{Review of Ledger Virtues}
 All fundamental use cases and proofs of security of blockchains are dependent on the following virtues being upheld.
 

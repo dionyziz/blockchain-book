@@ -454,6 +454,9 @@ Such a ticket is known as a \emph{block}\index{Block}.
 The sequence of transactions $\overline{x}$ is also known as the \emph{block payload}.
 Now each honest party can issue as many transactions
 as he wants in one go, as long as he is able to mine one block.
+In practice, to save on communication, $\overline{x}$ may be a list of transaction ids instead
+of the literal transactions themselves. We'll see more ways to optimize communication
+when we talk about Light Clients in Chapter~\ref{chapter:light}.
 From now on, we will no longer speak of tickets, but will speak of blocks,
 even if a block contains just one transaction.
 
@@ -623,7 +626,7 @@ frontpage of The Times newspaper of that day appears in Figure~\ref{fig.thetimes
 \end{figure}
 
 We will make all honest parties check that all blockchains begin with $\mathcal{G}$ to avoid
-premining. 
+premining.
 
 \section{Mining}
 

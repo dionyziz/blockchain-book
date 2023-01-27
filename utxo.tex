@@ -1,8 +1,8 @@
-\chapter{The UTXO}
+\chapter{The Transaction}\label{chapter:transaction}
 
 % \input{./commitments.tex} % TODO: restore this file to build Ouroboros Proof-of-Stake later?
 
-\section{The Transaction}\index{Transaction}
+\section{Coins}\index{Transaction}
 We are now ready to start creating money. Given our insight that money comes to be
 through mutual social agreement---a social construct---we can create money simply by conjuring
 it through software. As long as it is difficult to forge and everyone agrees
@@ -12,8 +12,6 @@ agreement.
 To solve the problem of knowing \emph{who has what}, we will employ an unusual strategy:
 We will require that \emph{every node on the network knows who owns what}. There are privacy
 and efficiency issues with this, and we will resolve both later.
-
-\subsection*{Coins}
 
 Let us imagine how we can model the transfer of money between two parties. We need to represent
 that Alice made a payment to Bob of some particular amount. We will represent this through a
