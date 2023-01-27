@@ -574,25 +574,7 @@ omitting the respective transactions inside for brevity.
     \label{fig.chain}
 \end{figure}
 
-Because the hash
-of a block cannot be predicted prior to the proof-of-work actually taking place (otherwise
-proof-of-work would be solvable by a faster algorithm than exhaustive search), the value
-$s$ of the previd must be computed prior to the value $H(s \concat \overline{x} \concat \ctr)$.
-In other words, the previd $s$ must already be known when mining for a new block that includes
-$s$ as its previd. Blocks are mined in the order they appear. The pointers between blocks
-in the chain are \emph{causality links}. They point backwards in time. The blockchain grows
-forward in time and defines an \emph{arrow of time}. When we observe a blockchain, we can
-deduce that all of its blocks were mined one after the other in the order that we observe
-them. In fact, if we have a blockchain consisting of a sequence of blocks, if we change
-the payload $\overline{x}$ in an earlier block, this will cause the proof-of-work in that
-same block and all subsequent blocks to become invalid. Changing the $\overline{x}$ of the
-block will cause its own blockid to change and its proof-of-work to be invalidated. This, in
-turn, requires changing the previd $s$ of the next block, causing \emph{its} proof-of-work to
-be invalidated, and so on and so forth for every subsequent block on the chain.
-% If the data included in an old block (such as $\overline{x}$)
-
-% In particular, $Pr[H(B) \leq T] = \frac{T}{2^{\kappa}}$ for any arbitrary $B$.
-% In the network, $T$ is fixed and hard-coded for honest parties. The value is chosen such that the time it takes for a node in the network to find a solution to the Proof-of-Work equation is around $\Delta$.
+% In the network, $T$ is fixed and hard-coded for honest parties.
 
 \section{Genesis}
 
@@ -639,6 +621,9 @@ frontpage of The Times newspaper of that day appears in Figure~\ref{fig.thetimes
     \caption{The genesis block contains metadata with a time anchor to real-world events.}
     \label{fig.thetimes}
 \end{figure}
+
+We will make all honest parties check that all blockchains begin with $\mathcal{G}$ to avoid
+premining. 
 
 \section{Mining}
 
