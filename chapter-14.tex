@@ -1,4 +1,4 @@
-\chapter{Security in Earnest III \small{\textsf{DRAFT}}}
+\chapter{Security in Earnest III \small{\textsf{DRAFT}}}\label{chapter:earnest3}
 
 \section{Recap of last lecture: Security in Earnest (II)}
 We proved several bounds in the previous lecture:
@@ -87,10 +87,10 @@ Recall chain growth lemma from the previous lecture.
     Suppose that at round $r$, an honest party $P$ has a chain of length $l$. Then by round $r' \geq r$, every honest party has adopted a chain of length at least $l + \sum_{i=r}^{r'-1} X_i$.
 \end {lemma}
 Now we are equipped with all the necessary tools to prove our first chain virtue.
-\begin{theorem}[Chain Growth]
+
+\begin{theorem}[Chain Growth]\label{thm:chain-growth}
 In a typical execution, Chain Growth is attained with $\tau = (1-\epsilon)f, s \geq \lambda$.
 \end{theorem}
-
 \begin{proof}
 For rounds $S$, such that $|S| \geq \lambda, X(S) > (1-\epsilon)f|S|$ with overwhelming probability. Invoking the growth chain lemma, it is deduced that the chain grows by at least $(1-\epsilon)f\lambda$. Therefore, the chain velocity is $\tau = (1-\epsilon)f$.
 \end{proof}
@@ -107,7 +107,7 @@ Our plan for this proof is as follows. We will show this by contradiction. Suppo
 The last two points are already proven, so we are only missing the first point to prove Common Prefix.
 To do so, we prove the following lemma. We will choose $\lambda$ to be at least $2f$.
 
-\begin{lemma}[Patience Lemma]
+\begin{lemma}[Patience Lemma]\label{lem:patience}
 In typical executions, any $k \geq 2\lambda f$ blocks have been computed in at least $\frac{k}{2f}$ rounds.
 \end{lemma}
 \begin{proof}

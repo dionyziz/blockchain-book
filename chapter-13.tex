@@ -262,7 +262,7 @@ Note the relationship between $\lambda$ and $\epsilon$. The smaller we require o
 
 So, we want both  $\epsilon$ to be large (to achieve fast confirmation and a small $\lambda$), but also $f$ to be large (to achieve good chain growth with a fast block production rate). However, we cannot make both of them arbitrarily large, as they have to satisfy the balancing equation: $3f + 3\epsilon \leq \delta$. The value $\delta$ is not a parameter we can change, but is given to us from the threat model and adversarial assumptions: It is telling us what sort of adversary we are able to withstand. In the end, for a given $\delta$, we want to have the fastest possible blockchain, yet maintain security. Splitting equally between $\epsilon$ and $f$, we can choose $\epsilon = f = \delta/6$. The takehome lesson is that, to withstand a powerful adversary (small $\delta$), we need to wait a sufficient amount of time for transactions to be confirmed. You cannot have both quick confirmation and good security!
 
-In the next class, we will use the tools developed today to show that in typical executions, $Y(S) > Z(S)$ for all intervals of slots $S$ with $|S|\geq \lambda$. This will help us to prove that Common Prefix and Chain Growth hold in typical executions.
+In the next chapter, we will use the tools developed today to show that in typical executions, $Y(S) > Z(S)$ for all intervals of slots $S$ with $|S|\geq \lambda$. This will help us to prove that Common Prefix and Chain Growth hold in typical executions.
 
 \begin{landscape}\centering
 \begin{figure*}
