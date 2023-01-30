@@ -61,7 +61,7 @@ Thinking back to the UTXO model, safety means that the transaction graph of one 
 to the other party. In particular, if one party has confirmed a transaction $\tx$, then the other party cannot have confirmed, and can
 never confirm, a transaction $\tx'$ which is a double spend of $\tx$. Let's try to understand why.
 
-\begin{lemma}[Safe \Rightarrow No double spend (informal)]
+\begin{lemma}[Safe $\Rightarrow$ No double spend (informal)]
 In a safe protocol that ensures transaction validity locally,
 two honest parties can never confirm two conflicting transactions.
 \end{lemma}
@@ -79,9 +79,9 @@ This is a good sanity check that our definition of safety makes sense. Is this r
 safety achieved by our \emph{longest chain} construction? Not quite. The problem is that, as we saw in the previous chapter,
 the chain may have \emph{temporary forks} even when no adversary is mining. Whenever the chain \emph{reorgs}, there is a
 potential for safety loss. Consider the case illustrated in Figure~\ref{fig:reorg-safety-loss}. Imagine that honest party
-$P_1$ had initially adopted the chain whose tip is block $6$ and contains the top (green) transaction $\tx$. In the meantime
+$P_1$ had initially adopted the chain whose tip is block $6$ and contains the top (white) transaction $\tx$. In the meantime
 party $P_2$, who has not seen block $6$ yet, is still mining on top of block $4$. If party $P_2$ successfully mines block
-$5$, he can include a double spending transaction in it, the bottom (red) transaction $\tx'$, conflicting with $\tx$.
+$5$, he can include a double spending transaction in it, the bottom (black) transaction $\tx'$, conflicting with $\tx$.
 Now the two chains at blocks $5$ and $6$ are at a tie. The tie will be broken when the next proof-
 of-work is found (block $7$) and one branch becomes longer; the nodes that were working on the other
 (block $6$) branch will then switch to the longer one. If we now compare the ledger reported by party $P_1$ when he
@@ -90,7 +90,7 @@ ledgers obtained by \emph{reading} these two chains are mutually unsafe.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/reorg-safety-loss.pdf}
+    \includegraphics[width=0.5 \columnwidth,keepaspectratio]{figures/reorg-safety-loss.pdf}
     \caption{A chain reorg during a temporary fork causes a safety loss.}
     \label{fig.reorg-safety-loss}
 \end{figure}
