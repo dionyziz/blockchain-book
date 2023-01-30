@@ -294,6 +294,11 @@ if the adversary wants to displace block $B$, she has to pay for it by mining $B
 \section{Honest Majority Assumption (\texorpdfstring{$n, t, \delta$}{Lg})}
 We will now give a new definition of the honest majority assumption by introducing the honest advantage parameter $\delta$ . We will see in the next lecture that we need this parameter in order the chain virtues hold for Bitcoin. We say that the honest majority assumption holds if $t < (1 - \delta)(n - t)$.
 
+\section*{Problems}
+\begin{problems}
+    \item Go back to Lemma~\ref{lem:honest-convergence}. Restate it and prove it formally in the model developed in this chapter.
+\end{problems}
+
 \section{Further Reading}
 Even though Satoshi Nakamoto developed the first blockchain and wrote the paper about it, he did
 not prove that blockchains are secure against \emph{all} adversaries within that paper. Instead,
@@ -301,4 +306,4 @@ he showed that Bitcoin is secure against the \emph{specific} Nakamoto adversary 
 in the previous chapters. At a later time, Juan Garay, Aggelos Kiayias, and Nikos Leonardos
 wrote the \emph{Bitcoin Backbone} paper~\cite{backbone}.
 The Bitcoin Backbone paper formalizes and proves that blockchains that use Proof-of-Work
-are secure.
+are secure. This is the model we have presented in this chapter, with minor modifications.
