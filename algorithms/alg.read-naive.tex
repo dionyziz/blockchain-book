@@ -1,0 +1,14 @@
+\begin{algorithm}[H]
+  \caption{\label{alg.read-naive} The na\"ive \emph{read} rule.}
+  \begin{algorithmic}[1]
+    \Function{read}{$\chain$}
+      \Let{L}{[\,]}
+      \For{$B \in \chain$}
+        \For{$\tx \in B\mathsf{.}\overline{x}$}
+          \Let{L}{L \conc \tx}
+        \EndFor
+      \EndFor
+      \State\Return{$L$}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}

@@ -208,18 +208,26 @@ the chain \emph{reorgs} (reorganizes)~\index{Reorg} and certain blocks are \emph
 back}.
 
 Once a party has adopted a canonical chain, reporting a ledger of transactions
-to implement the \emph{read} operation of a full node is straightforward:
-Given an adopted chain $\chain = (B_0, B_1, \ldots, B_{n-1})$, the ledger reported is
-
-\[
-    L = B_0.\overline{x} \conc B_1.\overline{x} \conc \ldots \conc B_{n-1}.\overline{x}\,.
-\]
-
+to implement the \emph{read} operation of a full node is straightforward and
+is depicted in Algorithm~\ref{alg.read-naive}. Given a chain
+$\chain = (B_0, B_1, \ldots, B_{n-1})$, the ledger reported by the honest
+party when the \emph{read} functionality is invoked is the sequence of
+transactions in the same order as they appear on the chain.
 Here, we use the notation $B.\overline{x}$ to denote the $\overline{x}$ component
-of block $B$. The ledger reading rule tells us that we take the transactions in each
-block of the adopted chain (which are already ordered sequences of transactions) and
-concatenate them into one big list of transactions in the order mandated by the
-chain.
+of block $B = s \conc \overline{x} \conc \ctr$. 
+First, the ledger is initialized to be the empty sequence $[\,]$. The algorithm
+then traverses each block $B$ of chain $\chain$ in chronological order (while we
+use the notation $B \in \chain$, remember that $\chain$ is an ordered sequence
+and not a set). The transactions of the genesis block $B_0$ are appended to the ledger, in the same
+order as they appear within the genesis block's transaction sequence $B_0.\overline{x}$
+(which, again, is a sequence and not a set of transactions);
+next, the transactions of the block following genesis are appended; and so on, until
+the transactions of the tip are appended.
+
+\import{./}{algorithms/alg.read-naive}
+
+As you can judge by the name of this rule, this is a rule which we plan to
+soon revise (in Chapter~\ref{chapter:virtues}).
 
 \section{The Stochastic Nature of Work}
 
