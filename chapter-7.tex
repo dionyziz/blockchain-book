@@ -1,4 +1,4 @@
-\chapter{Chain Attacks \small{\textsf{DRAFT}}}\label{chapter:attacks}
+\chapter{Chain Virtues \small{\textsf{DRAFT}}}\label{chapter:virtues}
 
 \section{Comparing Transactions and Blocks}
 
@@ -17,14 +17,113 @@ Now that we understand how blocks and transactions work, it is worth drawing par
 \end{tabular}
 \end{center}
 
-\section{Review of Ledger Virtues}
-All fundamental use cases and proofs of security of blockchains are dependent on the following virtues being upheld.
+\section{Safety, Revisited}
+
+When we gave the first intuitive definition of ledger safety in Definition~\ref{def:safety-informal}, we mandated that all honest parties
+agree \emph{exactly} on their ledgers. Now that we've talked about network delays and arranged transactions into blocks, we see
+that this will be impossible to achieve. In the best case scenario, we have a chain that is growing without any forks. Still, in this
+case, if two honest parties $P_1, P_2$ both have a chain $\chain$, whenever $P_1$ mines a block $B$ on top of $\chain$, it will take
+$\Delta$ time until $P_2$ receives this block and updates his ledger. Remember that the reported ledger of a party only includes the
+transactions that have been confirmed into blocks.
+
+We need to revise our safety definition to account for the fact that there can be discrepancies. We will accept that ledgers of honest
+parties may disagree. However, we want the ledgers to be \emph{consistent} with one another: If one honest party has reported a transaction
+at position $i$ in his ledger, then every other honest party must either have that same transaction at position $i$, or their ledger
+must be shorter than $i$, indicating that the party has not yet decided which transaction to place at that location. However, it is imperative
+that two different honest parties do not have different transactions at the same location. In different words, we want the ledger of
+honest party $P_1$ and honest party $P_2$ to be \emph{prefixes} of one another, even if they are observed at different points in time.
+Let's revise our \emph{ledger safety} virtue to state it formally.
+
+\begin{definition}[Safety]\index{Safety}
+  A protocol is \emph{safe} if
+  for any two honest parties $P_1, P_2$ and any two times $r_1, r_2$, it holds that either
+  $L^{P_1}_{r_1} \preccurlyeq L^{P_2}_{r_2}$ or $L^{P_2}_{r_2} \preccurlyeq L^{P_1}_{r_1}$.
+\end{definition}
+
+The notation $A \preccurlyeq B$ between two finite sequences $A$ and $B$ means that
+$B[{:}|A|] = A$. An example of safe ledgers is illustrated in Figure~\ref{fig.safe-ledgers}.
+The image shows the ledgers reported by all honest parties at potentially different points
+in time. The same transaction is illustrated as a circle of the same color on different ledgers.
+Not all parties have seen all transactions yet: Party $P_2$ has seen more transactions than
+any other party, while $P_5$ has seen the fewest. At position $8$, only $P_2$ has seen the white
+transaction, and every other party has not. However, if a transaction ever appears in position $8$
+of any other honest party (illustrated as a dashed-line ghost transaction), it will be the same
+exact transaction that party $P_2$ has seen at that position.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/safe-ledgers.pdf}
+    \caption{A god's eye view of the \emph{safe} ledgers of various honest parties at various moments in time.}
+    \label{fig.safe-ledgers}
+\end{figure}
+
+Thinking back to the UTXO model, safety means that the transaction graph of one party is outdated, but not inconsistent, as compared
+to the other party. In particular, if one party has confirmed a transaction $\tx$, then the other party cannot have confirmed, and can
+never confirm, a transaction $\tx'$ which is a double spend of $\tx$. Let's try to understand why.
+
+\begin{lemma}[Safe \Rightarrow No double spend (informal)]
+In a safe protocol that ensures transaction validity locally,
+two honest parties can never confirm two conflicting transactions.
+\end{lemma}
+\begin{proof}
+Suppose, towards a contradiction, that party $P_1$ at time $r_1$ has confirmed $\tx$. This means that $\tx$ appears in $P_1$'s
+ledger $L^{P_1}_{r_1}$ at time $r_1$, and let's call $i$ the position of the transaction in the ledger: $\tx = L^{P_1}_{r_1}[i]$.
+Additionally, party $P_2$ at time $r_2$ has confirmed $\tx'$, a conflicting transaction to $\tx$. Similarly, let $j$ be the index:
+$\tx' = L^{P_2}_{r_2}[j]$. Now, if $i = j$, then this means that $\tx = \tx'$, which is a contradiction since these are conflicting.
+If $i < j$, then by safety this means that $L^{P_2}_{r_2}[i] = L^{P_1}_{r_1}[i] = \tx$. But then, party $P_2$ has included
+in his ledger \emph{both} $\tx$ at position $i$ \emph{and} $\tx'$ at position $j$. This is a contradiction, because the honest
+party validates $\tx'$ before accepting it. Therefore, the two parties cannot have accepted conflicting transactions.
+\end{proof}
+
+This is a good sanity check that our definition of safety makes sense. Is this revised and precise, yet weaker, notion of ledger
+safety achieved by our \emph{longest chain} construction? Not quite. The problem is that, as we saw in the previous chapter,
+the chain may have \emph{temporary forks} even when no adversary is mining. Whenever the chain \emph{reorgs}, there is a
+potential for safety loss. Consider the case illustrated in Figure~\ref{fig:reorg-safety-loss}. Imagine that honest party
+$P_1$ had initially adopted the chain whose tip is block $6$ and contains the top (green) transaction $\tx$. In the meantime
+party $P_2$, who has not seen block $6$ yet, is still mining on top of block $4$. If party $P_2$ successfully mines block
+$5$, he can include a double spending transaction in it, the bottom (red) transaction $\tx'$, conflicting with $\tx$.
+Now the two chains at blocks $5$ and $6$ are at a tie. The tie will be broken when the next proof-
+of-work is found (block $7$) and one branch becomes longer; the nodes that were working on the other
+(block $6$) branch will then switch to the longer one. If we now compare the ledger reported by party $P_1$ when he
+had adopted block $6$ and the ledger reported by party $P_2$ when he had block $7$, we see that the
+ledgers obtained by \emph{reading} these two chains are mutually unsafe.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/reorg-safety-loss.pdf}
+    \caption{A chain reorg during a temporary fork causes a safety loss.}
+    \label{fig.reorg-safety-loss}
+\end{figure}
+
+We will have to revise our \emph{reading rule} to account for these temporary forks. We now argue that these
+temporary forks will be short. Let us initially analyze this claim in the setting where every miner is honest.
+The idea is that, if we choose $T$ appropriately, then convergence opportunities will happen regularly.
+Once a convergence opportunity happens, if there is no adversarial miner, the honest parties will converge into
+one chain.
+
+\begin{lemma}[Honest Convergence]\label{lem:honest-convergence}
+    In a setting where only honest parties are mining, exactly $\Delta$ time after every convergence
+    opportunity, all honest parties will hold the same chain.
+\end{lemma}
+\begin{proof}
+    Consider an arbitrary convergence opportunity producing block $B$ occurring at time $r$.
+    Since the convergence opportunity is $\Delta$ separated from every \emph{preceding} successful query,
+    and all successful queries are honest and broadcast to the network, all honest parties will
+    have seen all the blocks produced so far (because they all happen prior to $r - \Delta$ and it
+    takes at most $\Delta$ time to receive the message containing those blocks).
+    Therefore, the honest party who mined $B$
+    will be mining on top of the longest chain among all. This means
+    that, at time $r$, the block $B$ has a height larger than any other
+    block. Because the miner is honest, he broadcasts $B$, and it is received by all honest parties within $\Delta$
+    time. Since the convergence opportunity is $\Delta$ separated from every \emph{succeeding} successful
+    query, no other blocks are mined or during the time interval $r \ldots r + \Delta$.
+    At time $r + \Delta$, every honest party has received $B$ and adopted it since it is
+    the longest chain. At this point, all the honest parties agree on their chains.
+\end{proof}
 
 \begin{itemize}
     \label{sec:liveness}
     \item \textbf{Liveness}: Honest transactions are included in all honest ledgers "soon".
-    \label{sec:saftey}
-    \item \textbf{Safety}: For any two honest ledgers $L_B$ and $L_D$ produced a ``sufficient time'' apart such that $L_D$ is fresher than $L_B$, $L_B$ must be a prefix of $L_D$. Note that ledgers may diverge for some time as long as blocks are mined within a network delay $\Delta$, but must satisfy this property upon reaching convergence opportunities (more on this in \hyperref[sec:mechanics]{Section 2.2}).
 \end{itemize}
 
 \section{Chain Virtues}
