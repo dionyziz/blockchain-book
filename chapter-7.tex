@@ -1,6 +1,28 @@
 \chapter{Chain Virtues \small{\textsf{DRAFT}}}\label{chapter:virtues}
 
-\section{Comparing Transactions and Blocks}
+Now that we have developed the longest chain protocol and understand
+what constitutes a chain, let's familiarize ourselves with executions
+of this protocol, in honest and adversarial settings, by looking at
+the combinatorial properties of chains.
+
+\section{Transactions -- Blocks}
+
+Before we get into the combinatorial properties of chains, let us spend a moment
+comparing \emph{transactions} (Chapter~\ref{chapter:transaction}) and \emph{blocks}
+(Chapters~\ref{chapter:blocks} and~\ref{chapter:chain}), to ensure
+that we don't confuse the two.
+
+Recall from Chapter~\ref{chapter:transaction} that chain of transactions is what constitutes
+a \emph{coin}. Anyone can create a transaction spending their own money instantaneously, because
+they can easily create a signature. Long chains of such transactions can be created rapidly
+from a low-end device, such as a mobile phone, with no significant mining power required.
+On the other hand, no one can create a transaction that spends someone else's money,
+because they don't hold the respective private key, no matter how much computational
+power they have (within the bounds of our polynomial world). A chain of transaction
+conveys no information about time taken.
+
+As for blocks, creating them does not require producing any signatures, but does require
+having a lot of computational power, and cannot be performed on a laptop or mobile phone.
 
 Now that we understand how blocks and transactions work, it is worth drawing parallels between the two.
 \begin{center}
