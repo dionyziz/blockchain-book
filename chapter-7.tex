@@ -10,10 +10,13 @@ the combinatorial properties of chains.
 Before we get into the combinatorial properties of chains, let us spend a moment
 comparing \emph{transactions} (Chapter~\ref{chapter:transaction}) and \emph{blocks}
 (Chapters~\ref{chapter:blocks} and~\ref{chapter:chain}), to ensure
-that we don't confuse the two.
+that we don't confuse the two and to built a high-level mental model of the
+previous couple of chapters.
 
 Recall from Chapter~\ref{chapter:transaction} that chain of transactions is what constitutes
-a \emph{coin}. Anyone can create a transaction spending their own money instantaneously, because
+a \emph{coin} (although this is not a formal notion, since coin provenance may not be uniquely
+determinable because coins can be joined and split through transactions).
+Anyone can create a transaction spending their own money instantaneously, because
 they can easily create a signature. Long chains of such transactions can be created rapidly
 from a low-end device, such as a mobile phone, with no significant mining power required.
 On the other hand, no one can create a transaction that spends someone else's money,
@@ -24,20 +27,57 @@ conveys no information about time taken.
 As for blocks, creating them does not require producing any signatures, but does require
 having a lot of computational power, and cannot be performed on a laptop or mobile phone.
 
-Now that we understand how blocks and transactions work, it is worth drawing parallels between the two.
-\begin{center}
+A summary comparing blocks and transactions is shown in Table~\label{tbl:tx-block-compare}.
+\emph{Time to create honest} describes the time needed to create a transaction spending my
+own money (including double spending it) and the time needed for an honest party to mine an honest block.
+\emph{Time to create adversarial} describes the time needed to create a transaction spending
+someone else's money and the time needed for an adversarial party to mine an adversarial
+block (for example containing a double spend). The last few rows summarize the inductive
+process of validating a transaction and validating a block. For transaction validation, the
+inductive base is the coinbase transaction, where money is generated and the Conservation Law
+does not need to be verified, and neither do they need signatures.
+The inductive hypothesis there is that we have a valid UTXO set,
+and the inductive step involves updating the UTXO set by consuming and producing elements,
+checking transaction signatures, and verifying the law of conservation. For block validation,
+the inductive base is the genesis block, whose previd does not need to be checked. The inductive
+hypothesis is that the previous chain up to $s$ has been validated, and the inductive step
+involves checking the proof-of-work equation and validating the transactions within.
+
+\begin{table}
+\centering
 \begin{tabular}{ |c|c|c| }
   \hline
   & \textbf{Transaction} & \textbf{Block} \\
   \hline
-  \textbf{Inductive base} & Coinbase & Genesis \\
+  \textbf{Time to create honest} & Instantaneous & Moderately hard \\
   \hline
-  \textbf{Inductive hypothesis} & Outpoint UTXO & Previous ID ($s$) \\
+  \textbf{Time to create adversarial} & Exponential & Moderately hard \\
   \hline
-  \textbf{Inductive step} & \makecell{Consuming produced UTXO \\ Signatures \\ Conservation laws} & \makecell{Proof of Work \\ Causality \\ Transactions} \\
+  \textbf{Inductive base} & Coinbase & $\mathcal{G}$ \\
+  \hline
+  \textbf{Inductive hypothesis} & Outpoint UTXO & Previous blockid ($s$) \\
+  \hline
+  \textbf{Inductive step} & \makecell{Update UTXO set \\ Check $\sigma$ \\ Conservation} & \makecell{$H(B) \leq T$ \\ Validate $\overline{x}$} \\
   \hline
 \end{tabular}
-\end{center}
+\caption{A high-level comparison of the nature of transactions and blocks.}
+\end{table}
+
+Given this table, we can observe what protects a transaction in transit from being
+altered. Imagine the adversary sitting in the middle of a gossip path on the network.
+This adversary relays transactions and can modify them as they travel from one
+end of the network to the other. If the adversary attempts to change a transaction's
+data (such as the recipient), she will fail. The reason of failure is different for a
+normal transaction and a coinbase transaction. When it comes to a normal transaction,
+the polynomial adversary who attempts to change the recipient will fail because of the existential
+unforgeability of the signature scheme. When it comes to a coinbase transaction,
+these transactions are not signed, as they do not have any inputs. However, because
+the coinbase transaction is always associated with a block, changing the coinbase
+transaction invalidates the proof-of-work of the block the coinbase transaction is
+included in. A coinbase transaction is never valid unless it accompanies a block.
+The adversary would therefore need to solve the proof-of-work puzzle from scratch
+in order to usurp this payment. While this is not impossible, it is moderately
+difficult.
 
 \section{Safety, Revisited}
 
@@ -72,6 +112,7 @@ transaction, and every other party has not. However, if a transaction ever appea
 of any other honest party (illustrated as a dashed-line ghost transaction), it will be the same
 exact transaction that party $P_2$ has seen at that position.
 
+% TODO: show an example of unsafe ledgers in a similar fashion
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/safe-ledgers.pdf}
@@ -145,7 +186,7 @@ one chain.
 
 \begin{itemize}
     \label{sec:liveness}
-    \item \textbf{Liveness}: Honest transactions are included in all honest ledgers "soon".
+    \item \textbf{Liveness}: Honest transactions are included in all honest ledgers ``soon''.
 \end{itemize}
 
 \section{Chain Virtues}
