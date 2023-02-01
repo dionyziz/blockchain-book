@@ -1,0 +1,14 @@
+\begin{algorithm}[H]
+  \caption{\label{alg.read-stable} The stable \emph{read} rule.}
+  \begin{algorithmic}[1]
+    \Function{\textsf{read}$_k$}{$\chain$}
+      \Let{L}{[\,]}
+      \For{$B \in \chain[{:}-k]$}
+        \For{$\tx \in B\mathsf{.}\overline{x}$}
+          \Let{L}{L \conc \tx}
+        \EndFor
+      \EndFor
+      \State\Return{$L$}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}

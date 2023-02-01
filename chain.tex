@@ -73,6 +73,9 @@ is the last (and most recent) block, $\chain[-2]$ is the penultimate block, and 
 The block $\chain[-1]$ is called the \emph{tip}.
 The index of a block within its chain is called the block's \emph{height},
 so genesis has height $0$ and the tip has height $|\chain| - 1$.
+The \emph{depth} of a block within its chain is the distance of a block
+from the tip. For example, the tip has depth $1$, the block preceding the
+tip has depth $2$ and so on.
 It will also be useful to speak about \emph{chunks} of a chain, continuous portions
 of the chain. We'll denote by $\chain[i{:}j]$ the portion of the chain starting at block
 with index $i$ (inclusive) and ending at block with index $j$ (exclusive). For example,
@@ -214,7 +217,7 @@ $\chain = (B_0, B_1, \ldots, B_{n-1})$, the ledger reported by the honest
 party when the \emph{read} functionality is invoked is the sequence of
 transactions in the same order as they appear on the chain.
 Here, we use the notation $B.\overline{x}$ to denote the $\overline{x}$ component
-of block $B = s \conc \overline{x} \conc \ctr$. 
+of block $B = s \conc \overline{x} \conc \ctr$.
 First, the ledger is initialized to be the empty sequence $[\,]$. The algorithm
 then traverses each block $B$ of chain $\chain$ in chronological order (while we
 use the notation $B \in \chain$, remember that $\chain$ is an ordered sequence
@@ -278,7 +281,23 @@ there. This longest chain begins from genesis and goes on until block $16$. Here
 on the sidelines of the longest chain, we see a few blocks popping up such as block $2$
 and block $7$. These smaller branches alongside the longest chain are called \emph{temporary
 forks}\index{Temporary Fork} and can be one or more blocks long, but typically these
-temporary forks will be quite short.
+temporary forks will be quite short. We'll explore the reason for this in the next chapter.
+
+Our chain's lifecycle begins at genesis, with every honest party mining on top of it.
+When there is a single block mined by just one honest party, and that block makes it to
+the doorstep of every other honest party before they've had the opportunity to mine their
+own block, the chain grows for everyone. This is the usual case. In rare occassions, two
+different honest parties will mine two different blocks at approximately the same time.
+Because the one honest party has not received the block of the other honest party while
+he is mining his own, both of these blocks will extend the same parent, so we will have a
+temporary fork. We say that the chains of honest parties have diverged.
+These two forks will now have the same height, and so the honest population
+may be split among which one to adopt. If it so happens that the honest parties again
+mine two different blocks at about the same time across the different forks, these temporary
+forks will grow. However, as soon as there is a block mined on any of the
+two temporary forks, and no other block is mined in close temporal proximity to it,
+there will be one definitive longest chain, and every honest party will adopt it.
+We say that the honest chains have converged again.
 
 We notice that, in the optimistic setting where no adversary is mining, the honest parties
 \emph{converge} on one chain whenever there is an honest successful query separated $\Delta$

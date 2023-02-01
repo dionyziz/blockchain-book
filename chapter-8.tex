@@ -1,5 +1,19 @@
 \chapter{The Selfish Miner \small{\textsf{DRAFT}}}
 
+\section{Attacks of a Minority Adversary}
+A common conjecture is that Chain Quality can be approximated by the fraction of mining power that honest parties (however, future lectures will reveal that this is not the case).
+
+% Common prefix is broken if the adversary releases its chain to only a subset of nodes, thus making prefixes inconsistent until honest parties gossip amongst themselves. Chain quality is broken since a significant portion of the released chain is mined by the adversary.  Virtue \#2 (chain growth) is upheld as long as there are any honest participants mining that force the adversarial chain to grow.
+
+\subsection{Majority Adversary Attack}
+Now if the adversary held the majority of mining power in a network, all she needs to do is to mine a secret chain, which can be released at any time due to having more compute power. What properties can adversary break if she holds majority of the network hash power?
+
+Clearly, she can violate the Common Prefix property as was mentioned earlier. If honest parties agree on the longest chain containing some block $B_m$, she mines a secret chain extending from the previous block $B_{m-1}$. Once the longest chain has $k$ or more blocks after $B_m$, she releases her secret chain to some of the honest miners. Since the adversarial chain is longer than the honest chain, these honest miners adopt the adversarial chain.
+
+Additionally, an adversary with majority hash power can break Chain Quality as follows. If a block $B_m$ is mined by an honest miner, she creates a new longest chain extending the block $B_{m-1}$. Thus, the block $B_m$ is ``replaced" by a new block mined by the adversary. We will discuss this attack in more details in the next lecture.
+
+However, in such attacks Chain Growth is upheld as long as there are any honest participants mining that force the adversarial chain to grow.
+
 \section{Recap of Chain Virtues}
 There are 3 chain virtues that are relevant to our study:
 
