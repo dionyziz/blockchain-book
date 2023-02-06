@@ -163,6 +163,37 @@ We will have to revise our \emph{reading rule} to account for these temporary fo
 \section{Honest Convergence}
 We now argue that, in a correctly parametrized system, temporary forks will generally be short.
 Let us initially analyze this claim in the setting where every miner is honest.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth,keepaspectratio]{figures/mining-factions.pdf}
+    \caption{The timeline of two honest parties $P_1$ and $P_2$ mining in a way that causes
+             the honest population to temporarily split between two factions.}
+    \label{fig.mining-factions}
+\end{figure}
+
+Before we give a proof of this, let us think through an example of chain divergence and convergence.
+It is illustrated in Figure~\ref{fig.mining-factions}.
+Initially, all honest parties are mining on top of genesis $\mathcal{G}$. If it happens that an honest party
+gets a block $B_1$, and broadcasts it to the rest of the network, this block will arrive at the doorstep of every other honest
+party within time $\Delta$. If no other block was mined during that time, now all honest parties will
+switch to $B_1$. Convergence is maintained. This can continue happening, and the chain will
+keep growing, with all parties agreeing on one tip (with potentially a small delay). Now, the divergence
+case can happen when two honest parties mine a block almost simultaneously: First, one honest party
+mines a block $B_2$ on top of block $B_1$ and broadcasts it to the network. But before $\Delta$ time has
+elapsed, a second honest party mines block $B_2'$. The block $B_2'$ will also be on top of block $B_1$,
+as the second party has not received $B_2$ yet. At this point, two different chains, with tips $B_2$
+and $B_2'$ respectively, exist and have the same length. Now the honest mining power is split into
+two factions: Some honest nodes have seen $B_2$ first, whereas other honest nodes have seen $B_2'$
+first, so some honest nodes are trying to extend $B_2$ and some others are trying to extend $B_2'$.
+These factions may hold different, or similar, portions of compute. Now it's possible that an
+honest party mines another block $B_3$ extending $B_2$. The party broadcasts it to the network,
+but, before $\Delta$ time has elapsed, another party, who was mining on top of $B_2'$, also mines
+block $B_3'$ which extends $B_2'$. Again the honest parties are split between two different chains
+of the same length. This situation can continue. At some point, an honest party will mine a block
+$B$ and broadcast it to the network, but no other block will be mined within $\Delta$ time. At
+this point, every honest party will switch to block $B$. This is the convergence opportunity.
+
 The idea is that, if we choose $T$ appropriately, then convergence opportunities will happen regularly.
 Once a convergence opportunity happens, if there is no adversarial miner, the honest parties will converge into
 one chain.

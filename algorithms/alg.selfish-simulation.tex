@@ -1,0 +1,32 @@
+\begin{algorithm}[H]
+  \caption{\label{alg.selfish-simulation}
+  A Monte Carlo simulation to calculate the chain quality achieved by
+  a minor selfish miner.}
+  \begin{algorithmic}[1]
+    \Function{\textsf{simulate-selfish}}{$n, t, c, m$}
+      \Let{\textsf{pr}}{\frac{t}{n}}\Comment{Probability of the next successful query being adversarial}
+      \Let{\sigma}{0}
+      \For{$i = 1 \text{ to } m$}\Comment{Monte Carlo iteration}
+        \Let{\textsf{advantage}}{0}\Comment{Length of current secret adversarial fork}
+        \Let{\textsf{honest}}{1}\Comment{Honestly generated honestly adopted block count}
+        \Let{\textsf{adversary}}{0}\Comment{Adversarially generated honestly adopted block count}
+        \For{$j = 1 \text{ to } c$}\Comment{Make a $c$-long chain}
+          \State{$r \getsrandomly [0, 1)$}\Comment{Roughly simulate mining stochastic process}
+          \If{$r < \textsf{pr}$}\Comment{Adversary gets block}
+            \Let{\textsf{advantage}}{\textsf{advantage} + 1}
+          \Else\Comment{Honest parties get block}
+            \If{$\textsf{advantage} > 0$}
+              \Let{\textsf{advantage}}{\textsf{advantage} - 1}\Comment{Reveal previously secret block}
+              \Let{\textsf{adversary}}{\textsf{adversary} + 1}\Comment{Rushing adversary succeeds}
+            \Else\Comment{Advantage remains $0$}
+              \Let{\textsf{honest}}{\textsf{honest} + 1}\Comment{Unsuppressible block}
+            \EndIf
+          \EndIf
+        \EndFor
+        \Let{\mu}{\frac{\textsf{honest}}{\textsf{honest} + \textsf{adversarial}}}\Comment{Quality of the particular honestly adopted chain}
+        \Let{\sigma}{\sigma + \mu}
+      \EndFor
+      \State\Return{$\frac{\sigma}{m}$}\Comment{Average quality}
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
