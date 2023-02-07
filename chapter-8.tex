@@ -169,7 +169,7 @@ $14$. Lastly, the honest parties get $16$ and everybody adopts it.
 
 We wish to discover how low the chain quality $\mu$ gets for various values of
 $\frac{t}{n}$. This attack seems harder to analyze analytically, so we will use a simulation
-method to analyze its efficiency. In the simulation, we will code a simplified model of the attack
+method to analyze its effectiveness. In the simulation, we will code a simplified model of the attack
 in which the honest parties only get convergence opportunities, and there are no successful queries
 that are not convergence opportunities. This gives an advantage
 to the honest parties, so, if our adversary is successful against these honest
@@ -179,252 +179,348 @@ because we consider temporary forks due to network desynchronization immaterial 
 question, and we want to get an approximate feeling for how the chain quality behaves.
 
 The pseudocode for the simulation is illustrated in Algorithm~\ref{alg.selfish-simulation}.
+This simulation uses the Monte Carlo\index{Monte Carlo} method: An experiment is repeated many times
+(Line~\ref{alg.selfish-simulation.monte-carlo}),
+and a quantity of interest (here, the chain quality $\mu$) is measured during each experiment
+(Line~\ref{alg.selfish-simulation.mu}). An average
+is then taken across all experiment executions
+(Line~\ref{alg.selfish-simulation.avg}). The hope is that, even though each experiment may
+yield an unusual value, the average value will be indicative of the attack's nature.
+
+Each experiment proceeds as follows.
+Initially, all honest parties have
+only the genesis block, so all honestly adopted chains have just one honest
+block (Line~\ref{alg.selfish-simulation.genesis}). Each experiment allows the chain
+adopted by the honest parties to grow until it reaches a predetermined length $c$
+(Line~\ref{alg.selfish-simulation.chain}). While blocks are produced in the experiment,
+the simulation keeps track of how many blocks adopted by the honest parties have
+been honestly generated (\textsf{honest}), as well as how many blocks adopted by the honest parties
+have been adversarially generated (\textsf{adversary}). The simulation also keeps track
+of the number of blocks the adversary has generated but is still keeping secret (\textsf{advantage}).
+At every iteration, we allow one block to be mined, and we give the block to
+the adversary with probability $\frac{t}{n}$, or to the honest parties with
+probability $\frac{n - t}{n}$. This is done by selecting a uniformly random
+number in the interval $[0, 1)$ and then comparing it with $\frac{t}{n}$ (Line~\ref{alg.selfish-simulation.random}).
+For simplicity, as discussed before, we assume
+all honestly generated blocks are instantly communicated to the rest of the honest
+parties, so no divergence occurs between honest parties. Nevertheless, the rushing adversary
+has the option to rush whenever an honest block has been produced, and the adversary has
+an advantage.
+
+If the honest parties get a block, then the adversarial advantage is checked.
+If the adversary has no advantage, this means that the number of honestly generated
+blocks in the honestly generated chain increases by one (Line~\ref{alg.selfish-simulation.honest}),
+and the adversary starts
+mining on top of the new honestly generated block. The adversarial advantage remains $0$.
+If the adversary has a positive advantage, then the adversary broadcasts one of the previously
+secret blocks, and so displaces the honestly generated block, which is discarded by
+all honest parties. In this simple simulation, we ignore the fact that the honest party
+who mined this block will keep mining on it. This is an accurate simplification if the
+mining parties are many, with a small amount of mining power each. This causes the
+adversarially generated block to become honestly adopted, and the adversarial advantage
+to decrease by one (Line~\ref{alg.selfish-simulation.adv}). Lastly, if the adversary
+happens to get a new block, then this block is kept secret for the moment, and the
+adversarial advantage increases by one (Line~\ref{alg.selfish-simulation.withhold}).
+
+The Monte Carlo method is a very useful method to get an initial feel of whether
+an attack can be successful and to analyze probabilities and other values of interest.
+While it is not an analytical method, it can often function as a first indicator
+of whether an attack makes sense, and whether further theoretical analysis is warranted.
+It can also be used as a mechanism to double-check our theoretical results.
 
 \import{./}{algorithms/alg.selfish-simulation}
 
-% TODO...
+Plugging some numbers into this simulation, we observe that, for large values of $c$
+and $m$, the average chain quality converges to $\frac{1}{2}$ for $\frac{t}{n} = \frac{1}{3}$,
+and to $0$ as $\frac{t}{n} \rightarrow \frac{1}{2}$. You are asked to verify these
+results in Problem~\ref{problem:selfish-simulation}.
 
-\section{Attacks of a Majority Adversary}\index{Major Adversary}
-\section{Healing}
+We used a simulation to calculate these numbers to get a feel for them, but we can also
+support these numbers theoretically and to develop a closed-form formula for the achieved
+chain quality. To see how this attack performs, note that \emph{every} adversarially
+mined block is accepted in the honestly adopted chain. For every adversarially generated
+block that is accepted on the honest chain, there is one honestly generated block that
+was displaced from the honestly adopted chain. Those are exactly the honestly generated
+blocks that are wasted. The rest of the honestly generated blocks make it to the honestly
+adopted chain.
 
-\chapter{The Selfish Miner \small{\textsf{DRAFT}}}
+Let $L$ be the total number of blocks produced, of which $L_\mathcal{A}$ are
+adversarial and $L_h$ are honest. The ratio $\frac{L_\mathcal{A}}{L}$ will
+approach $\frac{t}{n}$, the ratio $\frac{L_h}{L}$ will approach
+$\frac{n - t}{n}$, and the ratio $\frac{L_\mathcal{A}}{L_h}$
+will approach $\frac{t}{n - t}$ after long executions.
+Let $|\chain|$ denote the length of the
+ultimate honestly adopted chain, $|\chain_\mathcal{A}|$ be the number of
+adversarial blocks in it, and $|\chain_h|$ be the number of honest blocks
+in it. We have that $|\chain_\mathcal{A}| = L_\mathcal{A}$ since all
+honestly generated blocks are eventually adopted, but
+$|\chain_h| = L_h - L_\mathcal{A}$, since every adversarially generated
+block displaces an honest block. Lastly,
+$|\chain| = |\chain_\mathcal{A}| + |\chain_h| = L_h$.
+The overall chain quality will be
+$\mu = \frac{|\chain_h|}{|\chain|} = \frac{L_h - L_\mathcal{A}}{L_h} = 1 - \frac{t}{n - t} = \frac{n - 2t}{n - t}$.
+This verifes our simulation results.
 
-\section{Attacks of a Minority Adversary}
-A common conjecture is that Chain Quality can be approximated by the fraction of mining power that honest parties (however, future lectures will reveal that this is not the case).
+The conclusion is that a minor adversary with close to $50\%$ mining power can bring
+chain quality very close to $0$. Regardless, if the adversary has mining power strictly
+less than $50\%$, the chain quality will be non-zero.
+Incidentally, the fact that in the above calculations
+$|\chain| = L_h$ also shows that the selfish mining attack is minimizing \emph{both}
+chain quality \emph{and} chain growth at the same time, since the adversarially mined
+blocks do not contribute to the honestly adopted chain growing more than it would
+grow even if no adversarial blocks were to be mined.
 
-% Common prefix is broken if the adversary releases its chain to only a subset of nodes, thus making prefixes inconsistent until honest parties gossip amongst themselves. Chain quality is broken since a significant portion of the released chain is mined by the adversary.  Virtue \#2 (chain growth) is upheld as long as there are any honest participants mining that force the adversarial chain to grow.
+A minor adversary cannot break Common Prefix for large $k$, can reduce but not eliminate the chain velocity
+$\tau$, and can reduce Chain Quality to $\mu$ close to, but not equal to $0$, the minor adversary cannot
+break the ledger virtues. Safety survives because of Common Prefix. Liveness survives because the chain grows
+and the chain quality is non-zero. Remember that, to ensure liveness, it is required that just a single honest
+block survives once in a while. While the time it takes for transactions to confirm will be harmed, all honest
+transactions will eventually make it to the ledger of all honest parties, and these ledgers will remain
+consistent.
 
-\subsection{Majority Adversary Attack}
-Now if the adversary held the majority of mining power in a network, all she needs to do is to mine a secret chain, which can be released at any time due to having more compute power. What properties can adversary break if she holds majority of the network hash power?
+\section{Attacks of a Major Adversary}\index{Major Adversary}
+We have explored the attacks of a minor adversary, and showed that ledger virtues survive them in a
+well-configured blockchain network. Let us now turn our attention to a \emph{major adversary}, an
+adversary with $t > n - t$. Such attacks are also known as $51\%$ attacks (or $> 50\%$ attacks).
 
-Clearly, she can violate the Common Prefix property as was mentioned earlier. If honest parties agree on the longest chain containing some block $B_m$, she mines a secret chain extending from the previous block $B_{m-1}$. Once the longest chain has $k$ or more blocks after $B_m$, she releases her secret chain to some of the honest miners. Since the adversarial chain is longer than the honest chain, these honest miners adopt the adversarial chain.
+\subsection*{Common Prefix}
+A major adversary can easily break Common Prefix by performing the Nakamoto Race, as discussed
+in the previous chapter. In fact, the larger the duration of the race, the more blocks the adversary
+gets. Increasing the Common Prefix $k$ parameter in our confirmation rule does not help!
+Concretely,
+if the honest parties have converged to a tip $B$, the adversary can start mining on top of
+$B[{:}{-1}]$. Once she has mined $k + 2$ blocks and holds a chain $\chain_\mathcal{A}$,
+she waits for the honest parties to also mine their own $k$ blocks on top of $B$
+forming the chain $\chain$.
+She then releases her chain and, since it is longer, the honest parties switch to it.
+The Common Prefix property is violated because, prior to the switch, the honest parties
+were holding a chain whose stable chunk $\chain[{:}{-k}]$ was not a prefix of the
+adversarially produced unstable chain $\chain_\mathcal{A}$. In particular,
+$\chain[{:}{-k}][-1]$ does not appear in $\chain_\mathcal{A}$. Refer back to
+Figure~\ref{fig.nakamoto-race}
+for a visualization.
 
-Additionally, an adversary with majority hash power can break Chain Quality as follows. If a block $B_m$ is mined by an honest miner, she creates a new longest chain extending the block $B_{m-1}$. Thus, the block $B_m$ is ``replaced" by a new block mined by the adversary. We will discuss this attack in more details in the next lecture.
+\subsection*{Chain Quality}
+A major adversary can easily break Chain Quality and achieve exactly $\mu = 0$ by, again,
+performing the Nakamoto Race. In fact, the adversary can simply just ignore all honest blocks,
+and mine on her own from the genesis block. No matter what the honest parties do, she will eventually
+surpass them and build a longer chain. The honest parties will adopt the adversarially generated
+chain. Since the adversarially generated chain only consists of adversarially generated blocks
+(with the exception of the genesis block), the chain quality of the chain chunk $\chain[1{:}]$
+will be $0$.
 
-However, in such attacks Chain Growth is upheld as long as there are any honest participants mining that force the adversarial chain to grow.
+\subsection*{Chain Growth}
+For the same reasons that a minor adversary fails to completely eliminate Chain Growth, the
+major adversary also fails to eliminate Chain Growth. The best attack the adversary can perform
+is to remain idle. Then velocity $\tau$ then drops to roughly a proportion $\frac{n - t}{n}$ of the rate
+it would have if the adversary were honest. Nevertheless, if $n - t > 0$, the chain continues
+to grow. The fact that the adversary cannot significanty harm Chain Growth is a consequence of
+the longest chain rule of our protocol.
 
-\section{Recap of Chain Virtues}
-There are 3 chain virtues that are relevant to our study:
+\subsection*{Safety}
+Since the major adversary can break Common Prefix, she can also break ledger safety. The double
+spending attack using the Nakamoto Race is one example. A transaction that is rolled back from
+an honest party's ledger and then replaced by a different transaction in the same position
+is a safety violation.
 
-\begin{enumerate}
-    \item Common prefix with parameter $k$
-    \item Chain quality with parameter $\mu$
-    \item Chain growth with parameter $\tau$
-\end{enumerate}
+As we discussed when we first introduced the double spending attack in Chapter~\ref{chapter:transaction},
+the double spending is problematic because it has real-world ramifications. When the adversary double
+spends, she receives some real-world goods, such as a car. When a conflicting transaction appears on
+the ledger of the seller and the original transaction is reverted, the adversary has long since
+departed with her brand new car. However, note that, while the adversary can break safety, the
+ledgers adopted by the honest parties are always \emph{locally consistent}. There is never the
+case of an honest party adopting a ledger that contains two conflicting transactions. The only
+thing that happens is that an honest party switches from one, locally consistent, ledger to another,
+also locally consistent, ledger.
 
+It is worth noting that a major adversary cannot steal an honest party's money from the system.
+Spending an honest party's money would require creating a signature that validates with the honest
+party's public key. That would require stealing the honest party's secret key, or breaking
+the existential unforgeability property of signature schemes. Therefore, even a major adversary
+cannot take our money.
 
-Common prefix has implications for the safety of transactions on chain. Meanwhile chain quality and chain growth affect the liveness of transactions (which refers to how much time it takes for a transaction to be confirmed after it is sent to the network).
-% These are also interrelated. Chain quality implies liveness because a  transaction will be validated faster if there are more honest nodes.
+A major adversary also cannot create more money than what is allowed by the macroeconomic policy,
+because blocks that violate the macroeconomic policy are not accepted by the honest nodes.
+Recall that when a block is validated, the coinbase transaction is checked, and part of that
+check includes validating the macroeconomic policy. Even though the honest nodes are a minority,
+they do not accept an invalid chain which violates these basic rules.
 
-\subsection{Common Prefix}
+\subsection*{Liveness}
+While the major adversary cannot break Chain Growth, she can break Chain Quality and therefore
+she can cause a liveness violation. This can be used to mount censorship attacks. As soon as
+the censoring adversary sees an honest transaction she dislikes, she starts mining on top of
+the currently adopted block, excluding the transaction in question from her block. She
+keeps mining on top of that block, eventually creating a longer chain than the honest parties
+because she holds the majority of compute. She must continue to mine, because she cannot allow
+any honest block to ever make it into the chain, as honest parties are still including the
+transaction in question in their mempool. Contrary to a Nakamoto Race, she does not need to keep
+her fork secret, and she can allow it to be extended by the honest parties at any time.
 
-Two or more chains have a common prefix of $k$ if and only if the chains agree on all blocks except the last $k$ blocks at the end of the chains.
-Chains adopted by different honest nodes satisfy the common prefix property.
-The probability of violation of this property decreases exponentially as $k$ increases. The greater $k$ is, the more ``forgiving" the common prefix property is, and the longer one waits to confirm a transaction.
-Common prefix property implies safety of the ledger.
+Such a situation is depicted in Figure~\ref{fig.censorship-attack}. The white circle represents
+a transation that the adversary wishes to censor. Whereas the honest parties are continuously
+attempting to include it into their blocks, the adversary keeps displacing their blocks by
+mining on top of the parent block. The honest blocks with the transaction in question never
+makes it into the ultimate honestly adopted longest chain.
 
-\subsection{Chain Quality}
-The chain adopted by any honest node contains at least $\mu$ fraction of blocks mined by honest nodes.
-% (ignoring temporary forks for counting purposes). These temporary forks are not necessarily problems because they will occur even in fully honest chains.
-
-The number of blocks mined by honest nodes in a chain is important because adoption of a chain by an honest node means it is valid (there are no double spends), but there could be a censorship attack (there are no honestly mined blocks in the chain).
-This property is required for liveness as adversarially mined blocks may not contain any transactions.
-
-\subsection{Chain Growth}
-The chain adopted by an honest node grows at a rate of $\tau$ blocks per unit time. This has ramifications for how fast transactions are included in the blockchain, and hence the liveness too.
-\section{Censorship Attack}
-Many chain attacks fall under the umbrella of a Nakamoto race, where honest parties and the adversary race to extend the length of their respective chains. Here, we will see another kind of attack. We started with the Honest Majority Assumption (henceforth HMA) which means that honest parties have more compute power than the adversary. We will look at a censorship attack that can be carried out by the adversary when she has majority compute power.
-
-In a censorship attack, the adversary tries to prevent a certain transaction from being confirmed. The basic idea is that when she sees a transaction $\mathsf{tx}$ in a certain block, she mines at the previous block to prevent that transaction being included in the chain.
-Since the adversary has majority, she can always win the Nakamoto race and therefore replace every honest block from the longest chain.
-Therefore, the transaction never enters the longest chain.
-This attack breaks chain quality.
-The mechanism is illustrated below.
-
-
- \begin{figure}[h!]
-
-\includegraphics[scale=0.5]{figures/censorship.png}
- \caption{Depiction of a censorship attack. Grey blocks are mined by honest miners. Red blocks are valid blocks mined by the adversary. The black dot represents the transaction $\mathsf{tx}$ that the adversary is trying to censor. }
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth,keepaspectratio]{figures/censorship-attack.pdf}
+  \caption{A major adversary mounts a censorship attack.}
+  \label{fig.censorship-attack}
 \end{figure}
 
-\section{Attacks Under Dishonest Majority}
-When honest majority holds, we have seen that the blockchain satisfies common prefix, chain quality and chain growth.
-If the adversary has majority of the computing power for some time, she can break common prefix (recall the Nakamoto race attack from the previous lecture). The adversary can also break chain quality (see the censorship attack above).
-However, chain growth is not broken, although it may be slowed down (i.e. the parameter $\tau$ may be reduced), because honest nodes continue to produce blocks on their longest chain.
+\section{Healing}\index{Healing}
 
-A majority adversary can revert a transaction (by breaking common prefix). The adversary can also censor transactions (by breaking chain quality).
-As a consequence, the adversary can break safety or liveness of the ledger.
-However, the adversary cannot spend coins owned by an honest party because she cannot generate valid transactions for such a signature.
-The adversary also cannot create more money than what is allowed by the macroeconomic policy, because such blocks would not be accepted by the honest nodes.
+Even though a major adversary can break Common Prefix, Chain Quality, Safety, and Liveness,
+it is worth considering whether a these properties \emph{heal} when the adversarial power
+goes back to a low value. The idea is that we may have a \emph{temporary dishonest majority},
+which overtakes the network for a short duration of time, but the adversary soon goes back
+to controlling the minority of compute. While we will not prove the exact formulae which
+determine the healing parameters of the chain in this book, we want to give intuitive
+arguments about why a proof-of-work chain heals very naturally.
 
-\section{Healing From Attacks}
-Assume there is a temporary adversarial majority of compute power (TAM). Then the HMA is not respected during some time period $\delta$, and then it is respected again.
-During the period of TAM, safety and liveness may not hold. The adversary can double spend and can carry out censorship attacks, violating properties like common prefix and chain quality.
+The temporary dishonest majority situation is depicted in Figure~\ref{fig.temporary-dishonest}.
+The system begins with a minor adversary whose compute increases until it exceeds
+$50\%$. The dishonest majority compute remains for a period of time, until the adversary's
+compute drops back to below $50\%$.
 
-After the period of TAM, when HMA is respected again, liveness heals because chain quality is recovered. Chain quality recovers because when HMA is respected, the honest parties will win the Nakamoto race and there will eventually be an honest block that includes previously censored transactions. Also, safety will heal as common prefix heals. Common Prefix recovers because of the reemergence of the HMA, and the presence of convergence opportunities means that the honest nodes will once again converge on their longest chains.
-
-The recovery of HMA presents convergence opportunities. If convergence occurs, then any conflicting transactions which would render a block invalid (i.e. a double spend) are not included in the
-honestly adopted chain
-or in the mempool,
-rather they are dropped.
-% Chain quality heals after convergence occurrs, and honest chains are able to latch onto the same chain. Then common prefix heals when honest mining power is once more concentrated.
-
-Since safety and liveness are not guaranteed during TAM, and it takes some time to recover safety and liveness after HMA is recovered, a user should not be using the blockchain during the TAM and a while after (if they are aware of the TAM). This is because safety and liveness cannot be recovered for coins affected during the TAM.
-For example, if a car dealer delivered a car in exchange for a transaction on the blockchain during TAM, and the adversary reverted that transaction after receiving the car, that money cannot be recovered by the car dealer.
-
-
-\section{Selfish Mining}
-We now ask the question: Is there a lower bound on the chain quality $\mu$, and if there is, what is it? It is intuitive to guess that the lower bound is roughly the percentage of hashing power that is honest. In other words, our conjecture is that:
-\begin{equation}
-\label{eq:cq_conjecture}
-    \mu \geq \frac{n-t}{n}
-\end{equation}
-We will see now that this is false. \\
-Consider the selfish miner $\mathcal{A}$, who does the following:
-\begin{enumerate}
-    \item Adopt the longest chain
-    \item Mine in secret extending the last block of the longest chain
-    \item When an honest block is found:
-    \begin{enumerate}
-        \item If $\mathcal{A}$ has a secret block, broadcast it.
-        \item Otherwise, adopt the honest tip.
-    \end{enumerate}
-    Then repeat from Step 2.
-\end{enumerate}
-
-
-Here, the adversary $\mathcal{A}$ is also a “rushing adversary”, which is one who sees honestly broadcasted messages prior to everybody else. As such, since $\mathcal{A}$ can broadcast her own block before the honest block gets to the rest of the honest miners, the honest miners will adopt $\mathcal{A}$'s block and start building the next block off of that. The honest block that $\mathcal{A}$ had originally seen is now wasted effort. If this continues, the block tree may look something like this:
-
-\begin{figure}[h!]
-\[\includegraphics[scale=0.4]{figures/longestchain.png}\]
-\caption{In this example, suppose that $n=17$, $t=5$ and $\frac{n-t}{n} \approx 0.71$. There are $5$ adversarial blocks and $12$ honest blocks mined which are proportional to the compute powers. In the longest chain here (highlighted in blue), there are $5$ adversarial blocks and $11$ total blocks, so we can see that $\mu \approx 0.55$. Thus, we can see that our earlier conjecture (\eqref{cq_conjecture}) is false.}
+% TODO: redo this graph
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth,keepaspectratio]{figures/temporary-dishonest.pdf}
+  \caption{The temporary dishonest majority.}
+  \label{fig.temporary-dishonest}
 \end{figure}
 
-Due to the wasted efforts of the honest blocks, we can start to see that $\mu$ is not necessarily equal to the fraction of honest mining power. None of the adversarial blocks are wasted in this example, but many of the honest ones are. The goal of the selfish mining attack is for every single adversarial block to be contained in the longest chain.
+\subsection*{Common Prefix}
+We already know that the major adversary can break Common Prefix, no matter what parameter
+$k$ we choose. However, if she only has \emph{temporary} dishonest majority, she cannot
+revive very old temporary forks, because it would take a long time to have them catch up
+with the current times, so she must mine on a recent temporary fork. She will likely be
+able to create a temporary fork longer than $k$ blocks long, but not \emph{arbitrarily}
+longer, because she has limited time. The length of temporary forks will still be bounded.
+When the adversary's mining power drops below the majority, she has limited time until
+she can reveal any secret temporary forks she has mined, because the honest parties will
+soon create a longer chain and the, now minor, adversary will not be able to catch up.
+Hence, such withheld temporary forks will soon be useless. As such, Common Prefix can only
+be broken during the time of dishonest majority, and perhaps a little earlier and a little
+later. However, if we wait enough time after the adversary has gone back to being minor,
+we will still have some Common Prefix assurance.
 
-Below is the simulation in typescript for selfish mining. If you run it yourself, you'll see that chain quality is on average less than 0.1, even though adversarial power is 0.49.
-\begin{tcolorbox}[colback=gray!30]
-{\small\begin{alltt}
-\begin{verbatim}
-const ADVERSARIAL_POWER = 0.49
-const BLOCK_LIMIT = 500
-const MONTE_CARLO = 10
+More concretely, there will be certain \emph{dangerous times} which extend some duration
+before and some duration after the temporary dishonest majority duration, during which
+we cannot give Common Prefix assurances. Nevertheless, the chains of honest parties
+adopted \emph{before} these dangerous times, and the chains of honest parties adopted
+\emph{after} these dangerous times will be consistent. In fact, chains adopted \emph{before}
+the dangerous times will also be consistent with chains adopted \emph{after} the dangerous
+times. Common Prefix heals.
 
-function simulate() {
-  let honestBlocks = 1
-  let adversaryHeadStart = 0
-  let chainLength = 1
+\subsection*{Chain Quality}
+We can apply a similar argument to show that Chain Quality heals. The adversary cannot
+go back and rewrite very old chunks of the honestly adopted chain. Additionally, soon after
+the adversary goes back to being minor, honest blocks will keep making it into the honestly
+adopted chain. The problematic chunks concern only those produced during the dangerous
+times, which extend from a duration before to a duration after the dishonest majority
+interval. Chain Quality heals.
 
-  while (chainLength < BLOCK_LIMIT) {
-    if (Math.random() < ADVERSARIAL_POWER) {
-      // adversary got a block
-      ++adversaryHeadStart
-    }
-    else {
-      // honest got a block
-      if (adversaryHeadStart > 0) {
-        --adversaryHeadStart
-      }
-      else {
-        ++honestBlocks
-      }
-      ++chainLength
-    }
-  }
-  return honestBlocks / BLOCK_LIMIT
-}
+\subsection*{Safety}
+It is not safe to use the system when an adversary has the upper hand. Additionally, it is
+hard to tell \emph{when} an adversary has the upper hand and when one should not use the system.
+However, if a particular user happens not to use the system during and around times of
+dishonest majority, the user will be safe. In particular, one is not susceptible to
+transaction rollbacks or double spending if one waits sufficiently long after the system
+has recovered. To be more precise, ledgers reported by honest parties at times \emph{before}
+the dangerous times and \emph{after} the dangerous times will be consistent with one another.
+Safety heals, because Common Prefix heals.
 
-let sumQuality = 0
-
-for (let i = 0; i < MONTE_CARLO; ++i) {
-  sumQuality += simulate()
-}
-console.log(sumQuality / MONTE_CARLO)
-\end{verbatim}
-\end{alltt}}
-\end{tcolorbox}
-
-In conclusion, an adversary does not need much mining power in order to incur heavy damage on chain quality.
-
-\section{What Value of $T$ to Choose?}
-Last class, we discussed how neither a high $T$ nor a low $T$ necessarily allows for the optimal convergence opportunity frequency. With a high $T$, blocks are produces more frequently, but they're so frequent that convergence opportunities are extremely rare. With an extremely low $T$, nearly every block is a convergence opportunity, but the blocks are so infrequent that the absolute frequency of convergence opportunities is low. So, what is the optimal $T$, you wonder? Below is the code for simulating convergence opportunity frequency with varying $T$, followed by the accompanying generated plot.
-\begin{tcolorbox}[colback=gray!30]
-{\small\begin{alltt}
-\begin{verbatim}
-import random
-import matplotlib.pyplot as plt
-import numpy as np
-
-MONTE_CARLO_REPEAT = 30
-TIME_INTERVAL = 100
-
-def simulate(eta, Delta):
-  convergence_opportunities = 0
-  t = 0
-  prev_interarrival_time = 2 * Delta
-  while t < TIME_INTERVAL:
-    interarrival_time = random.expovariate(1/eta)
-    if interarrival_time > Delta:
-      convergence_opportunities += 1
-    t += interarrival_time
-    prev_interarrival_time = interarrival_time
-  return convergence_opportunities
-
-def monte_carlo(eta, Delta):
-  convergence_sum = 0
-  for i in range(MONTE_CARLO_REPEAT):
-    convergence_sum += simulate(eta, Delta)
-  return convergence_sum / MONTE_CARLO_REPEAT
-
-Delta = 1
-x = []
-y = []
-kappa = 256
-min_T_exp = 229
-max_T_exp = 239
-n = 10
-q = 3000000
-min_eta = 0.01
-max_eta = 3.0
-eta_step = 0.01
-# eta is the expected block interarrival time
-for i, eta in enumerate(np.arange(min_eta, max_eta, eta_step)):
-  T = 1 / (n * q * eta)
-  x.append(T)
-  y.append(monte_carlo(eta, Delta))
-
-plt.xscale('log')
-plt.xlim((2**(min_T_exp - kappa), 2**(max_T_exp - kappa)))
-plt.xticks(
-  [2**x for x in range(min_T_exp - kappa, max_T_exp + 1 - kappa)],
-  ['$2^{' + str(x) + '}$' for x in range(min_T_exp, max_T_exp + 1)]
-)
-plt.plot(x, y)
-plt.xlabel('Mining target $T$')
-plt.ylabel(f'Convergence opportunity frequency in ${TIME_INTERVAL}$ rounds')
-
-plt.title(f'Convergence opportunities when varying the mining target $T$.
-\n$\Delta = {Delta}, n = {n}, q = 3 \cdot 10^9, \kappa = {kappa}$')
-plt.show()
-
-\end{verbatim}
-\end{alltt}}
-\end{tcolorbox}
-
-\begin{figure}[h!]
-\[\includegraphics[scale=0.35]{figures/targetT.png}\]
-
-\label{fig:convergence_opp_frequency}
-\caption{Plot of convergence opportunity frequency versus target $T$}
-\end{figure}
+\subsection*{Liveness}
+The adversary can censor transactions for the duration of time she controls dishonest majority.
+However, soon after, Chain Quality recovers, and honest blocks make it into the chain. This means
+that censorship attacks will eventually be recovered from, soon after the adversary loses the upper
+hand. At that point, any transactions that were previously censored will be included in the honestly
+generated blocks. Additionally, any newly produced transactions will make it into the new honestly
+generated blocks as well. Liveness heals, because Chain Quality heals.
 
 \section*{Problems}
 
 \begin{problems}
   \item Implement Algorithm~\ref{alg.selfish-simulation} in your favourite programming language,
         and run it for values $t, n, c, m$ of your choice. Can you reproduce the results described
-        in the text?
+        in the text?\label{problem:selfish-simulation}
+  \item Use the Monte Carlo method to implement a simulation to calculate the density of
+        convergence opportunities in time for various values of $n, t, T, \Delta$. Plot your
+        result. Does your graph resemble Figure~\ref{fig.p-vs-convergence-opportunities}?
+
+% \section{What Value of $T$ to Choose?}
+% \begin{tcolorbox}[colback=gray!30]
+% {\small\begin{alltt}
+% \begin{verbatim}
+% import random
+% import matplotlib.pyplot as plt
+% import numpy as np
+
+% MONTE_CARLO_REPEAT = 30
+% TIME_INTERVAL = 100
+
+% def simulate(eta, Delta):
+  % convergence_opportunities = 0
+  % t = 0
+  % prev_interarrival_time = 2 * Delta
+  % while t < TIME_INTERVAL:
+    % interarrival_time = random.expovariate(1/eta)
+    % if interarrival_time > Delta:
+      % convergence_opportunities += 1
+    % t += interarrival_time
+    % prev_interarrival_time = interarrival_time
+  % return convergence_opportunities
+
+% def monte_carlo(eta, Delta):
+  % convergence_sum = 0
+  % for i in range(MONTE_CARLO_REPEAT):
+    % convergence_sum += simulate(eta, Delta)
+  % return convergence_sum / MONTE_CARLO_REPEAT
+
+% Delta = 1
+% x = []
+% y = []
+% kappa = 256
+% min_T_exp = 229
+% max_T_exp = 239
+% n = 10
+% q = 3000000
+% min_eta = 0.01
+% max_eta = 3.0
+% eta_step = 0.01
+% # eta is the expected block interarrival time
+% for i, eta in enumerate(np.arange(min_eta, max_eta, eta_step)):
+  % T = 1 / (n * q * eta)
+  % x.append(T)
+  % y.append(monte_carlo(eta, Delta))
+
+% plt.xscale('log')
+% plt.xlim((2**(min_T_exp - kappa), 2**(max_T_exp - kappa)))
+% plt.xticks(
+  % [2**x for x in range(min_T_exp - kappa, max_T_exp + 1 - kappa)],
+  % ['$2^{' + str(x) + '}$' for x in range(min_T_exp, max_T_exp + 1)]
+% )
+% plt.plot(x, y)
+% plt.xlabel('Mining target $T$')
+% plt.ylabel(f'Convergence opportunity frequency in ${TIME_INTERVAL}$ rounds')
+
+% plt.title(f'Convergence opportunities when varying the mining target $T$.
+% \n$\Delta = {Delta}, n = {n}, q = 3 \cdot 10^9, \kappa = {kappa}$')
+% plt.show()
+
+% \end{verbatim}
+% \end{alltt}}
+% \end{tcolorbox}
+
+% \begin{figure}[h!]
+% \[\includegraphics[scale=0.35]{figures/targetT.png}\]
+%
+% \label{fig:convergence_opp_frequency}
+% \caption{Plot of convergence opportunity frequency versus target $T$}
+% \end{figure}
 \end{problems}
 
 \section*{Further Reading}
