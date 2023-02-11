@@ -67,7 +67,16 @@ hard-coded collisions in her source code, but, if our hash function is secure, t
 work\footnote{If you come from the field of cryptography,
 note that here we're bypassing the gory details of \emph{keyed} hash functions
 by requiring the adversary be uniform.}
-for sufficiently large values of $\kappa$.
+for sufficiently large values of $\kappa$. The security definition follows from this game:
+
+\begin{definition}[Collision Resistance]
+  A hash function $H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$ is \emph{collision resistant}
+  if for all PPT adversaries $\mathcal{A}$
+
+  \[
+    \Pr[\textsf{collision-game}_{H,\mathcal{A}}(\kappa) = 1] \leq \negl(\kappa)
+  \]
+\end{definition}
 
 \subsection*{Gossiping with Hashes}
 
@@ -143,7 +152,16 @@ and so any probabilities are also taken with respect to this randomness.
 The adversary is given $H(x)$ and would like to find $x$.
 As there are other inputs that produce the same $H(x)$,
 we ask her to produce some $x'$ (equal or different from $x$) that has the same hash value
-as $x$.
+as $x$. Preimage resistance is then defined as follows:
+
+\begin{definition}[Preimage Resistance]
+  A hash function $H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$ is \emph{preimage resistant}
+  if for all PPT adversaries $\mathcal{A}$
+
+  \[
+    \Pr[\textsf{preimage-game}_{H,\mathcal{A}}(\kappa) = 1] \leq \negl(\kappa)
+  \]
+\end{definition}
 
 \import{./}{algorithms/alg.2preimage-game}
 
@@ -155,6 +173,16 @@ game.\index{2nd Preimage Resistance}
 In this game, the adversary is given a randomly sampled $(2\kappa+1)$-bit string input $x_1$ by the challenger.
 The adversary is successful if she can come up with an $x_2 \neq x_1$ that hashes to the same value as $x_1$,
 as illustrated in Algorithm~\ref{alg.2preimage-game}.
+Second preimage resistance is then defined as follows:
+
+\begin{definition}[Second Preimage Resistance]
+  A hash function $H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$ is \emph{second preimage resistant}
+  if for all PPT adversaries $\mathcal{A}$
+
+  \[
+    \Pr[\textsf{2nd-preimage-game}_{H,\mathcal{A}}(\kappa) = 1] \leq \negl(\kappa)
+  \]
+\end{definition}
 
 It seems that all three properties, collision resistance, preimage resistance, and second preimage
 resistance, are desirable. Let us examine whether some of these properties are stronger than the other.
@@ -168,11 +196,11 @@ that $x_1 \neq x_2$. We now show that preimage resistance implies collision resi
   If a hash function $H$ is collision resistant, then it is 2nd preimage resistant.
 \end{theorem}
 \begin{proof}
-  Suppose, towards a contradiction, that $H$ is collision resistant but not 2nd preimage resistant.
-  Then, there exists an adversary $\mathcal{A}$ that can win the 2nd preimage game with non-negligible probability $Pr_\mathcal{A}$. We will construct an adversary $\mathcal{A}'$ against the
+  Suppose, towards a contradiction, that $H$ is not 2nd preimage resistant.
+  Then, there exists an adversary $\mathcal{A}$ that can win the 2nd preimage game with non-negligible probability. We will construct an adversary $\mathcal{A}'$ against the
   collision challenger which uses $\mathcal{A}$ as a black box.
 
-  The adversary $\mathcal{A}'$ works as illustrated in Algorithm~\ref{alg.collision-2preimage} and Figure~\ref{fig:2pre-collision}. She first chooses an $x_1$ uniformly at random from the message space. She then hands this $x_1$ to $\mathcal{A}$, who, hopefully, produces an $x_2$ such that $x_1 \neq x_2$ and $H(x_1) \neq H(x_2)$. The adversary $\mathcal{A}'$ outputs the pair $(x_1, x_2)$.
+  The adversary $\mathcal{A}'$ works as illustrated in Algorithm~\ref{alg.collision-2preimage} and Figure~\ref{fig:2pre-collision}. She first chooses an $x_1$ uniformly at random from the message space. She then hands this $x_1$ to $\mathcal{A}$, who, hopefully, produces an $x_2$ such that $x_1 \neq x_2$ and $H(x_1) = H(x_2)$. The adversary $\mathcal{A}'$ outputs the pair $(x_1, x_2)$.
 
   \begin{figure}[H]
       \centering
@@ -186,9 +214,9 @@ that $x_1 \neq x_2$. We now show that preimage resistance implies collision resi
   If the adversary $\mathcal{A}$ is successful in breaking the 2nd preimage game, then $\mathcal{A}'$ will be successful in breaking the collision game:
 
   \[
-    \Pr[\textsf{2nd-preimage-game}_\mathcal{A}(\kappa)]
+    \Pr[\textsf{2nd-preimage-game}_{H,\mathcal{A}}(\kappa)]
     =
-    \Pr[\textsf{collision-game}_{\mathcal{A}'}(\kappa)]
+    \Pr[\textsf{collision-game}_{H,\mathcal{A}'}(\kappa)]
   \]
 
   Since $\Pr[\textsf{2nd-preimage-game}_\mathcal{A}(\kappa)]$ is non-negligible, then so is $\Pr[\textsf{collision-game}_{\mathcal{A}'}(\kappa)]$.
