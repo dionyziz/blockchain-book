@@ -188,8 +188,8 @@ It seems that all three properties, collision resistance, preimage resistance, a
 resistance, are desirable. Let us examine whether some of these properties are stronger than the other.
 Finding a collision seems to be the easiest: The adversary is asked to come up with her own $x_1, x_2$,
 without any input from the challenger. The preimage adversaries seem stronger: If we have
-an adversary who can produce a preimage, we can use her to create a collision. Collisions require
-that $x_1 \neq x_2$. We now show that preimage resistance implies collision resistance.
+an adversary who can produce a preimage, we can use her to create a collision.
+We now show that collision resistance implies 2nd preimage resistance.
 
 \begin{theorem}[Collision Resistance $\implies$ 2nd Preimage Resistance]
   \label{thm.collision-2preimage}
@@ -578,8 +578,6 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
   \item Construct a correct but insecure signature scheme.
   \item Let $H:\{0,1\}^* \to \{0,1\}^{\kappa}$ be a collision-resistant hash function and define
         $G(x) = H(H(x))$. Show that $G$ is a collision-resistant hash function.
-  \item Given a collision resistant hash function $H$, construct a preimage and 2nd preimage resistant hash
-        function $G$ which is not collision resistant. Prove these properties.
 \end{problems}
 
 \section*{Further Reading}

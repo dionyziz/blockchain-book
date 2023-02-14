@@ -70,8 +70,9 @@ even before any transaction takes place.
 
 It may be useful to pay for multiple things with a single transaction. If Alice receives
 her salary through one transaction, she may want to spend it on both her rent as well
-as on a book. A transaction can have multiple outputs. Each of the outputs may have a
-different recipient public key and a different amount. An example is illustrated in
+as on a book. A transaction can have multiple outputs. Each of the outputs may have a,
+potentially different, recipient public key and a, potentially different, amount.
+An example is illustrated in
 Figure~\ref{fig.utxo-multiple-outputs}. Each of the outputs can be spent independently.
 For example, Alice's landlord can spend his money while the bookstore doesn't. This
 transaction consumes one input and produces two outputs.
@@ -203,7 +204,7 @@ incoming edge to a transaction, although this will typically be implicit.
 The whole history of payments in our system forms a \emph{transaction graph}\index{Transaction graph}.
 This is a Directed Acyclic Graph (DAG). It cannot contain cycles because transactions must be
 strictly orderable in the way that they spend: the input of a next transaction refers to
-outputs of previous trancations through outpoints that contain their hashes in the form of $\txid$s.
+outputs of previous transactions through outpoints that contain their hashes in the form of $\txid$s.
 An example transaction graph is illustrated in Figure~\ref{fig.utxo-tx-graph}. In this diagram,
 we are not showing the edge owners or amounts for conciseness. As new payments are made in the system,
 new transactions are added to the graph, but existing transactions are not modified, and previously
