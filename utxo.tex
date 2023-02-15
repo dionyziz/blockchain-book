@@ -438,7 +438,7 @@ like this:
       },
       {
         pk: "d9169b9601f3121f316f44e4d1bd0ecc
-             d6d07df4d152fdcbf59a210e7c77e467"
+             d6d07df4d152fdcbf59a210e7c77e467",
         amount: 135000000000
       }
     ]
@@ -497,7 +497,7 @@ the network, he performs the following steps:
 Let us discuss the step~\ref{enum.tx-double-spend} above.
 This is a necessary condition to ensure that the money really \emph{does} belong to its rightful owner and
 has not been previously spent.
-Consider would it would mean if this step failed.
+Consider what it would mean if this step failed.
 The verifier here is seeing a \emph{new} transaction, a transaction he has never seen before.
 Yet, this transaction is spending from an output that is \emph{not} in his UTXO set.
 
@@ -526,6 +526,17 @@ which spends from the \emph{same} output. This is called a \emph{double spend},
 and it must be rejected. Double spends are necessarily adversarially created.
 Honest parties do not produce double spending transactions.
 
+\begin{definition}[Double Spend]
+  In the UTXO model, a transaction $\tx$ is a \emph{double spend} or a
+  \emph{conflicting transaction} with another transaction $\tx' \neq \tx$,
+  if $\tx$ and $\tx'$ both have some outpoint in their inputs that is the
+  same, i.e.,
+
+  \[
+    \exists i, j \in \mathbb{N}: \tx\textsf{.ins}[i]\textsf{.outpoint} = \tx'\textsf{.ins}[j]\textsf{.outpoint}
+  \]
+\end{definition}
+
 Transactions broadcast from different parts of the network may arrive in a different order in other
 parts of the network.
 As different nodes on the network see different transactions
@@ -543,7 +554,8 @@ introduced blockchains, and his paper, \emph{Bitcoin: A Peer-to-Peer Electronic 
 the seminal paper that spoke about them for the first time. Consider it mandatory reading.
 It is an easy and short paper that includes details about the UTXO model that we explored
 in this chapter, but also blocks, chains, and SPV proofs that we will explore in the next chapters.
-The denomination \emph{satoshi} in Bitcoin is named after Satoshi Nakamoto. Satoshi was a pseudonymous Japanese man
+The denomination \emph{satoshi} in Bitcoin is named after Satoshi Nakamoto.
+Satoshi was a pseudonym of an alleged Japanese man
 who created both the Bitcoin paper and the first Bitcoin implementation in C++ during the years
 2008-2009. After two short years of participation in the community, he disappeared mysteriously, never
 to be heard from again. His identity remains a mystery.
