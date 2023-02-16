@@ -376,9 +376,10 @@ the wallet is to take requests from the human user to make payments, and to issu
 transactions to make these payments. The human user places such a request by choosing a particular
 recipient and value to transfer. It is up to the wallet to decide how to build the transaction.
 
-First, the human user places a request to the wallet to make a payment of amount $v$ to some
-recipient $pk$. a transaction, the wallet obtains the UTXO set from the full node it is
-associated with and must choose
+The timeline works as follows. First, the human user places a request to the wallet
+to make a payment of amount $v$ to some recipient $pk$. The wallet then builds a new transaction
+$\tx$, with an output of value $v$ and recipient $pk$. 
+% TODO...
 
 % \section{Some Bitcoin Statistics}
 % We can take a look at the blockchain statistics for Bitcoin on the website:\\
