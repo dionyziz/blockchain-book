@@ -376,11 +376,259 @@ the wallet is to take requests from the human user to make payments, and to issu
 transactions to make these payments. The human user places such a request by choosing a particular
 recipient and value to transfer. It is up to the wallet to decide how to build the transaction.
 
-The timeline works as follows. First, the human user places a request to the wallet
-to make a payment of amount $v$ to some recipient $pk$. The wallet then builds a new transaction
-$\tx$, with an output of value $v$ and recipient $pk$. 
-% TODO...
+The timeline is roughly as follows. First, the human user places a request to the wallet
+to make a payment of amount $v$ to some recipient $pk$. The wallet receives the human
+request. The wallet then decides an amount of fees per byte (the score) that it wishes to spend
+on the transaction to be created. Based on this score and an estimation of the size of the
+transaction which will be created, it estimates the total fee $\phi$ that the transaction is about
+to pay out. It then builds a new transaction
+$\tx$, with an output of value $v$ and recipient $pk$. It then asks the full node for
+the current UTXO set. Among the UTXO set, the wallet (which maintains a set of private keys)
+can distinguish those outputs that belong to the user, since they correspond to addresses
+encoding public keys that it holds the respective private key to. It then can make a choice
+of outputs. This choice must make up a value of at least $v + \phi$, but can also exceed $v + \phi$.
+The wallet adds those outpoints as inputs to the transaction. If the total value in the input
+exceeds $v + \phi$, then it also adds a change output whose value is the total value of the
+inputs reduced by $v + \phi$. The address in the change output is the encoding of a public
+key of a new private key it generates and stores internally for future spending. After
+the choice of inputs has been completed, the wallet inspects the new transaction for
+its size and may adjust the $\phi$ amount accordingly. Overall, this is a heuristic
+process.
 
+Some aspects of the above procedure are worth explaining in more detail. The step of choosing
+the inputs of the transaction must be done so as to minimize the total transaction size.
+The size of each outpoint is roughly the same, so what needs to be minimized is the number
+of inputs. Additionally, if the change output can be avoided, this is also desirable to
+reduce the size of the transaction. So, one strategy is to simply consume all the largest
+outputs that the user owns until the value $v + \phi$ is reached. However, this is not
+necessarily the best strategy, as this may lead to future transactions that are more expensive.
+Generally, there is no exact answer to this problem, because the wallet cannot know what
+future values the user will want to spend. An ideal wallet would minimize the user's fees
+across all of his spending habits. Different wallets employ different heuristics to reduce
+the cost.
+
+One more detail of the above procedure is to determine the score that the wallet wishes
+to use for the upcoming transaction. To estimate the score, the wallet asks the human
+user roughly how soon he wants the transaction to become confirmed by being included in
+a block. This choice is a tradeoff between confirmation latency and cost in fees.
+If the user wishes for fast confirmation, then the fees must be high.
+If the user is willing to wait for some time, then the fees can be low.
+If the fee is too low, the transaction may take a long time to be included,
+or may even never be included.
+The user sets a desired confirmation time $u$ (in, say, minutes).
+The wallet knows that blocks are produced in expectation every $\eta = \frac{1}{f}$.
+Once the transaction makes it to a block, it will take another $k$ blocks for it
+to become confirmed (recall that $k$ is the confirmation parameter).
+As such, the wallet attempts to adjust the score so that the
+transaction makes it within the next $\frac{u}{\eta} - k = uf - k$ blocks.
+The wallet then inspects the most recent $(uf - k)$ chunk of the currently
+adopted blockchain by the full node $\chain[{-(uf - k)}{:}]$, sorts transactions
+by score, and takes the minimum score. If the next $(uf - k)$-long chain chunk
+about to be mined happens to behave similarly to the last $(uf - k)$-long chunk, then using this score
+will ensure that the transaction will (marginally) make it within the next
+$uf - k$ blocks, and so will become confirmed within $u$ time.
+
+Some improvements
+in this heuristic can be made by looking into older chunks and taking an average
+to ensure that recent blocks are not outliers. Also, instead of simply taking the
+minimum score, the wallet can consider several among the minimum-scoring transactions,
+considering that the miners of recent blocks may have injected some transactions
+of their own with a very low score. Of course, the mining process is stochastic,
+and so blocks may not appear exactly $\eta$ apart. Additionally, the network
+may become more congested, and people will tend to increase their fees in
+that case. Fee estimators are inherently inaccurate. They can only function
+heuristically and hope for the best.
+
+If the fee of a transaction is miscalculated and it takes too long to make it
+into a block, there is a strategy to rectify this. The user can issue a new
+double spending transaction that spends from all the exact same outputs, but
+pays a higher fee by including a smaller amount in its \emph{change} output.
+This new transaction can then be broadcast to the network. Because miners are
+rational, they will choose to adopt this transaction instead of the lower-fee-paying
+alternative which already exists in their mempool. Such transactions are often
+issued by wallets in practice and are known as \emph{replace by fee}\index{Replace by Fee}
+transactions, and do not constitute attacks.
+They are double spends, but are not inherently malicious.
+While we previously said that only the adversary issues double spend,
+now that fees have been introduced, it also makes sense for honest wallets
+to do so on occasion. An example \emph{replace by fee} transaction is illustrated in
+Figure~\ref{fig.replace-by-fee}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.4 \columnwidth,keepaspectratio]{figures/replace-by-fee.pdf}
+  \caption{A replace-by-fee transaction. The same transaction is recreated, but with
+           a lower value on the \emph{change} address.}
+  \label{fig.replace-by-fee}
+\end{figure}
+
+\section{Types of Wallets}
+
+There exist a few different types of wallets...
+% TODO
+
+\section{Variable Difficulty}
+
+As we briefly discussed in the healing section of Chapter~\ref{chapter:attacks},
+it is possible for the adversarial power $t$ to fluctuate, and for the system to
+alternate between periods of honest majority and dishonest majority.
+Honest mining power $n - t$ can also fluctuate. In our calculations for the target $T$,
+we have assumed that all the system parameters, including $n$ and $t$ remain
+constant. In reality, however, mining power wildly fluctuates. As a blockchain
+system becomes more popular and the price of its token increases,
+more rational mines join the system hoping to make profit from it. This functions
+as a reinforcement mechanism for its security: The more value a system stores,
+the more miners tend to want to mine for it because it is more profitable, and
+the more expensive it becomes to attack, because the adversary needs to
+expend a lot of money to reach a high $t$ value. However, it is also possible
+at times for the system to be undersubscribed by miners.
+At the same time, as technology improves, the $q$ value also tends to increase with time.
+It is not rare for popular systems to see a tremendous increase of mining
+power over time. As an example, Bitcoin's hashrate in the unit of time ($nq$
+in our terms, assuming the adversary is also mining in her full capacity)
+is illustrated in Figure~\ref{fig.bitcoin-hashrate}. This
+hashrate is not directly observable, but can be deduced by the block
+production rate and the proof-of-work target $T$.
+
+% TODO: redo this figure in perfect LaTeX vector format/pdf
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth,keepaspectratio]{figures/bitcoin-hashrate.png}
+  \caption{Bitcoin's hashrate from its inception to 2023.}
+  \label{fig.bitcoin-hashrate}
+\end{figure}
+
+When we calculated the $T$ parameter, we based our calculations on $n$ and $q$.
+As these values change over time, the parameter $T$ will need to be adjusted.
+Otherwise, successful queries may become too rare or too dense, leading
+to issues of liveness or safety respectively.
+
+When the system was first launched, the $T$ parameter was calibrated
+according to the network parameter $\Delta$, which we assume does not
+change much over time (a change in $\Delta$ implies technical innovations
+on the physical network level, which we do not treat in this book),
+% TODO: discuss using a hard fork to upgrade $\Delta$?
+and the mining power $nq$ which existed at the first stages of the
+system's lifetime. Based on the estimated $\Delta$, the system
+was calibrated in order to achieve a particular expected block
+generation rate $\eta$. For example, in Bitcoin, the system was
+calibrated to achieve an $\eta$ of 10 minutes per block.
+We wish this $\eta$ to remain constant throughout the system's
+execution, even though the mining rate may fluctuate wildly.
+We cannot directly measure the values $n$, $t$, and $q$,
+but we can sample $\eta$ by taking observations now and
+then, and making adjustments to $T$ accordingly. If $\eta$
+is too large, this means that blocks are arriving farther
+apart than we like, so we must increase $T$ to make mining
+easier. If $\eta$ is too small, this means that blocks
+are arriving close together, so we must decrease $T$ to make
+mining harder.
+
+As mining is a stochastic process, it can happen that a block
+here and there may arrive quickly or slowly simply by chance,
+not having to do with the actual underlying mining rate. Therefore,
+we will not recalibrate our system every time a block arrives.
+Instead, we'll choose a somewhat large number of blocks
+and recalibrate the system every this many blocks. We call this
+number of blocks $m$, the \emph{epoch duration}. Every $m$
+blocks, the target $T$ is recalculated based on how quickly
+these $m$ blocks arrived. The target $T$ remains the same
+for the next $m$ blocks. These $m$-long chunks of blocks
+in which the target remains the same are known as \emph{epochs}.
+These epochs are illustrated in Figure~\ref{fig.pow-epochs}.
+
+\begin{definition}[Epoch]
+  Given an \emph{epoch duration} $m \in \mathbb{N}$,
+  an \emph{epoch} of a chain is any chunk $\chain[im{:}(i + 1)m]$
+  for any $i \in \mathbb{N}$.
+\end{definition}
+
+It is desired that each epoch takes $\eta m$ time to complete.
+By measuring how much time it \emph{actually} took to complete,
+we can proportionally adjust the target $T$. However, we cannot
+do this by simply measuring \emph{when} we locally received a block,
+because different nodes may disagree about the time at which
+they received the block. Instead, we use the chain itself to
+reach consensus about when a block was produced. We augment
+our block structure by adding one more field to it: The time $r$
+at which it was generated. Our block format now looks like
+this: $B = s \conc \overline{x} \conc \ctr \conc r$.
+
+% TODO: redo all figures in tikz
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8 \columnwidth,keepaspectratio]{figures/pow-epochs.pdf}
+  \caption{Epochs of $m$ blocks in which difficulty remains fixed. Squiggly lines
+           illustrate that some blocks have been omitted from the figure.}
+  \label{fig.pow-epochs}
+\end{figure}
+
+Given this new block format, we can now adjust our difficulty at
+the first block of every epoch, namely when a block's height is
+divisible by $m$. For each $i$ with $i \equiv 0 (mod m)$ marking
+the beginning of the epoch, we look at $\chain[i].r$, the timestamp
+reported at the beginning of the next epoch, and compare it against
+the timestamp $\chain[i - m].r$, the timestamp at the beginning
+of the previous epoch. The difference $\chain[i].r - \chain[i - m].r$
+marks the \emph{actual} time the epoch reportedly took. This must
+be compared to the value $\eta m$, the \emph{expected} time
+the epoch \emph{should}
+have taken. Calculating the ratio between the two gives us the
+target for the $j^\text{th}$ epoch:
+
+\index{Target Recalculation}
+\index{Difficulty Adjustment}
+\[
+    T_j = T_{j - 1} \frac{\chain[jm].r - \chain[(j - 1)m].r}{\eta m}
+\]
+
+This process is known as \emph{difficulty adjustment} or \emph{target
+recalculation}. If the actual time is larger than the expected time,
+the difficulty is decreased. If the actual time is smaller than the
+expected time, the difficulty is increased.
+
+Lastly, we need to ensure that the $r$ written on a block is somewhat
+accurate. We do this by ensuring that the chain is \emph{temporally consistent},
+which involves performing the following checks. Given a chain $\chain$:
+
+\begin{enumerate}
+  \item For all $i$, check that $\chain[i].r \leq \chain[i + 1].r$, i.e. timestamps are non-decreasing.
+  \item Check that $\chain[-1].r$ is not in the future by comparing it to the local clock.
+\end{enumerate}
+
+The last check may cause a block to be rejected if the receiving party
+has a clock that is slightly off. This is fine, because the party will
+receive the block again later from others as it is rebroadcast through
+the network. These two checks are added to the chain validation procedure.
+
+These two simply checks make the timestamps reported on the chain quite
+accurate. A minor adversary cannot lie about timestamps significantly.
+Due to the unfavorable conditions of the Nakamoto race against the minor
+adversary, the adversary cannot mine on top of a very old block. The
+adversary can only mine on top of a recent block. Specifically, it only
+makes sense for the adversary to mine on top of a block in
+$\chain[{-k}{:}]$, because any attempt to mine on top of older blocks
+will be in vain if $k$ Common Prefix holds. This means that the adversary
+has a very small wiggle room about fraudulently reporting timestamps:
+She can only place her timestamp between $\chain[{-k}].r$ and the current
+timestamp. This means that the adversary can have a small adverse effect
+on the difficulty recalculation, but this is not particularly significant.
+These small timing variations are not very important, because such errors
+can already happen in the system as it is. One reason for this is the
+stochastic nature of proof-of-work.
+The second reason is that the minor adversary can already cause the mining rate to fluctuate
+by close to a factor of $2$ by simply turning her mining power on and off.
+Therefore, small timing variations in difficulty recalculation are not very important.
+It's the big picture that counts. This means that the value $\eta$ should be
+calculated to be large enough so that, even under these small fluctuations
+(which can range to more than a factor of $2$) should not affect safety.
+
+At this point, it should be clear that $\eta$ must be chosen to be significantly
+larger than $\Delta$ to achieve a good density of convergence opportunities.
+We will calculate good values for $\eta$ (or, equivalently, its inverse $f = \frac{1}{\eta}$)
+precisely in the next few chapters.
+
+% TODO: bring these back
 % \section{Some Bitcoin Statistics}
 % We can take a look at the blockchain statistics for Bitcoin on the website:\\
 % \href{https://www.blockchain.com/charts/hash-rate}{https://www.blockchain.com/charts/hash-rate}.
@@ -390,12 +638,6 @@ $\tx$, with an output of value $v$ and recipient $pk$.
 % \end{align*}
 %
 %
-% \begin{figure}[ht]
-%     \centering
-%     \includegraphics[scale = 0.6]{figures/hash_rate.png}
-%     \caption{Hash Rate of Bitcoin from April 2021 to April 2022\cite{hash-rate}}
-%     \label{fig:hash_rate}
-% \end{figure}
 %
 % We can estimate the value of $q$ (the hash power of 1 party) on a real computer. On a laptop, $q \approx 100 \texttt{MHz}$. On a GPU, we can raise this to $q \approx 20 \texttt{ GHz}$. Today, we also use specialized mining power, with the best machines (ASICs) achieving $q \approx 200 \texttt{ THz}$. To see the hash power of the ASIC machine, you can refer to this website: \href{www.asicminervalue.com}{www.asicmine
 % rvalue.com}
@@ -408,118 +650,83 @@ $\tx$, with an output of value $v$ and recipient $pk$.
 % \end{itemize}
 % Overall, observe that many network activity values depend on human factors.
 
-\section{Mining}
+% TODO: bring these back
+% \begin{definition}
+%     Let $f$ be the probability of getting an honest block in one unit of time. Then,
+% \begin{align*}
+%     f &\approx p \cdot q \cdot (n-t) \\
+%     f &= 1- (1-p)^{q(n-t)}
+% \end{align*}
+% where $(1-p)^{q(n-t)}$ is the probability that every honest party failed.
+% \end{definition}
+% In Bitcoin, where 1 block is produced approximately every 10 minutes, we have $f \approx 1/600$ seconds. For small $p$, we have
+% \begin{align*}
+%     (1-p)^{q(n-t)} \approx 1 - qp(n-t)
+% \end{align*}
+%
+% \begin{definition}
+% Let $\eta = \frac{1}{f}$ be the expected block production duration.
+% \end{definition}
+%
+% \section{Mining Pools}
+% The probability of an individual miner successfully mining a block (and earning \$200k for the reward) is low. This reward has a high expectation, but it also has high variance. However, the miners want a consistent return, with the same expectation but a lower variance. To do this, miners combine together to form a \textit{pool}.
+%
+% \begin{definition}
+% A \textit{pool} is a collaboration of miners. If any one miner succeeds, then they share the profit with other miners.
+% \end{definition}
+%
+% \subsection{How Pools Work}
+% The pool operator, a trusted party, generates a key pair ($pk, sk$) and shares the public key $pk$ with all miners. The participants mine the block, in which the coinbase transaction goes to the public key $pk$ of the pool operator. Then, the operator distributes profits to the miners.
+%
+% Now the pool operator must verify that the miners are actually mining. They could achieve this by setting up a light PoW verification.
+% \begin{definition}
+% The \textit{light PoW} equation provides a target that is significantly easier, called a \textit{light block share}:
+% \begin{align*}
+% H(B) &\leq 2^\xi T
+% \end{align*}
+% where $\xi$ denotes a constant that scales the target.
+% \end{definition}
+% The participants would send the light PoW block to the operator once they have mined a block. The operator validates that:
+% \begin{enumerate}
+%     \item The light block share satisfied the light PoW equation
+%     \item The coinbase pays the operator\end{enumerate}
+%
+% Finally, after the block is mined, the operator distributes profits in proportion to the shares reported. An adversarial miner can only get payed if they submit the valid light block share. Additionally, the miner cannot change a valid block's public key to their own address because this will change the hash. Finally, an adversary would want to share a found block because they would get rewarded as part of the pool.
 
-\subsection{Including a transaction}
-Since miners prefer to mine more profitable transactions (i.e. those with higher fees), the chosen transaction fee would determine the confirmation time for a transaction. If a wallet wants their transaction to be confirmed faster, they would set a higher fee to incentivize miners to include the transaction into their blocks. If the wallet pays a lower fee, the transaction may take longer to be included, or never be included.
-
-\section{Variable Mining Difficulty}
-The Marabu protocol has a constant difficulty parameter, and thus a constant target $T$. However, this creates a problem since the hash power of the network is constantly changing. Therefore, when the hash power increases, the rate of block production could be less than $\Delta$. To keep a desired block production rate, we want to scale the difficulty appropriately as the hash power of the network increases.
-
-\subsection{Definitions}
-
-\begin{definition}
-    Let $f$ be the probability of getting an honest block in one unit of time. Then,
-\begin{align*}
-    f &\approx p \cdot q \cdot (n-t) \\
-    f &= 1- (1-p)^{q(n-t)}
-\end{align*}
-where $(1-p)^{q(n-t)}$ is the probability that every honest party failed.
-\end{definition}
-In Bitcoin, where 1 block is produced approximately every 10 minutes, we have $f \approx 1/600$ seconds. For small $p$, we have
-\begin{align*}
-    (1-p)^{q(n-t)} \approx 1 - qp(n-t)
-\end{align*}
-
-\begin{definition}
-Let $\eta = \frac{1}{f}$ be the expected block production duration.
-\end{definition}
-We split the chain into sections $m$ blocks long.
-\begin{definition}
-Let an \textit{epoch} be a section that is $m$ blocks long, where $m$ is a constant.
-\end{definition}
-Given the target for epoch $j-1$, denoted $T_{j-1}$, we wish to find the target for the next epoch $T_j$. The desired epoch duration is $m\cdot \eta$, the number of blocks times the expected production rate, but the actual duration is $t_2-t_1$ where $t_1$ and $t_2$ gives the mining times of the first and last blocks of the epoch $j-1$, respectively. Then we recalculate the target via
-
-\begin{align*}
-    T_j = T_{j-1}\frac{t_2 - t_1}{m\eta}
-\end{align*}
-
-We reach the following conclusion:
-\begin{quote}
-If actual time $<$ desired $\longrightarrow$ target decreased, difficulty increased.\\
-If actual time $>$ desired $\longrightarrow$ target increased, difficulty decreased
-\end{quote}
-
-\section{Mining Pools}
-The probability of an individual miner successfully mining a block (and earning \$200k for the reward) is low. This reward has a high expectation, but it also has high variance. However, the miners want a consistent return, with the same expectation but a lower variance. To do this, miners combine together to form a \textit{pool}.
-
-\begin{definition}
-A \textit{pool} is a collaboration of miners. If any one miner succeeds, then they share the profit with other miners.
-\end{definition}
-
-\subsection{How Pools Work}
-The pool operator, a trusted party, generates a key pair ($pk, sk$) and shares the public key $pk$ with all miners. The participants mine the block, in which the coinbase transaction goes to the public key $pk$ of the pool operator. Then, the operator distributes profits to the miners.
-
-Now the pool operator must verify that the miners are actually mining. They could achieve this by setting up a light PoW verification.
-\begin{definition}
-The \textit{light PoW} equation provides a target that is significantly easier, called a \textit{light block share}:
-\begin{align*}
-H(B) &\leq 2^\xi T
-\end{align*}
-where $\xi$ denotes a constant that scales the target.
-\end{definition}
-The participants would send the light PoW block to the operator once they have mined a block. The operator validates that:
-\begin{enumerate}
-    \item The light block share satisfied the light PoW equation
-    \item The coinbase pays the operator\end{enumerate}
-
-Finally, after the block is mined, the operator distributes profits in proportion to the shares reported. An adversarial miner can only get payed if they submit the valid light block share. Additionally, the miner cannot change a valid block's public key to their own address because this will change the hash. Finally, an adversary would want to share a found block because they would get rewarded as part of the pool.
-
-\section{Wallets}
-
-\subsection{Mining and Wallets}
-While miners wish to maximize fees to increase their rewards, wallets wish to minimize fees to decrease the price of transactions. The fee-per-byte is fixed by the user, so one way to lower the transaction fee is to minimize the size in bytes of the transaction. In case a user miscalculates the fee-per-byte and gives a value that is too low, an honest user can submit the same transaction but with a higher fee. This is an ``honest" double spend called a \textit{replace by fee}, as shown in Figure \ref{fig:replace_by_fee}. The higher-fee transaction replaces the older one in the mempool.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[scale = 0.5]{figures/replace_by_fee.png}
-    \caption{An example of a honest, rational party not being able to send a transaction and creating another replace by fee transaction}
-    \label{fig:replace_by_fee}
-\end{figure}
-
-
-\subsubsection{Types of Wallets}
-Wallets can be ``hot" or ``cold". Hot wallets are online, so they are easily available to use but less secure. Cold wallets are stored offline, such as in a hardware wallet or written down on a piece of paper. The hardware wallet could be plugged into a computer. The computer would store the transaction information, while the wallet generates the public keys, secret keys, and the signature without the secret keys leaving the device. They are more secure but tend to be harder to operate.
-
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[scale = 0.5]{figures/hardware.png}
-    \caption{Illustration of the interactions between the hardware wallet and the computer}
-    \label{fig:hardware}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[scale = 0.1]{figures/hardware_wallet.jpg}
-    \caption{An Example of a Hardware Wallet\cite{hard}}
-    \label{fig:hardware_wallet}
-\end{figure}
-
-
-\subsection{HD Wallets}
-For a wallet, we want to generate public and secret key pairs (sk, pk) $\longleftarrow$ $\mathsf{Gen}(1^\kappa)$.
-
-To do this, one approach is to start with a seed that is randomly generated (such as a series of words), then hash the seed with a counter. Note that we cannot use human-generated random words, such as ``I love my dog", because it could be easily stolen.
-
-One commonly used approach is the following. Given a randomly generated \textit{seed}, we can concatenate it with a counter and hash the concatenation to achieve a new secret key. Then, from the secret key, we can generate a public key.
-\begin{align*}
-H(\text{ctr}\|\text{seed})&\longrightarrow \text{new sk} \\
-H(1\|\text{seed}) &\longrightarrow \text{new sk}_0  \\
-H(2\|\text{seed}) &\longrightarrow \text{new sk}_1 \\
-&\cdots
-\end{align*}
-
+% \section{Wallets}
+%
+% \subsubsection{Types of Wallets}
+% Wallets can be ``hot" or ``cold". Hot wallets are online, so they are easily available to use but less secure. Cold wallets are stored offline, such as in a hardware wallet or written down on a piece of paper. The hardware wallet could be plugged into a computer. The computer would store the transaction information, while the wallet generates the public keys, secret keys, and the signature without the secret keys leaving the device. They are more secure but tend to be harder to operate.
+%
+%
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[scale = 0.5]{figures/hardware.png}
+%     \caption{Illustration of the interactions between the hardware wallet and the computer}
+%     \label{fig:hardware}
+% \end{figure}
+%
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[scale = 0.1]{figures/hardware_wallet.jpg}
+%     \caption{An Example of a Hardware Wallet\cite{hard}}
+%     \label{fig:hardware_wallet}
+% \end{figure}
+%
+%
+% \subsection{HD Wallets}
+% For a wallet, we want to generate public and secret key pairs (sk, pk) $\longleftarrow$ $\mathsf{Gen}(1^\kappa)$.
+%
+% To do this, one approach is to start with a seed that is randomly generated (such as a series of words), then hash the seed with a counter. Note that we cannot use human-generated random words, such as ``I love my dog", because it could be easily stolen.
+%
+% One commonly used approach is the following. Given a randomly generated \textit{seed}, we can concatenate it with a counter and hash the concatenation to achieve a new secret key. Then, from the secret key, we can generate a public key.
+% \begin{align*}
+% H(\text{ctr}\|\text{seed})&\longrightarrow \text{new sk} \\
+% H(1\|\text{seed}) &\longrightarrow \text{new sk}_0  \\
+% H(2\|\text{seed}) &\longrightarrow \text{new sk}_1 \\
+% &\cdots
+% \end{align*}
+%
 \section*{Problems}
 TBD
 
