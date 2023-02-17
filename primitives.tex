@@ -409,6 +409,7 @@ on hard computational problems and formal cryptographic claims.
 
 Before we define our security game, let us precisely state how a signature protocol
 works. Initially, Alice generates her key pair $(pk, sk)$ by invoking a special algorithm
+\glsxtrnewsymbol[description={generation function}]{gen}{$\Gen$}\glsadd{gen}
 $\Gen(1^\kappa)$. The public key and the secret key are both simple strings, $\kappa$
 bits long (in practice typically $256$ bits each).
 She keeps $sk$ secret and publishes $pk$ by
