@@ -1,4 +1,26 @@
-\chapter{Accounts \small{\textsf{DRAFT}}}
+\chapter{Accounts \small{\textsf{DRAFT}}}\label{chapter:accounts}
+
+In our treatment so far, we have dealt with the UTXO model. There, the state
+that we maintained was the UTXO set, and transactions expressed a \emph{transition}
+from one UTXO set to the next by updating it appropriately (adding and removing elements from
+it). By ordering the transactions into a ledger using a blockchain, we achieved
+consensus on a mutually shared state between mutually distrusted participants, among
+which an honest majority assumption holds. The machinery
+we have created solves the \emph{State Machine Replication}\index{State Machine Replication}
+problem.
+
+However, the machinery that we used to achieve consensus, namely the block and the chain,
+was quite separate from the semantic interpretation of the transactions that are confirmed
+in the produced ledgers. During the block validation process, we asked the full nodes
+to validate transactions by ensuring that the UTXO set can appropriately transition
+from one state to the next.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth,keepaspectratio]{figures/tx-state-transition.pdf}
+  \caption{Transitioning state by applying transactions.}
+  \label{fig.state-transition}
+\end{figure}
 
 \section{Accounts Model}
 
