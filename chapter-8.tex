@@ -1,4 +1,4 @@
-\chapter{Attacks}
+\chapter{Attacks}\label{chapter:attacks}
 
 In the previous chapter, we saw two basic attacks: the Fan-Out and the Nakamoto Race.
 The Fan-Out is more of a misconfigured network situation, because no mining adversary
@@ -237,7 +237,7 @@ and to $0$ as $\frac{t}{n} \rightarrow \frac{1}{2}$. You are asked to verify the
 results in Problem~\ref{problem:selfish-simulation}.
 
 We used a simulation to calculate these numbers to get a feel for them, but we can also
-support these numbers theoretically and to develop a closed-form formula for the achieved
+support these numbers theoretically and develop a closed-form formula for the achieved
 chain quality. To see how this attack performs, note that \emph{every} adversarially
 mined block is accepted in the honestly adopted chain. For every adversarially generated
 block that is accepted on the honest chain, there is one honestly generated block that
@@ -254,13 +254,13 @@ Let $|\chain|$ denote the length of the
 ultimate honestly adopted chain, $|\chain_\mathcal{A}|$ be the number of
 adversarial blocks in it, and $|\chain_h|$ be the number of honest blocks
 in it. We have that $|\chain_\mathcal{A}| = L_\mathcal{A}$ since all
-honestly generated blocks are eventually adopted, but
+adversarially generated blocks are eventually adopted, but
 $|\chain_h| = L_h - L_\mathcal{A}$, since every adversarially generated
-block displaces an honest block. Lastly,
+block displaces an honestly generated block. Lastly,
 $|\chain| = |\chain_\mathcal{A}| + |\chain_h| = L_h$.
 The overall chain quality will be
 $\mu = \frac{|\chain_h|}{|\chain|} = \frac{L_h - L_\mathcal{A}}{L_h} = 1 - \frac{t}{n - t} = \frac{n - 2t}{n - t}$.
-This verifes our simulation results.
+This verifies our simulation results.
 
 The conclusion is that a minor adversary with close to $50\%$ mining power can bring
 chain quality very close to $0$. Regardless, if the adversary has mining power strictly
@@ -272,7 +272,7 @@ blocks do not contribute to the honestly adopted chain growing more than it woul
 grow even if no adversarial blocks were to be mined.
 
 A minor adversary cannot break Common Prefix for large $k$, can reduce but not eliminate the chain velocity
-$\tau$, and can reduce Chain Quality to $\mu$ close to, but not equal to $0$, the minor adversary cannot
+$\tau$, and can reduce Chain Quality $\mu$ close to, but not equal to $0$, the minor adversary cannot
 break the ledger virtues. Safety survives because of Common Prefix. Liveness survives because the chain grows
 and the chain quality is non-zero. Remember that, to ensure liveness, it is required that just a single honest
 block survives once in a while. While the time it takes for transactions to confirm will be harmed, all honest
@@ -408,9 +408,9 @@ be broken during the time of dishonest majority, and perhaps a little earlier an
 later. However, if we wait enough time after the adversary has gone back to being minor,
 we will still have some Common Prefix assurance.
 
-More concretely, there will be certain \emph{dangerous times} which extend some duration
-before and some duration after the temporary dishonest majority duration, during which
-we cannot give Common Prefix assurances. Nevertheless, the chains of honest parties
+More concretely, there will be certain \emph{dangerous times} which extend from the moment
+the temporary dishonest majority takes over and slightly after the dishonest majority period,
+during which we cannot give Common Prefix assurances. Nevertheless, the chains of honest parties
 adopted \emph{before} these dangerous times, and the chains of honest parties adopted
 \emph{after} these dangerous times will be consistent. In fact, chains adopted \emph{before}
 the dangerous times will also be consistent with chains adopted \emph{after} the dangerous
@@ -430,7 +430,10 @@ hard to tell \emph{when} an adversary has the upper hand and when one should not
 However, if a particular user happens not to use the system during and around times of
 dishonest majority, the user will be safe. In particular, one is not susceptible to
 transaction rollbacks or double spending if one waits sufficiently long after the system
-has recovered. To be more precise, ledgers reported by honest parties at times \emph{before}
+has recovered. Because the adversary can roll back chains that have appeared as confirmed
+retroactively after the dishonest majority period commences, the dangerous times extend
+for a period \emph{prior} to the dishonest majority period.
+Ledgers reported by honest parties at times \emph{before}
 the dangerous times and \emph{after} the dangerous times will be consistent with one another.
 Safety heals, because Common Prefix heals.
 

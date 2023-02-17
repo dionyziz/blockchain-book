@@ -48,6 +48,10 @@ time is $\frac{1}{pnq} = \frac{2^\kappa}{Tnq}$. If we want this value to be abov
 
 In a nutshell, the more computational power there is on the network, the larger we must make the difficulty.
 Also, the larger the network delay, the larger we must make the difficulty.
+We will use $f$ to denote the honest block production rate (expected blocks per unit of time),
+and $\eta = \frac{1}{f}$ the expected time between two blocks being generated.
+For now, we'll estimate that $f \simeq (n - t)qp$, but we will give a more
+formal definition for $f$ in Chapter~\ref{chapter:earnest1}.
 
 As the designers of the protocol, we will make some reasonable estimations for $\Delta$, $n$, $t$ and $q$.
 Based on these, we will calculate the value $T$. For the time being, we will fix $T$ to be a constant
@@ -324,6 +328,8 @@ parties will not be aware of whether convergence has occurred, but this will not
 any issue.
 
 \section{The Honest Majority Assumption}\index{Honest Majority Assumption}
+
+% TODO: why is the honest majority assumption a "reasonable" assumption?
 
 Even though we used the longest chain rule to ensure that blocks from the long past are not
 retroactively revived, an adversary with large mining power compared to the honest parties can

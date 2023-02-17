@@ -188,8 +188,8 @@ It seems that all three properties, collision resistance, preimage resistance, a
 resistance, are desirable. Let us examine whether some of these properties are stronger than the other.
 Finding a collision seems to be the easiest: The adversary is asked to come up with her own $x_1, x_2$,
 without any input from the challenger. The preimage adversaries seem stronger: If we have
-an adversary who can produce a preimage, we can use her to create a collision. Collisions require
-that $x_1 \neq x_2$. We now show that preimage resistance implies collision resistance.
+an adversary who can produce a preimage, we can use her to create a collision.
+We now show that collision resistance implies 2nd preimage resistance.
 
 \begin{theorem}[Collision Resistance $\implies$ 2nd Preimage Resistance]
   \label{thm.collision-2preimage}
@@ -271,7 +271,7 @@ This is captured in the following theorem:
   Therefore, \emph{conditioned} on the fact that $\mathcal{A}$ is successful and that we have landed to the left of the dashed line, the probability of success of $\mathcal{A}'$ is $1 - 2^{-\kappa}$. The overall probability of success of $\mathcal{A}'$ is
 
   \[
-    \Pr[\textsf{2nd-preimage-game}_{\mathcal{A}'}(\kappa)] \geq \frac{1}{2} (1 - 2^{-\kappa}) \Pr[\textsf{preimage-game}_\mathcal{A}(\kappa)]\,.
+    \Pr[\textsf{2nd-preimage-game}_{\mathcal{A}'}(\kappa) \geq \frac{1}{2} (1 - 2^{-\kappa}) \Pr[\textsf{preimage-game}_\mathcal{A}(\kappa)]\,.
   \]
 
   Since $H$ is 2nd preimage resistant, the probability $\Pr[\textsf{2nd-preimage-game}_{\mathcal{A}'}(\kappa)]$ is negligible.
@@ -409,6 +409,7 @@ on hard computational problems and formal cryptographic claims.
 
 Before we define our security game, let us precisely state how a signature protocol
 works. Initially, Alice generates her key pair $(pk, sk)$ by invoking a special algorithm
+\glsxtrnewsymbol[description={generation function}]{gen}{$\Gen$}\glsadd{gen}
 $\Gen(1^\kappa)$. The public key and the secret key are both simple strings, $\kappa$
 bits long (in practice typically $256$ bits each).
 She keeps $sk$ secret and publishes $pk$ by
@@ -578,8 +579,6 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
   \item Construct a correct but insecure signature scheme.
   \item Let $H:\{0,1\}^* \to \{0,1\}^{\kappa}$ be a collision-resistant hash function and define
         $G(x) = H(H(x))$. Show that $G$ is a collision-resistant hash function.
-%   \item Given a collision resistant hash function $H$, construct a preimage and 2nd preimage resistant hash
-%         function $G$ which is not collision resistant. Prove these properties.
 \end{problems}
 
 \section*{Further Reading}

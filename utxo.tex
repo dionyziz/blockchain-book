@@ -70,8 +70,9 @@ even before any transaction takes place.
 
 It may be useful to pay for multiple things with a single transaction. If Alice receives
 her salary through one transaction, she may want to spend it on both her rent as well
-as on a book. A transaction can have multiple outputs. Each of the outputs may have a
-different recipient public key and a different amount. An example is illustrated in
+as on a book. A transaction can have multiple outputs. Each of the outputs may have a,
+potentially different, recipient public key and a, potentially different, amount.
+An example is illustrated in
 Figure~\ref{fig.utxo-multiple-outputs}. Each of the outputs can be spent independently.
 For example, Alice's landlord can spend his money while the bookstore doesn't. This
 transaction consumes one input and produces two outputs.
@@ -203,7 +204,7 @@ incoming edge to a transaction, although this will typically be implicit.
 The whole history of payments in our system forms a \emph{transaction graph}\index{Transaction graph}.
 This is a Directed Acyclic Graph (DAG). It cannot contain cycles because transactions must be
 strictly orderable in the way that they spend: the input of a next transaction refers to
-outputs of previous trancations through outpoints that contain their hashes in the form of $\txid$s.
+outputs of previous transactions through outpoints that contain their hashes in the form of $\txid$s.
 An example transaction graph is illustrated in Figure~\ref{fig.utxo-tx-graph}. In this diagram,
 we are not showing the edge owners or amounts for conciseness. As new payments are made in the system,
 new transactions are added to the graph, but existing transactions are not modified, and previously
@@ -437,7 +438,7 @@ like this:
       },
       {
         pk: "d9169b9601f3121f316f44e4d1bd0ecc
-             d6d07df4d152fdcbf59a210e7c77e467"
+             d6d07df4d152fdcbf59a210e7c77e467",
         amount: 135000000000
       }
     ]
@@ -496,7 +497,7 @@ the network, he performs the following steps:
 Let us discuss the step~\ref{enum.tx-double-spend} above.
 This is a necessary condition to ensure that the money really \emph{does} belong to its rightful owner and
 has not been previously spent.
-Consider would it would mean if this step failed.
+Consider what it would mean if this step failed.
 The verifier here is seeing a \emph{new} transaction, a transaction he has never seen before.
 Yet, this transaction is spending from an output that is \emph{not} in his UTXO set.
 
@@ -525,6 +526,17 @@ which spends from the \emph{same} output. This is called a \emph{double spend},
 and it must be rejected. Double spends are necessarily adversarially created.
 Honest parties do not produce double spending transactions.
 
+\begin{definition}[Double Spend]
+  In the UTXO model, a transaction $\tx$ is a \emph{double spend} or a
+  \emph{conflicting transaction} with another transaction $\tx' \neq \tx$,
+  if $\tx$ and $\tx'$ both have some outpoint in their inputs that is the
+  same, i.e.,
+
+  \[
+    \exists i, j \in \mathbb{N}: \tx\textsf{.ins}[i]\textsf{.outpoint} = \tx'\textsf{.ins}[j]\textsf{.outpoint}
+  \]
+\end{definition}
+
 Transactions broadcast from different parts of the network may arrive in a different order in other
 parts of the network.
 As different nodes on the network see different transactions
@@ -542,7 +554,8 @@ introduced blockchains, and his paper, \emph{Bitcoin: A Peer-to-Peer Electronic 
 the seminal paper that spoke about them for the first time. Consider it mandatory reading.
 It is an easy and short paper that includes details about the UTXO model that we explored
 in this chapter, but also blocks, chains, and SPV proofs that we will explore in the next chapters.
-The denomination \emph{satoshi} in Bitcoin is named after Satoshi Nakamoto. Satoshi was a pseudonymous Japanese man
+The denomination \emph{satoshi} in Bitcoin is named after Satoshi Nakamoto.
+Satoshi was a pseudonym of an alleged Japanese man
 who created both the Bitcoin paper and the first Bitcoin implementation in C++ during the years
 2008-2009. After two short years of participation in the community, he disappeared mysteriously, never
 to be heard from again. His identity remains a mystery.
