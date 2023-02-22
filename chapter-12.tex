@@ -150,29 +150,33 @@ The third algorithm is used to extract all transactions from a blockchain. This 
     \caption{\label{alg.backbone} The honest party}
     \begin{algorithmic}[1]
      \Statex
-     \State $\mathcal{G} \leftarrow \epsilon$
+     \State{$\mathcal{G}$}
+     \Let{\chain}{[\,]}
         \Function{$\textsf{Constructor}$}{$\mathcal{G}'$}
             \State $\mathcal{G} \leftarrow \mathcal{G}'$ \Comment{Select Genesis Block}
             \State $\chain \leftarrow [\mathcal{G}]$ \Comment{Add Genesis Block to start of chain}
             \State \textsf{round} $\leftarrow 1$
         \EndFunction
         \Function{$\textsf{Execute}$}{$1^\kappa$}
+            \Let{M}{\emptyset}
             \State $\tilde\chain \leftarrow$ maxvalid$(C, \bar M[i])$ \Comment{Adopt Longest Chain in the network}
             \If{$\tilde\chain \neq \chain$}
-                \State\textsc{Broadcast}{$(\tilde\chain)$} \Comment{Gossip Protocol}
+                \Let{M}{\{\tilde\chain\}}
+                \Let{\chain}{\tilde\chain}
             \EndIf
-            \State $x \leftarrow$ {\textsc{Input}()} \Comment{Take all transactions in mempool}
-            \State $B \leftarrow$ {\Call{PoW}{$x, \tilde\chain$}}
+            \Let{x}{\textsc{Input}()} \Comment{Take all transactions in mempool}
+            \Let{B}{\textsf{PoW}(x, \tilde\chain)}
             \If{$B \neq \bot$} \Comment{Successful Mining}
-                \State $\chain \leftarrow \tilde\chain || B$ \Comment{Add block to current longest chain}
-                \State\textsc{Broadcast}{$(\chain)$} \Comment{Gossip protocol}
+                \Let{\chain}{\chain \conc B} \Comment{Add block to current longest chain}
+                \Let{M}{M \cup \{\chain\}}
             \EndIf
             \State {\textsf{round}} $\leftarrow$ {\textsf{round}+1}
+            \State\Return$M$
         \EndFunction
         \Function{$\textsf{Read}$}{}
-            \State $x \leftarrow \epsilon$ \Comment{Instantiate transactions}
-            \For{$B \in C$}
-                \State $x \leftarrow x || C.x$ \Comment{Extract all transactions from each block in the chain}
+            \Let{x}{[\,]} \Comment{Instantiate transactions}
+            \For{$B \in \chain$}
+                \Let{x}{x \conc \chain.x} \Comment{Extract all transactions from each block in the chain}
             \EndFor
             \State\Return{$x$}
         \EndFunction
@@ -195,7 +199,7 @@ The algorithm below is run by miners to find a new block. Notice that all partie
               \If{$H(B) \leq T$} \Comment{Successful Mining}
                   \State\Return{$B$}
               \EndIf
-              \State ctr $\leftarrow$ ctr $+ 1$
+              \Let{\ctr}{\ctr + 1}
           \EndFor
           \State\Return{$\bot$} \Comment{Unsuccessful Mining}
       \EndFunction

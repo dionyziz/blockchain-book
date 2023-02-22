@@ -15,6 +15,11 @@ in the produced ledgers. During the block validation process, we asked the full 
 to validate transactions by ensuring that the UTXO set can appropriately transition
 from one state to the next.
 
+Certain aspects of the validation concern the \emph{consensus layer}\index{Consensus Layer},
+which pertains to checking the consensus contents of blocks: The ancestry relation,
+the genesis block, the proof-of-work, the timestamps, the difficulty adjustment mechanism.
+These checks concern the \emph{structural validation} of blocks. 
+
 \begin{figure}[h]
   \centering
   \includegraphics[width=\columnwidth,keepaspectratio]{figures/tx-state-transition.pdf}
