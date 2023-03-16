@@ -18,7 +18,7 @@ to determine \emph{who owns what}. If two honest nodes accept the same set of tr
 even if they have processed them in different order, they will arrive at the same transaction
 graph and the UTXO set computed by them will be the same.
 
-Of course, if a transaction is delayed while in transit on the network \emph{for ever}, some nodes
+Of course, if a transaction is delayed while in transit on the network \emph{forever}, some nodes
 will not receive it and they will not be in consensus with the rest of the network, but this
 contradicts our non-eclipsing assumption that we introduced in
 Chapter~\ref{chapter.untrusty-world}. To make our intuition more precise, let us quantify how
@@ -256,7 +256,7 @@ when their \emph{read} functionality is invoked. That way, everyone will arrive 
 UTXO set and agree \emph{who owns what}.
 
 \begin{definition}[Ledger]
-    A \emph{ledger} of an honest party $P$ reported at time $r$, denoted $L^P_r$ is
+    A \emph{ledger} of an honest party $P$ reported at time $r$, denoted $L^P_r$, is
     a finite \emph{sequence of transactions} returned when the honest party $P$ invokes
     the \emph{read} functionality of its honest protocol $\Pi$.
 \end{definition}
@@ -276,7 +276,7 @@ more formally in Chapter~\ref{chapter:earnest2}.
 
 \begin{definition}[Safety (informal)]\label{def:safety-informal}
     For any two honest parties, their reported ledgers at any point in time
-    are be equal.
+    are to be equal.
 \end{definition}
 
 \begin{definition}[Liveness (informal)]\label{def:liveness-informal}
@@ -528,7 +528,8 @@ a block as a rectangle and a transaction as a circle.
 \end{figure}
 
 When a transaction makes it into a block, we term the transaction
-\emph{confirmed}~\index{Confirmation}. An honest party invokes the \emph{read} functionality
+% There's a space between confirmed and the period
+\emph{confirmed}~\index{Confirmation}. When an honest party invokes the \emph{read} functionality
 of its ledger, only confirmed transactions are reported. This ensures that ledgers
 are consistent, salvaging safety. Liveness is guaranteed from the fact that an honest
 block will eventually appear, and this will cause all the transactions in the mempool to
@@ -557,7 +558,7 @@ similarly to before, the adversary cannot retroactively change $s$ after mining 
 because this will invalidate the proof-of-work. This helps with freshness: If a block $B$ is
 old and includes a pointer $s$ to an even older block, this $s$ cannot be retroactively
 chnaged to point to a newer block to make $B$ appear fresh. The final proof-of-work algorithm
-illustrated in Algorithm~\ref{alg.mine-block}.
+is illustrated in Algorithm~\ref{alg.mine-block}.
 accepts both $s$ and $\overline{x}$ as parameters and tries to find a $\ctr$ that
 satisfies the proof-of-work equation.
 
