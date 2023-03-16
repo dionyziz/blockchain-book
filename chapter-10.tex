@@ -4,7 +4,7 @@ In our treatment so far, we have dealt with the UTXO model. There, the state
 that we maintained was the UTXO set, and transactions expressed a \emph{transition}
 from one UTXO set to the next by updating it appropriately (adding and removing elements from
 it). By ordering the transactions into a ledger using a blockchain, we achieved
-consensus on a mutually shared state between mutually distrusted participants, among
+consensus on a mutually shared state between mistrustful participants, among
 which an honest majority assumption holds. The machinery
 we have created solves the \emph{State Machine Replication}\index{State Machine Replication}
 problem.
@@ -18,7 +18,7 @@ from one state to the next.
 Certain aspects of the validation concern the \emph{consensus layer}\index{Consensus Layer},
 which pertains to checking the consensus contents of blocks: The ancestry relation,
 the genesis block, the proof-of-work, the timestamps, the difficulty adjustment mechanism.
-These checks concern the \emph{structural validation} of blocks. 
+These checks pertain to the \emph{structural validation} of blocks. 
 
 \begin{figure}[h]
   \centering

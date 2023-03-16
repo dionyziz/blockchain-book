@@ -37,7 +37,7 @@ $Z_r$ counts the number of successful queries for the adversary in round $r$. It
 We can use bound~\ref{eq:bound2}, which gives a lower bound on $\E[Y_r]$.
 We have that:
 \begin{align}
-Y(S) & = (1-\epsilon)\Ex[Y(S)] \\
+Y(S) & \geq (1-\epsilon)\Ex[Y(S)] \\
 & = (1-\epsilon)\Ex[Y_r] |S| \\
 &> (1-\epsilon)f(1-f)|S|\\
 &>  \left(1 - \frac{\delta}{3}\right)f|S| \label{eq:ylower}
@@ -46,7 +46,7 @@ The last inequality is derived as follows by setting $f = \epsilon = \frac{\delt
 \begin{align}
  (1-\epsilon)(1-f) &> 1 - \frac{\delta}{3}\\
  \Leftarrow \left(1-\frac{\delta}{6}\right)\left(1-\frac{\delta}{6}\right) &> 1-\frac{\delta}{3}\\
- \Leftarrow \frac{2\delta}{6} + \frac{\delta^2}{36} &> -\frac{\delta}{3}\\
+ \Leftarrow -\frac{2\delta}{6} + \frac{\delta^2}{36} &> -\frac{\delta}{3}\\
  \Leftarrow \frac{\delta^2}{36} &> 0\\
  \Leftarrow \delta &> 0.
 \end{align}
@@ -71,7 +71,7 @@ To prove inequality~\ref{eq:zupper}, we again use our choice of values $f = \eps
     \Leftarrow \frac{1-\delta}{1-f} + \epsilon &< 1-\frac{2\delta}{3}\\
     \Leftarrow \frac{1-\delta}{1-\delta/6} + \frac{\delta}{6} &< 1 - \frac{2\delta}{3}\\
     \Leftarrow 1-\delta + \frac{\delta}{6} -\frac{\delta^2}{36} &< 1- \frac{\delta}{6} -\frac{2\delta}{3} + \frac{2\delta^2}{18}\\
-    \Leftarrow -\frac{5\delta}{6}-\frac{\delta^2}{36} &< \frac{5\delta}{6} + \frac{\delta^2}{9}\\
+    \Leftarrow -\frac{5\delta}{6}-\frac{\delta^2}{36} &< -\frac{5\delta}{6} + \frac{\delta^2}{9}\\
     \Leftarrow -\frac{\delta^2}{36} < \frac{\delta^2}{9}
 \end{align}
 Combining results~\ref{eq:zupper} and~\ref{eq:ylower} together gives us:

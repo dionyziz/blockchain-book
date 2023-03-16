@@ -146,7 +146,7 @@ In order to prove $\Pr[Y(S) < Z(S)] = \negl(\kappa)$, we will use a probability 
 We will not prove this theorem here, but intuitively, the Chernoff Bound says this: if we flip a fair coin $n$ times, where heads = 1 and tails = 0, then the more tosses we have, the less likely their sum is going to deviate from the expected value of their sum, which is $0.5 \times n$. As the number of trials increases, the probability that the sum is off the expectation by a certain \emph{percentage} of error approaches 0 (this probability is represented by the shaded regions in Figure~\ref{fig:balancing_eq}). More formally, the Chernoff Bound states:
 
 \begin{theorem}
-Consider random variables ${X_i}$, ${i\in [n]}$ s.t. $X_i \overset{\text{i.i.d.}}{\sim} \mathrm{Bernoulli}(p)$ and $X = \sum_{i=1}^{n} X_i$. For any $\epsilon > 0$,
+Consider random variables ${X_i}$, ${i\in [n]}$ s.t. $X_i \overset{\text{i.i.d.}}{\sim} \mathrm{Bernoulli}(p)$ and $X = \sum_{i=1}^{n} X_i$. Let $\mu = \E[X] = n \E[X_i]$. For any $0 < \epsilon < 1$,
 \begin{align}
     \Pr[X \leq (1 - \epsilon) \mu ] &\leq e^{-\Omega(n\epsilon^2\mu)}, \\
     \Pr[X \geq (1 + \epsilon) \mu ] &\leq e^{-\Omega(n\epsilon^2\mu)}.
