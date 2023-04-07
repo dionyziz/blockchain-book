@@ -404,7 +404,7 @@ $\mathcal{A}'$ works as follows:
 
 Given that $\mathcal{A}$ succeeds, the returned list of $\pi$ is used to calculate hashes of the nodes to verify the returned data chunk, which involves calculating $e$ values by concatenating the children of the nodes. The hash of the root is the same ($h_\epsilon = e_{top}$)
 and the hash of the data chunk is different ($e_0 \neq h_0$). (If not, $\mathcal{A}'$ has already found a collision because different data chinks have the same hash.)
-Therefore, there must exists a node, some level $k$ in the tree, such that $e_k = h_k$ but its children $e_{k-1}$ or $\pi_{k-1}$ not equal to the expected $h$ values. (These must exist because roots are the same, but leaves are different). In this case, we have two different inputs that hash to the same value.
+Therefore, there must exist a node, some level $k$ in the tree, such that $e_k = h_k$ but its children $e_{k-1}$ or $\pi_{k-1}$ not equal to the expected $h$ values. (These must exist because roots are the same, but leaves are different). In this case, we have two different inputs that hash to the same value.
 
 Then, adversary $\mathcal{A}'$ returns children of $e_k$ from the verifier tree at level $k$ as $x_1$ and children of $h_k$ from real tree at the corresponding position as $x_2$. Then, $x_1$ and $x_2$ satisfy $x_1 \neq x_2 \land H(x_1) = H(x_2)$.
 
