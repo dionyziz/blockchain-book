@@ -231,7 +231,7 @@ our protocols are structured upon three pillars~\cite{katz}:
   \item \textbf{Rigorous proofs of security} give us the \emph{guarantee} that
         our protocols are secure, as long as our assumptions hold. Instead of
         employing handwavy arguments, the proofs are mathematical theorems
-        employing computational reductions ane exact probability calculations.
+        employing computational reductions and exact probability calculations.
         They assert that the protocols are secure \emph{for all} adversaries.
 \end{enumerate}
 
@@ -300,7 +300,7 @@ then takes the output of the adversary and decides whether the adversary has bee
 in her endeavour to break the protocol. The game outputs a boolean output: \emph{true}
 if the adversary was successful in breaking the protocol, and \emph{false} if the adversary
 was unsuccessful. It is bad for us, the designers of the protocol, if there exists some
-adversary such that the game outputs \emph{true}. That's why we call this a \emph{bad event}\index{Bad Event}
+adversary such that the game outputs \emph{true}. That's why we call this a \emph{bad event}\index{Bad Event}.
 The execution of the game never occurs
 in real implementations of the protocol. It is simply a tool we use at the mathematical
 level to argue about the security of our design.
@@ -439,7 +439,7 @@ polynomial}. Such functions are called \emph{negligible}.
 \end{definition}
 
 We choose to accept negligible functions exactly because the probability of failure
-cannot be amplified in this manner. If an adverary $\mathcal{A}$ succeeds with negligible
+cannot be amplified in this manner. If an adversary $\mathcal{A}$ succeeds with negligible
 probability, an adversary $\mathcal{A}'$ that simulates $\mathcal{A}$ must run the
 simulation an \emph{exponential} number of times in order to achieve anything beyond
 a negligible probability. Given that we have constrained our adversaries to be polynomial-time,
@@ -557,7 +557,7 @@ except with negligible probability, then also no PPT adversary can win in our ne
 protocol, except with negligible probability.
 
 The proofs of these theorems will take the form of a \emph{computational reduction},
-and they will look roughly as follows, when we are designing a new protocol $\Pi^*$:
+and they will look roughly as follows, when we are designing a new protocol $\Pi$:
 
 \noindent
 \textbf{Claim. } If protocol $\Pi^*$ is secure, then protocol $\Pi$, built on top of $\Pi^*$,

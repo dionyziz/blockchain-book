@@ -279,7 +279,7 @@ $3$ units.
 
 Alice must authorize this spending by signing using her secret key.
 The data that she signs are the contents of the new transaction:
-The owners and amounts in the outputs, and the outpoint of the input.
+the owners and amounts in the outputs, and the outpoint of the input.
 It is not necessary to include the value of the input here, as the outpoint
 uniquely identifies it. It is imperative that Alice includes the public key
 of Bob in her signature when she creates this transaction. Otherwise, a malicious
@@ -293,6 +293,7 @@ together with the transaction and accompanies it whenever it is broadcast on the
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.65 \columnwidth,keepaspectratio]{figures/utxo-sig-multi.pdf}
+    % Is there is a typo in the graphic? Law of conservation violated?
     \caption{Alice creates a new transaction, transaction $19$, by which she pays Bob
              $8$ units
              and Charlie $2$ units.
