@@ -237,7 +237,7 @@ To see this,
 \begin{align}
     \E[Z_r] = pqt = \frac{t}{n-t} \cdot pq(n-t) < \frac{t}{n-t} \cdot \frac{f}{1-f} < \left(1+\frac{\delta}{2}\right)\cdot f \cdot \frac{t}{n-t}.
 \end{align}
-Here, we have used the inequality $\frac{f}{1-f} > pq(n-t)$ proved in \eqref{f_lower_bound}, and another inequality $\frac{1}{1-f} < 1 + \frac{\delta}{2}$. To prove the second inequality, we know that $f < \frac{\delta}{3}$ because $3f+3\epsilon \leq \delta$ and $\epsilon>0$. So, we need to show that $\frac{1}{1-\delta/3} < 1+\frac{\delta}{2}$ which can be verified as follows:
+Here, we have used the inequality $\frac{f}{1-f} > pq(n-t)$ proved in \eqref{eq:f_lower_bound}, and another inequality $\frac{1}{1-f} < 1 + \frac{\delta}{2}$. To prove the second inequality, we know that $f < \frac{\delta}{3}$ because $3f+3\epsilon \leq \delta$ and $\epsilon>0$. So, we need to show that $\frac{1}{1-\delta/3} < 1+\frac{\delta}{2}$ which can be verified as follows:
 \begin{align*}
     1 &< \left(1-\frac{\delta}{3}\right) \left(1+\frac{\delta}{2}\right) \\
     \iff 1 &< 1 + \frac{\delta}{2} - \frac{\delta}{3} - \frac{\delta^2}{6} \\
@@ -251,9 +251,9 @@ The honest advantage $\delta$ (which is the distance between $|S|pqt$ and $|S|pq
 \begin{itemize}
     \item $3 \epsilon$ is the relative distance we allocate between $\E[Z(S)]$ and $\E[Y(S)]$, where $\epsilon$ is the Chernoff error. By Chernoff, we have that $Z(S)$ should not exceed $(1+\epsilon)\E[Z(S)]$ with more than negligible probability, and likewise $Y(S)$ should not go below $(1-\epsilon)\E[Y(S)]$. Therefore, if we leave some buffer distance between $(1+\epsilon)\E[Z(S)]$ and $(1-\epsilon)\E[Y(S)]$ we should have that $Y(S) > Z(S)$ except with negligible probability. So we secure $\epsilon$ to the right of $\E[Z(S)]$, $\epsilon$ to the left of $\E[Y(S)]$, and another $\epsilon$ in between as a buffer, which gives us $3 \epsilon$.
 
-    \item The probability of an honestly successful round is $f=\E[X_r]$. Recall that we have calculated that $\E[Y_r] \geq f (1-f)$ in \eqref{y_lower_bound}, so $\E[Y(S)]$ is at most $f$ relative distance away from $\E[X(S)]$. Following similar logic as above, we secure $f$ to the right of $\E[Y(S)]$ and $f$ to the left of $\E[X(S)]$.
+    \item The probability of an honestly successful round is $f=\E[X_r]$. Recall that we have calculated that $\E[Y_r] \geq f (1-f)$ in \eqref{eq:y_lower_bound}, so $\E[Y(S)]$ is at most $f$ relative distance away from $\E[X(S)]$. Following similar logic as above, we secure $f$ to the right of $\E[Y(S)]$ and $f$ to the left of $\E[X(S)]$.
 
-    \item Finally, $\E[X(S)]$ is at most $f$ relative distance away from $|S|pq(n-t)$. We get this from \eqref{f_lower_bound}.
+    \item Finally, $\E[X(S)]$ is at most $f$ relative distance away from $|S|pq(n-t)$. We get this from \eqref{eq:f_lower_bound}.
 
     % \item $\delta$ is the honest advantage, i.e. the difference between $\E[X]$ and $\E[Z]$ from $\E[X] - \E[Z] \geq \delta \E[X]$ as discussed above.
 \end{itemize}
