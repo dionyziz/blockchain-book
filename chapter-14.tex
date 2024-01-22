@@ -145,9 +145,11 @@ Consider a block $C[i]$ produced during a convergence opportunity. If $C'[i] \ne
 
 We are now ready to prove our second chain virtue.
 
-\begin{theorem}[Common Prefix]
+% TODO: this is the common prefix lemma; write it more carefully
+% as a lemma
+\begin{lemma}[Common Prefix]\label{lem:common-prefix}
 A typical execution satisfies Common Prefix with $k = 2\lambda f$.
-\end{theorem}
+\end{lemma}
 
 \begin{figure}
     \centering
@@ -175,8 +177,104 @@ Thus, overall, we have matched every convergence opportunity with an adversarial
 We have $k$ blocks that were produced in $S$, so by the Patience Lemma, we have $|S| \geq \lambda$, which gives us typicality. However, typicality states that $Z(S) < Y(S)$, a direct contradiction.
 \end{proof}
 
+% \begin{theorem}[Common Prefix]
+%   A typical execution satisfies the Common Prefix virtue with $k = 2\lambda f$.
+% \end{theorem}
+% \begin{proof}
+%   Consider a typical execution and suppose, towards a contradiction, that Common
+%   Prefix is violated, and let $r_2$ be the first round during which it is violated.
+%   At $r_2$ there is an honest party $P_2$ who has chain $C_2'$ and adopts chain
+%   $C_2 \neq C_2'$ inconsistent with the chain $C_1$ adopted by an honest party
+%   $P_1$ at a round $r_1 \leq r_2$, namely $C_1[{:}{-}k] \not\preceq C_2$.
+%
+%   If $r_1 < r_2$, then at round $r_2 - 1$ the party $...$
+% \end{proof}
+%
+% \begin{theorem}[Common Prefix]
+%   A typical execution satisfies the Common Prefix virtue with $k = 2\lambda f$.
+% \end{theorem}
+% \begin{proof}
+%   We know from Lemma~\ref{lem:common-prefix} that for every round $r$ of a typical
+%   execution, for every honest party $P^1$ that \emph{has} a chain $C^1$ at $r$ and every
+%   honest party $P^2$ that \emph{adopts} a chain $C^2$ at $r$, it holds that
+%   $C^1[{:}-k] \preceq C^2$ and $C^2[{:}{-k}] \preceq C^1$.
+%
+%   Suppose, towards a contradiction, that a typical execution does not satisfy
+%   the Common Prefix virtue, even though the Common Prefix lemma statement holds.
+%   Namely, there are two rounds $r_1 \leq r_2$ and honest parties $P^1, P^2$ \emph{adopting}
+%   chains $C^1_{r_1}, C^2_{r_2}$ at rounds $r_1$ and $r_2$ respectively with
+%   $C^1_{r_1}[{:}{-k}] \not\preceq C^2_{r_2}$.
+%
+%   Let $C^a_{r_a}$ be the shortest among $C^1_{r_1}, C^2_{r_2}$ (breaking ties arbitrarily), let
+%   $r_a$ be the round in which it was \emph{adopted} and $P^a$ be the honest party that \emph{adopted} it; and,
+%   similarly let $C^b_{r_b}$ be the other chain among the two, and $r_b, P^b$ be the
+%   respective round and honest party. At round $r_2 + 1 \geq r_a$, the party $P^a$ \emph{adopts} a
+%   chain $C^a_{r_2+1}$ at least as long as $C^b_{r_b}$ (by the longest chain rule).
+%   Let $\overline{C}$ be the common prefix of $C^a_{r_a}$ and $C^b_{r_b}$.
+%   Let $B$ be the most recent block in the common prefix of $C^a_{r_a}$ and $C^a_{r_2 + 1}$.
+%   We distinguish two cases.
+%
+%   \noindent
+%   \textbf{Case 1: } $B$ lies in $\overline{C}$. Then at round $r_b < r_2 + 1$,
+%   party $P^b$ adopts chain $C^b_{r_b}$ with $\overline{C} \preceq C^b_{r_b}$. If at round
+%   $r_2 \geq r_b$ party $C_b$ also \emph{adopts} a chain $C^b_{r_2}$ with
+%   $\overline{C} \preceq C^b_{r_2}$,
+%   then the party \emph{has} the chain $C^b_{r_2}$ at round $r_2 + 1$, whereas
+%   the party $P^a$ \emph{adopts} the chain $C^a_{r_2 + 1}$ at $r_2 + 1$.
+%   But $C^a_{r_2 + 1}[{:}{-k}] \not\preceq C^b_{r_2}$,
+%   contradicting Lemma~\ref{lem:common-prefix}. On the contrary, if at round
+%   $r_2 \geq r_b$ party $P^b$ \emph{adopts} a chain $C^b_{r_2}$ with $\overline{C} \not\preceq C^b_{r_2}$,
+%   then there must exist a round $r$ with $r_b \leq r < r_2$ in which party $P^b$ \emph{has} a
+%   chain $C^b_{r - 1}$ and \emph{adopts} a chain $C^b_r$ with
+%   $\overline{C} \preceq C^b_{r - 1}$, but $\overline{C} \not\preceq C^b_r$,
+%   and so $C^b_r[{:}{-k}] \not\preceq C^b_{r - 1}$,
+%   contradicting Lemma~\ref{lem:common-prefix}.
+%
+%   \noindent
+%   \textbf{Case 2: } $B$ lies in $C^a_{r_2 + 1}$ but not in $\overline{C}$.
+%   Then at round $r_2 + 1$, party $P^a$ \emph{adopts} the chain $C^a_{r_2 + 1}$,
+%   but party $P^b$ \emph{has} the chain $C^b_{...}$...
+% \end{proof}
+%
 
+\begin{theorem}[Common Prefix]
+\end{theorem}
+\begin{proof}
+    Consider a typical execution and suppose, towards a contradiction, that Common
+    Prefix is violated, and let $r_2$ be the first round during which it is violated.
+    At $r_2$ there is an honest party $P_2$ who adopts chain $C_2$
+    inconsistent with the chain $C_1$ adopted by an honest party
+    $P_1$ at a round $r_1 \leq r_2$, namely $C_1[{:}{-}k] \not\preceq C_2$.
 
+    % TODO: Change algorithm so that has r => adopts r + 1
+    \noindent
+    \textbf{Case $r_1 < r_2$.}
+    At round $r_2$, party $P_1$ has a chain $C$,
+    which it adopted at $r_2 - 1$ (not excluding the case
+    where $C = C_1$). It holds that $C_1[{:}{-k}] \preceq C$
+    due to the minimality of $r_2$ (otherwise, the Common Prefix virtue would
+    have been broken at $r_2 - 1$ by chains $C_1$ and $C$).
+    Furthermore, $|C| \geq |C_1|$ due to the longest chain
+    rule followed by $P_1$. Therefore $C_1[{:}{-k}] \preceq C[{:}{-k}]$.
+    By the Common Prefix lemma, we have $C[{:}{-k}] \preceq C_2$
+    (at $r_2$, party $P_1$ has $C$ and party $P_2$ adopts $C_2$).
+    By transitivity of $\preceq$, we have $C_1[{:}{-k}] \preceq C_2$,
+    which contradicts the violation of Common Prefix.
+
+    \noindent
+    \textbf{Case $r_1 = r_2$.}
+    Let $C$ be the chain that $P_1$ adopts at $r_1 + 1$ (not excluding the case
+    where $C = C_1$).
+    By the Common Prefix lemma, we have that
+    $C_1[{:}{-k}] \preceq C$ (at $r_1 + 1$, party $P_1$ adopts $C$ and has $C_1$).
+    Furthermore, $|C| \geq |C_1|$ due to the longest chain
+    rule followed by $P_1$.
+    Because $|C| \geq |C_1|$, therefore $C_1[{:}{-k}] \preceq C[{:}{-k}]$.
+    By the Common Prefix lemma, we have that
+    $C[{:}{-k}] \preceq C_2$ (at $r_1 + 1$, party $P_1$ adopts $C$ and party $P_2$ has $C_2$).
+    By transitivity of $\preceq$, we have $C_1[{:}{-k}] \preceq C_2$,
+    which contradicts the violation of Common Prefix.
+\end{proof}
 
 \section{Note about Tradeoffs with $\epsilon$ and $f$}
 
