@@ -625,6 +625,17 @@ become confirmed in its stead.
 
 \section{Problems}
 
+\begin{enumerate}
+  \item It is not sufficient to assume a hash function is collision resistant in order
+  for it to be used in proof-of-work applications. That is why we make use of
+  the random oracle model. To see why, answer the following question:
+  Given a random oracle $H$ (which is collision resistant), define a different
+  collision resistant hash function $G$ which behaves similar to a random oracle
+  for honest parties, but is very beneficial for solving proof-of-work
+  to the adversary. Calculate the probability that the adversary obtains a
+  block with your hash function $G$ in one query, and the probability that
+  an honest party obtains a block with your hash function in one query.
+\end{enumerate}
 TBD
 
 \section{Further Reading}
