@@ -59,6 +59,8 @@ Z(S) &< (1+\epsilon)\Ex[Z(S)]\\
 &< \frac{t}{n-t} \cdot \frac{f}{1-f} |S| + \epsilon f|S|\label{eq:balance}\\
 &\leq \left(1 - \frac{2\delta}{3}\right)f|S|\label{eq:zupper}.
 \end{align}\\
+
+{\color{red} actually this can be proven by invoking $\Ex[Z] < \Ex[X]$ directly}
 To prove inequality~\ref{eq:balance}, note that from the balancing equation we have $f \leq \frac{\delta}{3}$. It suffices to show that $\frac{t}{n-t}\cdot\frac{1}{1-f} < 1$:
 \begin{align}
 \frac{t}{n-t}\cdot\frac{1}{1-f} &< 1\\
