@@ -123,7 +123,7 @@ and mines block $7$ on top of block $5$.
     \centering
     \includegraphics[width=0.4 \columnwidth,keepaspectratio]{figures/regular-adv-honest-queries.pdf}
     \caption{A series of successful honest (black solid diamonds) and adversarial (red hollow circles) queries
-             regularly spaced apart more than $\delta$.}
+             regularly spaced apart more than $\Delta$.}
     \label{fig.regular-adv-honest-queries}
 \end{figure}
 
@@ -455,7 +455,7 @@ to anyone.
 
 To verify a coinbase transaction, we follow these steps:
 \begin{enumerate}
-    \item Check that is is the only one in that block.
+    \item Check that it is the only one in that block.
     \item Check that it is the first transaction in the block.
     \item Check that it has no input and exactly one output.
     \item Check that its output has a value which is less than or equal to the sum of the block reward and the difference between the input and output amounts of all \emph{other} transactions in the block.
@@ -523,7 +523,7 @@ In this example, $B.\overline{x} = (\tx_1, \tx_2, \tx_3, \tx_4)$.
     \caption{Validating the $\overline{x}$ part of block $B$. The intermediate states
              are shown as purple cylinders. The state $\st_{B'}$ comes from a block
              which has already been validated (shown partially on the left).}
-    \label{fig.fee}
+    \label{fig.block-tx-validation}
 \end{figure}
 
 While we will sometimes say that \emph{chains} are exchanged on the network, it is really

@@ -557,7 +557,7 @@ similarly to before, the adversary cannot retroactively change $s$ after mining 
 because this will invalidate the proof-of-work. This helps with freshness: If a block $B$ is
 old and includes a pointer $s$ to an even older block, this $s$ cannot be retroactively
 chnaged to point to a newer block to make $B$ appear fresh. The final proof-of-work algorithm
-illustrated in Algorithm~\ref{alg.mine-block}.
+illustrated in Algorithm~\ref{alg.mine-block}
 accepts both $s$ and $\overline{x}$ as parameters and tries to find a $\ctr$ that
 satisfies the proof-of-work equation.
 

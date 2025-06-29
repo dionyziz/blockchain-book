@@ -13,7 +13,7 @@ comparing \emph{transactions} (Chapter~\ref{chapter.transaction}) and \emph{bloc
 that we don't confuse the two and to built a high-level mental model of the
 previous couple of chapters.
 
-Recall from Chapter~\ref{chapter.transaction} that chain of transactions is what constitutes
+Recall from Chapter~\ref{chapter:transaction} that a chain of transactions is what constitutes
 a \emph{coin} (although this is not a formal notion, since coin provenance may not be uniquely
 determinable because coins can be joined and split through transactions).
 Anyone can create a transaction spending their own money instantaneously, because
@@ -27,7 +27,7 @@ conveys no information about time taken.
 As for blocks, creating them does not require producing any signatures, but does require
 having a lot of computational power, and cannot be performed on a laptop or mobile phone.
 
-A summary comparing blocks and transactions is shown in Table~\label{tbl:tx-block-compare}.
+A summary comparing blocks and transactions is shown in Table~\ref{tbl:tx-block-compare}.
 \emph{Time to create honest} describes the time needed to create a transaction spending my
 own money (including double spending it) and the time needed for an honest party to mine an honest block.
 \emph{Time to create adversarial} describes the time needed to create a transaction spending
@@ -61,6 +61,7 @@ involves checking the proof-of-work equation and validating the transactions wit
   \hline
 \end{tabular}
 \caption{A high-level comparison of the nature of transactions and blocks.}
+\label{tbl:tx-block-compare}
 \end{table}
 
 Given this table, we can observe what protects a transaction in transit from being
@@ -471,7 +472,7 @@ of honest parties. Towards this, we will hope our chains will have two more virt
 On the one hand, we want honest chains to grow. If chains do not grow at all, then
 there is no hope of new transactions making it in. As long as our chain grows
 at a positive rate, however, we will have some liveness. The rate at which the
-chain of an honest party grows over a period of time if the chain velocity.
+chain of an honest party grows over a period of time is the chain velocity.
 
 \glsxtrnewsymbol[description={chain velocity}]{chain velocity}{$\tau$}\glsadd{chain velocity}
 \begin{definition}[Chain Velocity]

@@ -167,7 +167,7 @@ as $x$. Preimage resistance is then defined as follows:
 
 But, perhaps, we are simply asking too much of this adversary. It would already be a big problem
 for us if the adversary, given some $x_1$, can find a \emph{different} $x_2$ that hashes to the same
-value. We call this property \emph{second primage resistance}, and it is defined through the following
+value. We call this property \emph{second preimage resistance}, and it is defined through the following
 game.\index{2nd Preimage Resistance}
 
 In this game, the adversary is given a randomly sampled $(2\kappa+1)$-bit string input $x_1$ by the challenger.
@@ -271,7 +271,7 @@ This is captured in the following theorem:
   Therefore, \emph{conditioned} on the fact that $\mathcal{A}$ is successful and that we have landed to the left of the dashed line, the probability of success of $\mathcal{A}'$ is $1 - 2^{-\kappa}$. The overall probability of success of $\mathcal{A}'$ is
 
   \[
-    \Pr[\textsf{2nd-preimage-game}_{\mathcal{A}'}(\kappa) \geq \frac{1}{2} (1 - 2^{-\kappa}) \Pr[\textsf{preimage-game}_\mathcal{A}(\kappa)]\,.
+    \Pr[\textsf{2nd-preimage-game}_{\mathcal{A}'}(\kappa)] \geq \frac{1}{2} (1 - 2^{-\kappa}) \Pr[\textsf{preimage-game}_\mathcal{A}(\kappa)]\,.
   \]
 
   Since $H$ is 2nd preimage resistant, the probability $\Pr[\textsf{2nd-preimage-game}_{\mathcal{A}'}(\kappa)]$ is negligible.
@@ -299,7 +299,7 @@ simply require that our hash functions are collision resistant.
 
   \begin{gather*}
     \forall PPT \mathcal{A}:
-      \Pr[\textsf{collision-game}_{H,\mathcal{A}}(\kappa)] = 1] \leq \textsf{negl}
+      \Pr[\textsf{collision-game}_{H,\mathcal{A}}(\kappa) = 1] \leq \textsf{negl}
   \end{gather*}
 \end{definition}
 
