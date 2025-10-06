@@ -1,4 +1,4 @@
-\chapter{Security in Earnest III \small{\textsf{DRAFT}}}\label{chapter:earnest3}
+\chapter{Security in Earnest III \small{\textsf{DRAFT}}}\label{chapter.earnest3}
 
 \section{Recap of last lecture: Security in Earnest (II)}
 We proved several bounds in the previous lecture:
@@ -109,7 +109,7 @@ Our plan for this proof is as follows. We will show this by contradiction. Suppo
 The last two points are already proven, so we are only missing the first point to prove Common Prefix.
 To do so, we prove the following lemma. We will choose $\lambda$ to be at least $2f$.
 
-\begin{lemma}[Patience Lemma]\label{lem:patience}
+\begin{lemma}[Patience Lemma]\label{lem.patience}
 In typical executions, any $k \geq 2\lambda f$ blocks have been computed in at least $\frac{k}{2f}$ rounds.
 \end{lemma}
 \begin{proof}
@@ -149,7 +149,7 @@ We are now ready to prove our second chain virtue.
 
 % TODO: this is the common prefix lemma; write it more carefully
 % as a lemma
-\begin{lemma}[Common Prefix]\label{lem:common-prefix}
+\begin{lemma}[Common Prefix]\label{lem.common-prefix}
 A typical execution satisfies Common Prefix with $k = 2\lambda f$.
 \end{lemma}
 
@@ -157,11 +157,11 @@ A typical execution satisfies Common Prefix with $k = 2\lambda f$.
     \centering
     \includegraphics[width=16cm]{figures/common_prefix.png}
     \caption{A common prefix violation. Honestly computed blocks are shown in gray, while adversarially computed blocks are shown in red. At the end of round $r$, party $P$ has adopted chain $C$ and party $P'$ has adopted chain $C'$. $B^\star$ is the most recent honestly produced block in the common prefix of $C,C'$. This is genesis if all other blocks in the common prefix are adversarial. $r'$ is the round with the last convergence opportunity. By the Pairing Lemma, convergence opportunities in rounds after the fork must be matched with a successful adversarial query. For example, $C[i'-3]$ is an adversarially produced block is matched with $C'[i'-3]$, and similarly for $C'[i'-2], C[i'-2]$. It is also possible to have multiple honestly produced blocks in a round after the fork without any convergence opportunities, as $C[i'-1], C'[i'-1]$ show.}
-    \label{fig:cp_violation}
+    \label{fig.cp_violation}
 \end{figure}
 
 \begin{proof}
-Assume towards contradiction that there is a CP$(k)$ violation, illustrated in Figure \ref{fig:cp_violation}.
+Assume towards contradiction that there is a CP$(k)$ violation, illustrated in Figure \ref{fig.cp_violation}.
 We have two forks $C, C'$ where if we remove the last $k$ blocks from each of them, they are not the same chain. Let $S = \{ r^*, ..., r\}$, where $r^*$ is the round in which the most recent honestly mined block $C[i^*] = B^*$ in the common prefix of $C, C'$ was produced. After $r^*$, all honest parties will be mining on chains at least $i^*$ long. \\
 
 We claim that $Z(S) \geq Y(S)$. Let $J$ be set of the heights of blocks $B$, where $B$ was produced during a convergence opportunity in $S$. Let $r'$ be the last convergence opportunity in $S$, in which block $B'$ was computed at height $i'$.
@@ -196,7 +196,7 @@ We have $k$ blocks that were produced in $S$, so by the Patience Lemma, we have 
 %   A typical execution satisfies the Common Prefix virtue with $k = 2\lambda f$.
 % \end{theorem}
 % \begin{proof}
-%   We know from Lemma~\ref{lem:common-prefix} that for every round $r$ of a typical
+%   We know from Lemma~\ref{lem.common-prefix} that for every round $r$ of a typical
 %   execution, for every honest party $P^1$ that \emph{has} a chain $C^1$ at $r$ and every
 %   honest party $P^2$ that \emph{adopts} a chain $C^2$ at $r$, it holds that
 %   $C^1[{:}-k] \preceq C^2$ and $C^2[{:}{-k}] \preceq C^1$.
@@ -224,13 +224,13 @@ We have $k$ blocks that were produced in $S$, so by the Patience Lemma, we have 
 %   then the party \emph{has} the chain $C^b_{r_2}$ at round $r_2 + 1$, whereas
 %   the party $P^a$ \emph{adopts} the chain $C^a_{r_2 + 1}$ at $r_2 + 1$.
 %   But $C^a_{r_2 + 1}[{:}{-k}] \not\preceq C^b_{r_2}$,
-%   contradicting Lemma~\ref{lem:common-prefix}. On the contrary, if at round
+%   contradicting Lemma~\ref{lem.common-prefix}. On the contrary, if at round
 %   $r_2 \geq r_b$ party $P^b$ \emph{adopts} a chain $C^b_{r_2}$ with $\overline{C} \not\preceq C^b_{r_2}$,
 %   then there must exist a round $r$ with $r_b \leq r < r_2$ in which party $P^b$ \emph{has} a
 %   chain $C^b_{r - 1}$ and \emph{adopts} a chain $C^b_r$ with
 %   $\overline{C} \preceq C^b_{r - 1}$, but $\overline{C} \not\preceq C^b_r$,
 %   and so $C^b_r[{:}{-k}] \not\preceq C^b_{r - 1}$,
-%   contradicting Lemma~\ref{lem:common-prefix}.
+%   contradicting Lemma~\ref{lem.common-prefix}.
 %
 %   \noindent
 %   \textbf{Case 2: } $B$ lies in $C^a_{r_2 + 1}$ but not in $\overline{C}$.

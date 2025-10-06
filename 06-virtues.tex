@@ -1,4 +1,4 @@
-\chapter{Chain Virtues}\label{chapter:virtues}
+\chapter{Chain Virtues}\label{chapter.virtues}
 
 Now that we have developed the longest chain protocol and understand
 what constitutes a chain, let's familiarize ourselves with executions
@@ -8,12 +8,12 @@ the combinatorial properties of chains.
 \section{Transactions -- Blocks}
 
 Before we get into the combinatorial properties of chains, let us spend a moment
-comparing \emph{transactions} (Chapter~\ref{chapter:transaction}) and \emph{blocks}
-(Chapters~\ref{chapter:blocks} and~\ref{chapter:chain}), to ensure
+comparing \emph{transactions} (Chapter~\ref{chapter.transaction}) and \emph{blocks}
+(Chapters~\ref{chapter.blocks} and~\ref{chapter.chain}), to ensure
 that we don't confuse the two and to built a high-level mental model of the
 previous couple of chapters.
 
-Recall from Chapter~\ref{chapter:transaction} that chain of transactions is what constitutes
+Recall from Chapter~\ref{chapter.transaction} that chain of transactions is what constitutes
 a \emph{coin} (although this is not a formal notion, since coin provenance may not be uniquely
 determinable because coins can be joined and split through transactions).
 Anyone can create a transaction spending their own money instantaneously, because
@@ -198,7 +198,7 @@ The idea is that, if we choose $T$ appropriately, then convergence opportunities
 Once a convergence opportunity happens, if there is no adversarial miner, the honest parties will converge into
 one chain.
 
-\begin{lemma}[Honest Convergence]\label{lem:honest-convergence}
+\begin{lemma}[Honest Convergence]\label{lem.honest-convergence}
     In a setting where only honest parties are mining, exactly $\Delta$ time after every convergence
     opportunity, all honest parties will hold the same chain.
 \end{lemma}
@@ -258,7 +258,7 @@ develop some length, but soon enough, a convergence opportunity will arise. At t
 all forks apart from one will be abandoned, and the honest parties will convergence on
 one chain. It takes time to mine a temporary fork of longer length.
 Because convergence opportunities will occur often (we will
-calculate precisely how often in Chapter~\ref{chapter:earnest2}),
+calculate precisely how often in Chapter~\ref{chapter.earnest2}),
 there is not enough time to build long temporary forks. Our blocktrees will look roughly
 like Figure~\ref{fig.honest-chain-common-prefix}.
 
@@ -314,7 +314,7 @@ are assured it will not change.
 \import{./}{algorithms/alg.read-stable}
 
 We have finally achieved safety. This is captured in the following theorem, whose proof we will
-complete in Chapter~\ref{chapter:earnest2}.
+complete in Chapter~\ref{chapter.earnest2}.
 
 \glsxtrnewsymbol[description={common prefix}]{common prefix}{$k$}\glsadd{common prefix}
 \begin{theorem}[Common Prefix $\Rightarrow$ Safety (informal)]

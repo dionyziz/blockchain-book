@@ -1,4 +1,4 @@
-\chapter{Security in Earnest II \small{\textsf{DRAFT}}}\label{chapter:earnest2}
+\chapter{Security in Earnest II \small{\textsf{DRAFT}}}\label{chapter.earnest2}
 \section{Safety and Liveness}
 
 \subsection{Defining Safety and Liveness}
@@ -134,7 +134,7 @@ At this point, it is not obvious that $\E[Z(S)] < \E[Y(S)]$ but we will prove th
     \centering
     \includegraphics[width=14cm]{figures/honest-maj}
     \caption{Illustration of the probability density functions for $X(S)$, $Y(S)$, and $Z(S)$. Note that $\E[Z(S)] < \E[Y(S)] < \E[X(S)]$}
-    \label{fig:expectation_gap}
+    \label{fig.expectation_gap}
 \end{figure}
 
 But if we want common prefix to hold except with negligible probability, it is not sufficient that the \emph{expectations} are in this order. It is not sufficient that \emph{on average} the adversary will have fewer successful queries than the honest parties will have convergence opportunities. We want something stronger: except with negligible probability, in all large enough intervals of consecutive slots $S$, the adversary will have fewer successful queries than the honest parties will have convergence opportunities, i.e. $\Pr[\forall S\colon Z(S) < Y(S)] \geq 1 - \negl(\kappa)$. In other words, the expectations of $X(S)$, $Y(S)$, and $Z(S)$ must be sufficiently separated so that the probability of $Y(S) \leq Z(S)$ is negligible.
@@ -143,7 +143,7 @@ In order to prove $\Pr[Y(S) < Z(S)] = \negl(\kappa)$, we will use a probability 
 
 \subsubsection{Chernoff Bound}
 
-We will not prove this theorem here, but intuitively, the Chernoff Bound says this: if we flip a fair coin $n$ times, where heads = 1 and tails = 0, then the more tosses we have, the less likely their sum is going to deviate from the expected value of their sum, which is $0.5 \times n$. As the number of trials increases, the probability that the sum is off the expectation by a certain \emph{percentage} of error approaches 0 (this probability is represented by the shaded regions in Figure~\ref{fig:balancing_eq}). More formally, the Chernoff Bound states:
+We will not prove this theorem here, but intuitively, the Chernoff Bound says this: if we flip a fair coin $n$ times, where heads = 1 and tails = 0, then the more tosses we have, the less likely their sum is going to deviate from the expected value of their sum, which is $0.5 \times n$. As the number of trials increases, the probability that the sum is off the expectation by a certain \emph{percentage} of error approaches 0 (this probability is represented by the shaded regions in Figure~\ref{fig.balancing_eq}). More formally, the Chernoff Bound states:
 
 \begin{theorem}
 Consider random variables ${X_i}$, ${i\in [n]}$ s.t. $X_i \overset{\text{i.i.d.}}{\sim} \mathrm{Bernoulli}(p)$ and $X = \sum_{i=1}^{n} X_i$. Let $\mu = \E[X] = n \E[X_i]$. For any $0 < \epsilon < 1$,
@@ -246,7 +246,7 @@ Here, we have used the inequality $\frac{f}{1-f} > pq(n-t)$ proved in \eqref{f_l
 \end{align*}
 which is true because $0 < \delta < 1$.
 
-The honest advantage $\delta$ (which is the distance between $|S|pqt$ and $|S|pq(n-t)$, scaled by $|S|pq(n-t)$) is composed of the distance between $\E[Z(S)]=|S|pqt$ and $\E[Y(S)]$, distance between $\E[Y(S)]$ and $\E[X(S)]$, and distance between $\E[X(S)]$ and $|S|pq(n-t)$. We allocate this total possible distance by following balancing equation: $3\epsilon + 3f \leq \delta$. Let's break this inequality down for an intuitive understanding along with Figure~\ref{fig:balancing_eq}.
+The honest advantage $\delta$ (which is the distance between $|S|pqt$ and $|S|pq(n-t)$, scaled by $|S|pq(n-t)$) is composed of the distance between $\E[Z(S)]=|S|pqt$ and $\E[Y(S)]$, distance between $\E[Y(S)]$ and $\E[X(S)]$, and distance between $\E[X(S)]$ and $|S|pq(n-t)$. We allocate this total possible distance by following balancing equation: $3\epsilon + 3f \leq \delta$. Let's break this inequality down for an intuitive understanding along with Figure~\ref{fig.balancing_eq}.
 
 \begin{itemize}
     \item $3 \epsilon$ is the relative distance we allocate between $\E[Z(S)]$ and $\E[Y(S)]$, where $\epsilon$ is the Chernoff error. By Chernoff, we have that $Z(S)$ should not exceed $(1+\epsilon)\E[Z(S)]$ with more than negligible probability, and likewise $Y(S)$ should not go below $(1-\epsilon)\E[Y(S)]$. Therefore, if we leave some buffer distance between $(1+\epsilon)\E[Z(S)]$ and $(1-\epsilon)\E[Y(S)]$ we should have that $Y(S) > Z(S)$ except with negligible probability. So we secure $\epsilon$ to the right of $\E[Z(S)]$, $\epsilon$ to the left of $\E[Y(S)]$, and another $\epsilon$ in between as a buffer, which gives us $3 \epsilon$.
@@ -270,7 +270,7 @@ In the next chapter, we will use the tools developed today to show that in typic
     \vspace*{\fill}
     \includegraphics[width=\linewidth]{figures/backbone-vars.pdf}
     \caption{The distribution of the random variables $X$, $Y$, and $Z$ in the proof-of-work longest chain protocol.}
-    \label{fig:balancing_eq}
+    \label{fig.balancing_eq}
     \vspace*{\fill}
 \end{figure*}
 \end{landscape}

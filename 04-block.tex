@@ -1,4 +1,4 @@
-\chapter{Blocks}\label{chapter:blocks}
+\chapter{Blocks}\label{chapter.blocks}
 
 \section{The Network Delay}
 
@@ -86,7 +86,7 @@ We have lost consensus on \emph{who owns what}.
     \label{fig.double-spend}
 \end{figure}
 
-\section{Simple Ideas Don't Work}\label{sec:simple-ideas}
+\section{Simple Ideas Don't Work}\label{sec.simple-ideas}
 
 Let us consider three simple ideas to resolve the double spending problem that first come to mind.
 Sadly, these ideas won't work.
@@ -206,7 +206,7 @@ we would like to have them coordinate with one another to report them in the sam
 order. Each honest party will report a \emph{ledger}, an ordered sequence of transactions.
 This ledger will not necessarily contain the transactions in the order they were
 received from the network. It may also not immediately report some transaction as
-soon as it is received from the network, but, akin to Idea 3 of Section~\ref{sec:simple-ideas},
+soon as it is received from the network, but, akin to Idea 3 of Section~\ref{sec.simple-ideas},
 it may need to delay reporting it on its ledger for a bit.
 By reading that ledger reported by an honest party one transaction at a time from left to right,
 we can reconstruct the transaction graph and arrive at the UTXO set. If the honest parties
@@ -272,7 +272,7 @@ ledger.
 
 We want the ledgers reported by honest parties to have two \emph{virtues}. We give
 an intuitive definition of these virtues now, but we will return to define them
-more formally in Chapter~\ref{chapter:earnest2}.
+more formally in Chapter~\ref{chapter.earnest2}.
 
 \begin{definition}[Safety (informal)]\label{def:safety-informal}
     For any two honest parties, their reported ledgers at any point in time
@@ -366,7 +366,7 @@ apart?
 \section{Proof-of-Work}
 
 There is a natural candidate for creating rare events like the tickets we need in a permissionless
-world. When we introduced hashes in Chapter~\ref{chapter:primitives}, we gave a brute-force algorithm
+world. When we introduced hashes in Chapter~\ref{chapter.primitives}, we gave a brute-force algorithm
 (Algorithm~\ref{alg.hash-preimage})
 that breaks the preimage property of a hash, but takes exponential time. However, we can tweak
 the problem of finding a preimage so that it is not an \emph{exact} preimage, but a ``close enough''
@@ -456,7 +456,7 @@ Now each honest party can issue as many transactions
 as he wants in one go, as long as he is able to mine one block.
 In practice, to save on communication, $\overline{x}$ may be a list of transaction ids instead
 of the literal transactions themselves. We'll see more ways to optimize communication
-when we talk about Light Clients in Chapter~\ref{chapter:light}.
+when we talk about Light Clients in Chapter~\ref{chapter.light}.
 From now on, we will no longer speak of tickets, but will speak of blocks,
 even if a block contains just one transaction.
 

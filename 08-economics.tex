@@ -1,4 +1,4 @@
-\chapter{Economics}\label{chapter:economics}
+\chapter{Economics}\label{chapter.economics}
 
 So far, we have analyzed our protocols in the \emph{honest majority} setting,
 assuming that most parties will follow our protocol. We provided assurances
@@ -70,7 +70,7 @@ which is an expensive endeavour. Therefore, miners need to be incentived to
 secure the network, for example by having their electricity paid for.
 
 We have already examined the mechanisms by which miners are paid when they
-successfully mine a block in Chapter~\ref{chapter:chain}, where we mandated
+successfully mine a block in Chapter~\ref{chapter.chain}, where we mandated
 that a block's coinbase transaction pays out a total amount $f_t$ which
 consists of the \emph{block reward} $f_r$ and the \emph{block fees} $f_f$:
 
@@ -129,7 +129,7 @@ some point in the future the block reward in Bitcoin will drop below
 one Satoshi, at which point it will become $0$ and no new coins will
 enter the supply. In about a century, Bitcoin will reach a total supply
 of $21$ million bitcoin, and the reward will drop to $0$. This
-macroeconomic policy is depicted in Figure~\ref{fig:reward_halving}
+macroeconomic policy is depicted in Figure~\ref{fig.reward_halving}
 (in this graph by CoinDesk, \emph{subsidy} refers to the block
 reward).
 
@@ -137,7 +137,7 @@ reward).
     \centering
     \includegraphics[width=\columnwidth,keepaspectratio]{figures/reward_halving.png}
     \caption{Reward Halving for Bitcoin Supply (source: coindesk)}
-    \label{fig:reward_halving}
+    \label{fig.reward_halving}
 \end{figure}
 
 One of the problems with such a policy is that the reward function
@@ -243,8 +243,8 @@ within the block, and then allow the client to request each transaction as neede
 a later time. Another example is to just include the hash of the transaction sequence
 $\overline{x}$, which already commits to the transactions, and not the transactions
 themselves, again allowing the interested client to download the transactions in question.
-We'll explore these strategies in more detail in Chapter~\ref{chapter:light} to optimize
-our protocol, but for now let's observe why these don't fix the $\Delta$ problem:
+We'll explore these strategies in more detail in Chapter~\ref{chapter.light} to optimize
+our protocol, but for now let's observe why these don't fix the $\Delta$ problem.
 The time $\Delta$ really captures the time that is needed for \emph{all} the data
 to transmit over the network so that a block can be properly validated. If we separate
 out transaction bodies from blocks, then a miner who observes a new block on the network
@@ -568,7 +568,7 @@ pertain to the engineering of the various cryptocurrencies.
 
 \section{Variable Difficulty}
 
-As we briefly discussed in the healing section of Chapter~\ref{chapter:attacks},
+As we briefly discussed in the healing section of Chapter~\ref{chapter.attacks},
 it is possible for the adversarial power $t$ to fluctuate, and for the system to
 alternate between periods of honest majority and dishonest majority.
 Honest mining power $n - t$ can also fluctuate. In our calculations for the target $T$,
@@ -733,7 +733,7 @@ precisely in the next few chapters.
 % \section{Some Bitcoin Statistics}
 % We can take a look at the blockchain statistics for Bitcoin on the website:\\
 % \href{https://www.blockchain.com/charts/hash-rate}{https://www.blockchain.com/charts/hash-rate}.
-% Today, the hash rate of the bitcoin network is $210.48$m TH/s, measured in terahertz per second, as shown in Figure ~\ref{fig:hash_rate}. This can be denoted as:
+% Today, the hash rate of the bitcoin network is $210.48$m TH/s, measured in terahertz per second, as shown in Figure ~\ref{fig.hash_rate}. This can be denoted as:
 % \begin{align*}
 %     q\cdot (n-t) \approx 2^{67} \texttt{ Hz}.
 % \end{align*}
@@ -804,14 +804,14 @@ precisely in the next few chapters.
 %     \centering
 %     \includegraphics[scale = 0.5]{figures/hardware.png}
 %     \caption{Illustration of the interactions between the hardware wallet and the computer}
-%     \label{fig:hardware}
+%     \label{fig.hardware}
 % \end{figure}
 %
 % \begin{figure}[ht]
 %     \centering
 %     \includegraphics[scale = 0.1]{figures/hardware_wallet.jpg}
 %     \caption{An Example of a Hardware Wallet\cite{hard}}
-%     \label{fig:hardware_wallet}
+%     \label{fig.hardware_wallet}
 % \end{figure}
 %
 %

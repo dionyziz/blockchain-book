@@ -1,4 +1,4 @@
-\chapter{Attacks}\label{chapter:attacks}
+\chapter{Attacks}\label{chapter.attacks}
 
 In the previous chapter, we saw two basic attacks: the Fan-Out and the Nakamoto Race.
 The Fan-Out is more of a misconfigured network situation, because no mining adversary
@@ -40,7 +40,7 @@ Nakamoto Attack}~\cite{nakamoto-wins}. As we've seen, using this attack she cann
 except with negligible probability in $k$. The more we allow $k$ to grow, the more the actual successful
 queries of the adversary and the actual convergence opportunities will tend to
 approximate their expectations. We will make this argument precise when we
-prove the Common Prefix against \emph{all} adversaries in Chapter~\ref{chapter:earnest3}.
+prove the Common Prefix against \emph{all} adversaries in Chapter~\ref{chapter.earnest3}.
 
 \subsection*{Chain Growth}
 Even though a minor adversary can affect the chain velocity $\tau$ of honest
@@ -234,7 +234,7 @@ It can also be used as a mechanism to double-check our theoretical results.
 Plugging some numbers into this simulation, we observe that, for large values of $c$
 and $m$, the average chain quality converges to $\frac{1}{2}$ for $\frac{t}{n} = \frac{1}{3}$,
 and to $0$ as $\frac{t}{n} \rightarrow \frac{1}{2}$. You are asked to verify these
-results in Problem~\ref{problem:selfish-simulation}.
+results in Problem~\ref{problem.selfish-simulation}.
 
 We used a simulation to calculate these numbers to get a feel for them, but we can also
 support these numbers theoretically and develop a closed-form formula for the achieved
@@ -324,7 +324,7 @@ spending attack using the Nakamoto Race is one example. A transaction that is ro
 an honest party's ledger and then replaced by a different transaction in the same position
 is a safety violation.
 
-As we discussed when we first introduced the double spending attack in Chapter~\ref{chapter:transaction},
+As we discussed when we first introduced the double spending attack in Chapter~\ref{chapter.transaction},
 the double spending is problematic because it has real-world ramifications. When the adversary double
 spends, she receives some real-world goods, such as a car. When a conflicting transaction appears on
 the ledger of the seller and the original transaction is reverted, the adversary has long since
@@ -450,7 +450,7 @@ generated blocks as well. Liveness heals, because Chain Quality heals.
 \begin{problems}
   \item Implement Algorithm~\ref{alg.selfish-simulation} in your favourite programming language,
         and run it for values $t, n, c, m$ of your choice. Can you reproduce the results described
-        in the text?\label{problem:selfish-simulation}
+        in the text?\label{problem.selfish-simulation}
   \item Use the Monte Carlo method to implement a simulation to calculate the density of
         convergence opportunities in time for various values of $n, t, T, \Delta$. Plot your
         result. Does your graph resemble Figure~\ref{fig.p-vs-convergence-opportunities}?
@@ -522,7 +522,7 @@ generated blocks as well. Liveness heals, because Chain Quality heals.
 % \begin{figure}[h!]
 % \[\includegraphics[scale=0.35]{figures/targetT.png}\]
 %
-% \label{fig:convergence_opp_frequency}
+% \label{fig.convergence_opp_frequency}
 % \caption{Plot of convergence opportunity frequency versus target $T$}
 % \end{figure}
 \end{problems}
