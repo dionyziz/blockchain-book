@@ -496,14 +496,15 @@ $\overline{x}$ refers to any transactions that are unknown, these are downloaded
 to validate the block.
 
 The validation of transactions
-$\overline{x}$ in a block works as follows. For each block $B$, we remember a UTXO set which we
-associate with the state $\st(B)$ of the world \emph{after} the particular block has been adopted.
+$\overline{x}$ in a block works as follows.
+First, for each block $B$ we save the UTXO set after the particular block has been applied.
+We call this UTXO set the \emph{state}\index{State} $\st(B)$ of the block $B$.
 We also define a \emph{genesis state}\index{Genesis State} $\st_0$, the state of the world \emph{before}
 any transaction ever
 took place. The genesis state, which is where the UTXO set begins its lifetime, is defined to be the
 empty set.
 
-To validate the transactions in a block $B = s \conc \overline{x} \conc \ctr$, we take the state
+To proceed with the transaction validation in a block $B = s \conc \overline{x} \conc \ctr$, we take the state
 $\st_{B'}$ associated with
 its parent block $B'$ whose blockid is $s = H(B')$, or $\st_0$ if $B = \mathcal{G}$.
 We then attempt to apply each of the transactions in the block, in the order
@@ -512,7 +513,7 @@ and producing elements in the set, and validating
 every transaction along the way, in the manner we already discussed in Chapter~\ref{chapter.transaction}.
 If at any point the transaction validation fails, the whole block is rejected,
 even if just one transaction was invalid. If all transaction validations succeeded,
-we assign the state $\st_B$ after our block to be the UTXO set we arrived at after
+we assign the state $\st_B$ (``the state after the block'') to be the UTXO set we arrived at after
 this process is completed. This is illustrated in Figure~\ref{fig.block-tx-validation}.
 In this example, $B.\overline{x} = (\tx_1, \tx_2, \tx_3, \tx_4)$.
 

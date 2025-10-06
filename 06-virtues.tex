@@ -83,7 +83,7 @@ difficult.
 
 When we gave the first intuitive definition of ledger safety in Definition~\ref{def:safety-informal}, we mandated that all honest parties
 agree \emph{exactly} on their ledgers. Now that we've talked about network delays and arranged transactions into blocks, we see
-that this will be impossible to achieve. In the best case scenario, we have a chain that is growing without any forks. Still, in this
+that we have not actually achieved this goal. In the best case scenario, we have a chain that is growing without any forks. Still, in this
 case, if two honest parties $P_1, P_2$ both have a chain $\chain$, whenever $P_1$ mines a block $B$ on top of $\chain$, it will take
 $\Delta$ time until $P_2$ receives this block and updates his ledger. Remember that the reported ledger of a party only includes the
 transactions that have been confirmed into blocks.
@@ -135,7 +135,8 @@ Additionally, party $P_2$ at time $r_2$ has confirmed $\tx'$, a conflicting tran
 $\tx' = L^{P_2}_{r_2}[j]$. Now, if $i = j$, then this means that $\tx = \tx'$, which is a contradiction since these are conflicting.
 If $i < j$, then by safety this means that $L^{P_2}_{r_2}[i] = L^{P_1}_{r_1}[i] = \tx$. But then, party $P_2$ has included
 in his ledger \emph{both} $\tx$ at position $i$ \emph{and} $\tx'$ at position $j$. This is a contradiction, because the honest
-party validates $\tx'$ before accepting it. Therefore, the two parties cannot have accepted conflicting transactions.
+party validates $\tx'$ before accepting it. A symmetric argument holds if $j < i$.
+Therefore, the two parties cannot have accepted conflicting transactions.
 \end{proof}
 
 This is a good sanity check that our definition of safety makes sense. Is this revised and precise, yet weaker, notion of ledger
@@ -305,7 +306,7 @@ the transactions that are within $\chain[{:}-k]$, our chain with the last $k$ bl
 off. If the Common Prefix virtue holds, we know that the blocks in $\chain[{:}-k]$ will never
 be abandoned in the future.
 
-Our new, and final, confirmation rule, is illustrated in
+Our new, and final, \emph{confirmation rule}\index{Confirmation Rule}, is illustrated in
 Algorithm~\ref{alg.read-stable}. Compare this rule to Algorithm~\ref{alg.read-naive} of
 the previous chapter. The only difference is that we have replaced $\chain$ with $\chain[{:}-k]$.
 The portion $\chain[{:}-k]$ is called the \emph{stable} part of the chain, because we
