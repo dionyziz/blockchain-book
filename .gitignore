@@ -1,5 +1,6 @@
 # Exclude compiled output file
 blockchain-foundations.pdf
+output/*
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
@@ -16,6 +17,7 @@ blockchain-foundations.pdf
 .*.lb
 *.swp
 *.swo
+*.synctex.gz
 
 ## Intermediate documents:
 *.dvi
