@@ -1,10 +1,10 @@
-\chapter{Accounts \small{\textsf{DRAFT}}}\label{chapter:accounts}
+\chapter{Accounts \small{\textsf{DRAFT}}}\label{chapter.accounts}
 
 In our treatment so far, we have dealt with the UTXO model. There, the state
 that we maintained was the UTXO set, and transactions expressed a \emph{transition}
 from one UTXO set to the next by updating it appropriately (adding and removing elements from
 it). By ordering the transactions into a ledger using a blockchain, we achieved
-consensus on a mutually shared state between mutually distrusted participants, among
+consensus on a mutually shared state between mistrustful participants, among
 which an honest majority assumption holds. The machinery
 we have created solves the \emph{State Machine Replication}\index{State Machine Replication}
 problem.
@@ -18,7 +18,7 @@ from one state to the next.
 Certain aspects of the validation concern the \emph{consensus layer}\index{Consensus Layer},
 which pertains to checking the consensus contents of blocks: The ancestry relation,
 the genesis block, the proof-of-work, the timestamps, the difficulty adjustment mechanism.
-These checks concern the \emph{structural validation} of blocks. 
+These checks pertain to the \emph{structural validation} of blocks.
 
 \begin{figure}[h]
   \centering
@@ -30,7 +30,7 @@ These checks concern the \emph{structural validation} of blocks.
 \section{Accounts Model}
 
 \subsection{Accounts Model Compared with UTXO Model}
-Recall the previous UTXO model: we store a set of unspent transaction outputs (UTXOs). When a transaction occurs, UTXOs corresponding to the transaction's inputs are removed and UTXOs corresponding to the transaction's outputs are added into the UTXO set to produce a new UTXO set, as shown in Figure \ref{fig:UTXOModelDiagram}.
+Recall the previous UTXO model: we store a set of unspent transaction outputs (UTXOs). When a transaction occurs, UTXOs corresponding to the transaction's inputs are removed and UTXOs corresponding to the transaction's outputs are added into the UTXO set to produce a new UTXO set, as shown in Figure \ref{fig.UTXOModelDiagram}.
 
 \begin{figure}[h]
     \centering
@@ -50,7 +50,7 @@ Recall the previous UTXO model: we store a set of unspent transaction outputs (U
 
     \end{tikzpicture}
     \caption{State transitions in the UTXO model}
-    \label{fig:UTXOModelDiagram}
+    \label{fig.UTXOModelDiagram}
 \end{figure}
 
 The accounts model is another model of transactions.
@@ -64,11 +64,11 @@ In the accounts model, transactions contain 1) the account that sends balance (f
          From & To & Val & Fee & {$\sigma$} \\
          \hline
     \end{tabular}
-    \label{fig:accountsTx}
+    \label{fig.accountsTx}
     \caption{Structure of a transaction in the accounts model}
 \end{figure}
 
-For the accounts model, the state is maintained by accounts (public keys) and balances, as shown in Figure \ref{fig:AccountsModelDiagram} and Figure \ref{fig:balanceState}.
+For the accounts model, the state is maintained by accounts (public keys) and balances, as shown in Figure \ref{fig.AccountsModelDiagram} and Figure \ref{fig.balanceState}.
 
 \begin{figure}[h]
     \centering
@@ -88,7 +88,7 @@ For the accounts model, the state is maintained by accounts (public keys) and ba
 
     \end{tikzpicture}
     \caption{State transitions in the accounts model}
-    \label{fig:AccountsModelDiagram}
+    \label{fig.AccountsModelDiagram}
 \end{figure}
 
 \begin{figure}[ht]
@@ -104,7 +104,7 @@ For the accounts model, the state is maintained by accounts (public keys) and ba
         \hline
         \end{tabular}
     \caption{Balance State}
-    \label{fig:balanceState}
+    \label{fig.balanceState}
 \end{figure}
 
 The function that takes in a state and a transaction and returns a new state is called a \textbf{transition function}. It has a general form of:
@@ -159,7 +159,7 @@ Here comes a problem. In the accounts model, if the same transaction is sent to 
 
 If the network decides to accept transactions that are the same, the following replay attack could happen: an adversarial coffee shop could replay the transaction even if Bob didn't buy a coffee. However, if the network decided not to include transactions that are same, then Bob could only buy a coffee once.
 
-The solution is to add a nonce field to transactions. The nonce is an 256-bit integer per source account which is incremented every new transaction. The transaction structure now looks like Figure \ref{fig:accountsTxWithNonce}.
+The solution is to add a nonce field to transactions. The nonce is an 256-bit integer per source account which is incremented every new transaction. The transaction structure now looks like Figure \ref{fig.accountsTxWithNonce}.
 
 \begin{figure}[ht]
 \centering
@@ -169,7 +169,7 @@ The solution is to add a nonce field to transactions. The nonce is an 256-bit in
          \hline
     \end{tabular}
     \caption{Structure of tx in accounts model}
-    \label{fig:accountsTxWithNonce}
+    \label{fig.accountsTxWithNonce}
 \end{figure}
 
 And therefore, while validating transactions, an additional step of validating the nonce should be included. Transactions in which the nonce
@@ -178,7 +178,7 @@ has already been used is rejected.
 This means that the state contains the current nonce for each account, in addition to the balance.
 The state transition function must also update the nonce for the ``from'' account of the transaction.
 
-A side by side comparison between the two models  of transactions is shown in Figure \ref{fig:sideBySide}.
+A side by side comparison between the two models  of transactions is shown in Figure \ref{fig.sideBySide}.
 
 \begin{figure}[ht]
     \centering
@@ -211,7 +211,7 @@ A side by side comparison between the two models  of transactions is shown in Fi
          \hline
     \end{tabular}
     \caption{Side by Side Comparison of Two Models}
-    \label{fig:sideBySide}
+    \label{fig.sideBySide}
 \end{figure}
 
 \section{State Machine Replication}
@@ -247,7 +247,7 @@ $$
 h \coloneqq H(h[\mathrm{left}] \mathbin\Vert h[\mathrm{right}])
 $$
 
-Nodes on the leaves store the hash of the corresponding data chunk. The client stores the Merkle tree root (MTR) $h_\epsilon$. When a data chunk is requested, the server sends the data chunk, along with every sibling hash value to the clients as shown in Figure \ref{fig:merkleTree}. For example, when data chunk at index $j$ is requested, the server sends $D[j]$, $\pi_0$, $\pi_1$, $\pi_2$, and $\pi_3$ to the client. The client walks from the received data chunk all the way up to the root to check if the hash values are intact. From calculating $e_0$ by hashing the data chunk, to the top level $e_{\mu+1}$, the client calculates $e_k = H(e_{k-1} \mathbin\Vert \pi_{k-1})$ or $e_k = H(\pi_{k-1} \mathbin\Vert e_{k-1})$(left child first). In this example, the client computes the values $e_0 = H(D[j])$, $e_1 = H(e_0 \mathbin\Vert \pi_0)$, $e_2 = H(\pi_1 \mathbin\Vert e_1)$, $e_3 = H(e_2 \mathbin\Vert \pi_2)$, and $e_4 = H(\pi_3 \mathbin\Vert e_3)$ and then compares $e_4$ with $h_\epsilon$.
+Nodes on the leaves store the hash of the corresponding data chunk. The client stores the Merkle tree root (MTR) $h_\epsilon$. When a data chunk is requested, the server sends the data chunk, along with every sibling hash value to the clients as shown in Figure \ref{fig.merkleTree}. For example, when data chunk at index $j$ is requested, the server sends $D[j]$, $\pi_0$, $\pi_1$, $\pi_2$, and $\pi_3$ to the client. The client walks from the received data chunk all the way up to the root to check if the hash values are intact. From calculating $e_0$ by hashing the data chunk, to the top level $e_{\mu+1}$, the client calculates $e_k = H(e_{k-1} \mathbin\Vert \pi_{k-1})$ or $e_k = H(\pi_{k-1} \mathbin\Vert e_{k-1})$(left child first). In this example, the client computes the values $e_0 = H(D[j])$, $e_1 = H(e_0 \mathbin\Vert \pi_0)$, $e_2 = H(\pi_1 \mathbin\Vert e_1)$, $e_3 = H(e_2 \mathbin\Vert \pi_2)$, and $e_4 = H(\pi_3 \mathbin\Vert e_3)$ and then compares $e_4$ with $h_\epsilon$.
 
 \begin{figure}[ht]
     \centering
@@ -328,7 +328,7 @@ Nodes on the leaves store the hash of the corresponding data chunk. The client s
 
     \end{tikzpicture}
     \caption{Merkle Tree}
-    \label{fig:merkleTree}
+    \label{fig.merkleTree}
 \end{figure}
 
 With this data structure, the data transferred is a list of $\pi$ values and the data chunk of fixed size, which gives $\lvert \pi \rvert = O(\log n)$ succinct communication and $O(1)$ constant storage.
@@ -404,7 +404,7 @@ $\mathcal{A}'$ works as follows:
 
 Given that $\mathcal{A}$ succeeds, the returned list of $\pi$ is used to calculate hashes of the nodes to verify the returned data chunk, which involves calculating $e$ values by concatenating the children of the nodes. The hash of the root is the same ($h_\epsilon = e_{top}$)
 and the hash of the data chunk is different ($e_0 \neq h_0$). (If not, $\mathcal{A}'$ has already found a collision because different data chinks have the same hash.)
-Therefore, there must exists a node, some level $k$ in the tree, such that $e_k = h_k$ but its children $e_{k-1}$ or $\pi_{k-1}$ not equal to the expected $h$ values. (These must exist because roots are the same, but leaves are different). In this case, we have two different inputs that hash to the same value.
+Therefore, there must exist a node, some level $k$ in the tree, such that $e_k = h_k$ but its children $e_{k-1}$ or $\pi_{k-1}$ not equal to the expected $h$ values. (These must exist because roots are the same, but leaves are different). In this case, we have two different inputs that hash to the same value.
 
 Then, adversary $\mathcal{A}'$ returns children of $e_k$ from the verifier tree at level $k$ as $x_1$ and children of $h_k$ from real tree at the corresponding position as $x_2$. Then, $x_1$ and $x_2$ satisfy $x_1 \neq x_2 \land H(x_1) = H(x_2)$.
 

@@ -1,4 +1,4 @@
-\chapter{Security in Earnest I \small{\textsf{DRAFT}}}\label{chapter:earnest1}
+\chapter{Security in Earnest I \small{\textsf{DRAFT}}}\label{chapter.earnest1}
 
 % TODO: define $f$ and $\eta$ formally
 
@@ -7,14 +7,33 @@ they work. In this chapter and the next couple of chapters, we will formalize th
 security and prove that blockchains are secure. We start by making a few things more precise,
 beginning with our hash function and the notion of time. Once we have specified these, we
 will describe the environment that the parties operate in. This will make precise
-the concept of a Sybil adversary and the non-eclipsing assumption, among other things.
+the concept of a \emph{Sybil adversary} and the \emph{non-eclipsing assumption}, which we introduced informally
+in Chapter~\ref{chapter.untrusty-world}, among other things.
 Next, we will write out the protocol of the honest parties as exact pseudocode.
 We will move on to formally prove the three chain virtues we explored intuitively:
 Chain Growth, Common Prefix, and Chain Quality.
 Finally, we will formally show that ledger virtues follow from chain virtues.
 
+In order to prove the security of our systems,
+we need to set the stage to explicitly define what it means to run the blockchain network as a
+whole and analyze its properties. We want to be able to speak about an \emph{execution} of the network.
+This execution needs to be a well-defined mathematical object so that we can precisely speak about
+predicates on this object and determine, for example, whether the common prefix chain virtue held in a
+particular execution, or if the safety ledger virtue was violated in another. To this end, we will
+model the running of the whole blockchain network as a kind of simulation: We will instantiate multiple
+honest machines running the honest code, and one adversarial machine running the adversarial code.
+Whereas the honest code will be defined by us, the adversarial code will be free to be anything.
+The machines will be polynomially bound, and formally they can be treated as Turing Machines (although
+the precise details of the computational model of each machine are unimportant). Once these machines
+are booted up, we will create all the plumbing and piping to orchestrate their execution and their
+connection. We will define how they operate step by step, when each machine is ran, and how they
+exchange messages with one another on the network.
+
+Let us begin by discussing a model of how the hash function behaves in this network context.
+
 \section{Random Oracle}\index{Random Oracle}
-In Chapter~\ref{chapter:blocks}, we argued that the hash function behaves like a random
+
+In Chapter~\ref{chapter.blocks}, we argued that the hash function behaves like a random
 oracle and that $Pr[H(B) \leq T] = p = \frac{T}{2^k}$. Let us now make the random oracle
 model more precise. We want the hash function to return a uniformly randomly chosen $\kappa$-bit
 value whenever it is invoked with a fresh input. However, in order for it to be a function,
@@ -32,12 +51,44 @@ the key $B$ queried has been queried before, the random oracle returns the cache
 Otherwise, the oracle generates a uniformly random $\kappa$-bit string, caches it in the $\mathcal{T}$
 dictionary for future use, and returns it.
 
+By introducing the random oracle model, we are treating the hash function as an idealized ``API''
+or service that any party can query. It is important to understand that this is an idealized model
+and not how real systems work. In real implementations of cryptocurrencies, the hash function is
+computed locally by each party by a fast and deterministic algorithm that does not require reaching
+out to an external service.
+
 \section{Synchrony}\index{Synchrony Assumption}
-Until now, we considered time as continuous. We will now follow a synchronous model where time is broken
-up into rounds, each round lasting a discrete time $\Delta$. Additionally, we will consider the network
-delay to be precisely $\Delta$. This implies that any message broadcast by an honest party at some point
-during the round $r$ will be received by \textbf{every honest party} at the start of round $r+1$, all at
-exactly the same moment.
+
+To simplify our analysis, we will \emph{quantize} time. We will pretend that time progresses in
+discrete \emph{rounds} that are numbered by the integers $1, 2, \ldots, L$. The honest parties
+and the adversary execute in \emph{lockstep}: The execution begins at round $1$, and everyone gets
+to take an action. When everyone has completed their actions for round $1$, the round concludes,
+and round $2$ begins. Everyone gets to take an action during round $2$. When everyone has completed
+their actions for round $2$, the round concludes, and so on, until the last round $L \in \mathbb{N}$
+is reached. We call $L$ the system's \emph{lifetime}. This lockstep model with rounds is like
+a turn-based game between the parties.
+
+The actions of a party during a round are private to himself and not seen by the other parties.
+For example, the adversary cannot directly observe the actions of an honest party. The only way for
+the parties to exchange information is through the \emph{network}. Again, we will model the network as a
+mathematical device, and abstract away the more concrete details of the gossip network that
+we explored in Chapter~\ref{chapter.untrusty-world}. We allow each honest party to emit one or more messages
+during its execution during a particular round. These messages are then collected by the network at the end
+of the round and forwarded to all parties at the beginning of the next round. The phrases ``at the beginning''
+and ``at the end'' of a round are narrative devices to aid understanding, but rounds are, in a sense,
+instantaneous, and there is no communication between parties during the same round. Because messages
+emitted by an honest during one round and received by every honest party by the beginning of the next round,
+we are letting the network diameter $\Delta = 1$. Because $\Delta$ is unitless, we think of a round as exactly
+the amount of time that a message takes to reach the whole network.
+
+\begin{definition}[Synchronous Network]
+    We say that the network is \emph{synchronous} if, whenever a message is emitted by an honest party at
+    round $r$, that message is received by all honest parties by round $r+1$.
+\end{definition}
+
+In practice, on the modern Internet, the duration of one round is taken to be around $10$ seconds or so;
+this is the time it takes for a message to reach all the honest parties, even those in remote locations,
+when the gossip network over multiple hops is used.
 
 This model synchronizes the arrival of messages such that they all arrive at the boundary of each round,
 and lets us discretize time by eliminating complexities of network distance and speed. Furthermore, the execution
@@ -302,7 +353,7 @@ We will now give a new definition of the honest majority assumption by introduci
 
 \section*{Problems}
 \begin{problems}
-    \item Go back to Lemma~\ref{lem:honest-convergence}. Restate it and prove it formally in the model developed in this chapter.
+    \item Go back to Lemma~\ref{lem.honest-convergence}. Restate it and prove it formally in the model developed in this chapter.
 \end{problems}
 
 \section{Further Reading}
@@ -313,3 +364,24 @@ in the previous chapters. At a later time, Juan Garay, Aggelos Kiayias, and Niko
 wrote the \emph{Bitcoin Backbone} paper~\cite{backbone}.
 The Bitcoin Backbone paper formalizes and proves that blockchains that use Proof-of-Work
 are secure. This is the model we have presented in this chapter, with minor modifications.
+
+There are a few other approaches to proving that Bitcoin is secure. One proof is by
+Rafael Pass and Elaine Shi~\cite{rethinking-consensus}. Another is Ling Ren's
+``Analysis of Nakamoto Consensus''~\cite{ling-analysis}. Ling's proof is in a continuous-time
+model in which the hash queries are modeled as a Poisson process, which renders it simpler
+in some ways. One important result in the continuous-time model is that the private mining
+attack, which we studied in Chapter~\ref{chapter.attack}, is the \emph{best possible} attack
+an adversary can mount~\cite{nakamoto-wins}. Given this understanding, it becomes sufficient
+to study under which conditions an adversary cannot mine a private chain faster than the block tree of
+honest parties grows.
+
+Katz and Lindell have a short chapter on the modeling of the hash function as a random oracle
+in their \emph{Modern Cryptography}~\cite{katz}. The model was popularized by Mihir Bellare
+and Phillip Rogaway in their paper \emph{Random Oracles are Practical: A Paradigm for Designing
+Efficient Protocols}~\cite{ro}, but later challenged in the well-cited article \emph{The Random
+Oracle Methodology, Revisited}~\cite{ro-revisited}. Random oracles have a history prior to their introduction in
+cryptography, first appearing in complexity theory. One famous appearance was in
+the paper ``Relative to a Random Oracle $A$, $\textsf{P}^A \neq \textsf{NP}^A$
+with Probability $1$'' by Bennett and Gill~\cite{p-vs-np-randomoracle}, following the earlier seminal
+work of Baker, Gill, and Solovay on the \textsf{P} vs \textsf{NP} relativization
+barrier~\cite{relativization-barrier}.

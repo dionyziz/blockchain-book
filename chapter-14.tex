@@ -1,4 +1,4 @@
-\chapter{Security in Earnest III \small{\textsf{DRAFT}}}\label{chapter:earnest3}
+\chapter{Security in Earnest III \small{\textsf{DRAFT}}}\label{chapter.earnest3}
 
 \section{Recap of last lecture: Security in Earnest (II)}
 We proved several bounds in the previous lecture:
@@ -37,7 +37,7 @@ $Z_r$ counts the number of successful queries for the adversary in round $r$. It
 We can use bound~\ref{eq:bound2}, which gives a lower bound on $\E[Y_r]$.
 We have that:
 \begin{align}
-Y(S) & = (1-\epsilon)\Ex[Y(S)] \\
+Y(S) & \geq (1-\epsilon)\Ex[Y(S)] \\
 & = (1-\epsilon)\Ex[Y_r] |S| \\
 &> (1-\epsilon)f(1-f)|S|\\
 &>  \left(1 - \frac{\delta}{3}\right)f|S| \label{eq:ylower}
@@ -46,7 +46,7 @@ The last inequality is derived as follows by setting $f = \epsilon = \frac{\delt
 \begin{align}
  (1-\epsilon)(1-f) &> 1 - \frac{\delta}{3}\\
  \Leftarrow \left(1-\frac{\delta}{6}\right)\left(1-\frac{\delta}{6}\right) &> 1-\frac{\delta}{3}\\
- \Leftarrow \frac{2\delta}{6} + \frac{\delta^2}{36} &> -\frac{\delta}{3}\\
+ \Leftarrow -\frac{2\delta}{6} + \frac{\delta^2}{36} &> -\frac{\delta}{3}\\
  \Leftarrow \frac{\delta^2}{36} &> 0\\
  \Leftarrow \delta &> 0.
 \end{align}
@@ -59,6 +59,8 @@ Z(S) &< (1+\epsilon)\Ex[Z(S)]\\
 &< \frac{t}{n-t} \cdot \frac{f}{1-f} |S| + \epsilon f|S|\label{eq:balance}\\
 &\leq \left(1 - \frac{2\delta}{3}\right)f|S|\label{eq:zupper}.
 \end{align}\\
+
+{\color{red} actually this can be proven by invoking $\Ex[Z] < \Ex[X]$ directly}
 To prove inequality~\ref{eq:balance}, note that from the balancing equation we have $f \leq \frac{\delta}{3}$. It suffices to show that $\frac{t}{n-t}\cdot\frac{1}{1-f} < 1$:
 \begin{align}
 \frac{t}{n-t}\cdot\frac{1}{1-f} &< 1\\
@@ -71,7 +73,7 @@ To prove inequality~\ref{eq:zupper}, we again use our choice of values $f = \eps
     \Leftarrow \frac{1-\delta}{1-f} + \epsilon &< 1-\frac{2\delta}{3}\\
     \Leftarrow \frac{1-\delta}{1-\delta/6} + \frac{\delta}{6} &< 1 - \frac{2\delta}{3}\\
     \Leftarrow 1-\delta + \frac{\delta}{6} -\frac{\delta^2}{36} &< 1- \frac{\delta}{6} -\frac{2\delta}{3} + \frac{2\delta^2}{18}\\
-    \Leftarrow -\frac{5\delta}{6}-\frac{\delta^2}{36} &< \frac{5\delta}{6} + \frac{\delta^2}{9}\\
+    \Leftarrow -\frac{5\delta}{6}-\frac{\delta^2}{36} &< -\frac{5\delta}{6} + \frac{\delta^2}{9}\\
     \Leftarrow -\frac{\delta^2}{36} < \frac{\delta^2}{9}
 \end{align}
 Combining results~\ref{eq:zupper} and~\ref{eq:ylower} together gives us:
@@ -107,7 +109,7 @@ Our plan for this proof is as follows. We will show this by contradiction. Suppo
 The last two points are already proven, so we are only missing the first point to prove Common Prefix.
 To do so, we prove the following lemma. We will choose $\lambda$ to be at least $2f$.
 
-\begin{lemma}[Patience Lemma]\label{lem:patience}
+\begin{lemma}[Patience Lemma]\label{lem.patience}
 In typical executions, any $k \geq 2\lambda f$ blocks have been computed in at least $\frac{k}{2f}$ rounds.
 \end{lemma}
 \begin{proof}
@@ -145,19 +147,21 @@ Consider a block $C[i]$ produced during a convergence opportunity. If $C'[i] \ne
 
 We are now ready to prove our second chain virtue.
 
-\begin{theorem}[Common Prefix]
+% TODO: this is the common prefix lemma; write it more carefully
+% as a lemma
+\begin{lemma}[Common Prefix]\label{lem.common-prefix}
 A typical execution satisfies Common Prefix with $k = 2\lambda f$.
-\end{theorem}
+\end{lemma}
 
 \begin{figure}
     \centering
     \includegraphics[width=16cm]{figures/common_prefix.png}
     \caption{A common prefix violation. Honestly computed blocks are shown in gray, while adversarially computed blocks are shown in red. At the end of round $r$, party $P$ has adopted chain $C$ and party $P'$ has adopted chain $C'$. $B^\star$ is the most recent honestly produced block in the common prefix of $C,C'$. This is genesis if all other blocks in the common prefix are adversarial. $r'$ is the round with the last convergence opportunity. By the Pairing Lemma, convergence opportunities in rounds after the fork must be matched with a successful adversarial query. For example, $C[i'-3]$ is an adversarially produced block is matched with $C'[i'-3]$, and similarly for $C'[i'-2], C[i'-2]$. It is also possible to have multiple honestly produced blocks in a round after the fork without any convergence opportunities, as $C[i'-1], C'[i'-1]$ show.}
-    \label{fig:cp_violation}
+    \label{fig.cp_violation}
 \end{figure}
 
 \begin{proof}
-Assume towards contradiction that there is a CP$(k)$ violation, illustrated in Figure \ref{fig:cp_violation}.
+Assume towards contradiction that there is a CP$(k)$ violation, illustrated in Figure \ref{fig.cp_violation}.
 We have two forks $C, C'$ where if we remove the last $k$ blocks from each of them, they are not the same chain. Let $S = \{ r^*, ..., r\}$, where $r^*$ is the round in which the most recent honestly mined block $C[i^*] = B^*$ in the common prefix of $C, C'$ was produced. After $r^*$, all honest parties will be mining on chains at least $i^*$ long. \\
 
 We claim that $Z(S) \geq Y(S)$. Let $J$ be set of the heights of blocks $B$, where $B$ was produced during a convergence opportunity in $S$. Let $r'$ be the last convergence opportunity in $S$, in which block $B'$ was computed at height $i'$.
@@ -175,8 +179,104 @@ Thus, overall, we have matched every convergence opportunity with an adversarial
 We have $k$ blocks that were produced in $S$, so by the Patience Lemma, we have $|S| \geq \lambda$, which gives us typicality. However, typicality states that $Z(S) < Y(S)$, a direct contradiction.
 \end{proof}
 
+% \begin{theorem}[Common Prefix]
+%   A typical execution satisfies the Common Prefix virtue with $k = 2\lambda f$.
+% \end{theorem}
+% \begin{proof}
+%   Consider a typical execution and suppose, towards a contradiction, that Common
+%   Prefix is violated, and let $r_2$ be the first round during which it is violated.
+%   At $r_2$ there is an honest party $P_2$ who has chain $C_2'$ and adopts chain
+%   $C_2 \neq C_2'$ inconsistent with the chain $C_1$ adopted by an honest party
+%   $P_1$ at a round $r_1 \leq r_2$, namely $C_1[{:}{-}k] \not\preceq C_2$.
+%
+%   If $r_1 < r_2$, then at round $r_2 - 1$ the party $...$
+% \end{proof}
+%
+% \begin{theorem}[Common Prefix]
+%   A typical execution satisfies the Common Prefix virtue with $k = 2\lambda f$.
+% \end{theorem}
+% \begin{proof}
+%   We know from Lemma~\ref{lem.common-prefix} that for every round $r$ of a typical
+%   execution, for every honest party $P^1$ that \emph{has} a chain $C^1$ at $r$ and every
+%   honest party $P^2$ that \emph{adopts} a chain $C^2$ at $r$, it holds that
+%   $C^1[{:}-k] \preceq C^2$ and $C^2[{:}{-k}] \preceq C^1$.
+%
+%   Suppose, towards a contradiction, that a typical execution does not satisfy
+%   the Common Prefix virtue, even though the Common Prefix lemma statement holds.
+%   Namely, there are two rounds $r_1 \leq r_2$ and honest parties $P^1, P^2$ \emph{adopting}
+%   chains $C^1_{r_1}, C^2_{r_2}$ at rounds $r_1$ and $r_2$ respectively with
+%   $C^1_{r_1}[{:}{-k}] \not\preceq C^2_{r_2}$.
+%
+%   Let $C^a_{r_a}$ be the shortest among $C^1_{r_1}, C^2_{r_2}$ (breaking ties arbitrarily), let
+%   $r_a$ be the round in which it was \emph{adopted} and $P^a$ be the honest party that \emph{adopted} it; and,
+%   similarly let $C^b_{r_b}$ be the other chain among the two, and $r_b, P^b$ be the
+%   respective round and honest party. At round $r_2 + 1 \geq r_a$, the party $P^a$ \emph{adopts} a
+%   chain $C^a_{r_2+1}$ at least as long as $C^b_{r_b}$ (by the longest chain rule).
+%   Let $\overline{C}$ be the common prefix of $C^a_{r_a}$ and $C^b_{r_b}$.
+%   Let $B$ be the most recent block in the common prefix of $C^a_{r_a}$ and $C^a_{r_2 + 1}$.
+%   We distinguish two cases.
+%
+%   \noindent
+%   \textbf{Case 1: } $B$ lies in $\overline{C}$. Then at round $r_b < r_2 + 1$,
+%   party $P^b$ adopts chain $C^b_{r_b}$ with $\overline{C} \preceq C^b_{r_b}$. If at round
+%   $r_2 \geq r_b$ party $C_b$ also \emph{adopts} a chain $C^b_{r_2}$ with
+%   $\overline{C} \preceq C^b_{r_2}$,
+%   then the party \emph{has} the chain $C^b_{r_2}$ at round $r_2 + 1$, whereas
+%   the party $P^a$ \emph{adopts} the chain $C^a_{r_2 + 1}$ at $r_2 + 1$.
+%   But $C^a_{r_2 + 1}[{:}{-k}] \not\preceq C^b_{r_2}$,
+%   contradicting Lemma~\ref{lem.common-prefix}. On the contrary, if at round
+%   $r_2 \geq r_b$ party $P^b$ \emph{adopts} a chain $C^b_{r_2}$ with $\overline{C} \not\preceq C^b_{r_2}$,
+%   then there must exist a round $r$ with $r_b \leq r < r_2$ in which party $P^b$ \emph{has} a
+%   chain $C^b_{r - 1}$ and \emph{adopts} a chain $C^b_r$ with
+%   $\overline{C} \preceq C^b_{r - 1}$, but $\overline{C} \not\preceq C^b_r$,
+%   and so $C^b_r[{:}{-k}] \not\preceq C^b_{r - 1}$,
+%   contradicting Lemma~\ref{lem.common-prefix}.
+%
+%   \noindent
+%   \textbf{Case 2: } $B$ lies in $C^a_{r_2 + 1}$ but not in $\overline{C}$.
+%   Then at round $r_2 + 1$, party $P^a$ \emph{adopts} the chain $C^a_{r_2 + 1}$,
+%   but party $P^b$ \emph{has} the chain $C^b_{...}$...
+% \end{proof}
+%
 
+\begin{theorem}[Common Prefix]
+\end{theorem}
+\begin{proof}
+    Consider a typical execution and suppose, towards a contradiction, that Common
+    Prefix is violated, and let $r_2$ be the first round during which it is violated.
+    At $r_2$ there is an honest party $P_2$ who adopts chain $C_2$
+    inconsistent with the chain $C_1$ adopted by an honest party
+    $P_1$ at a round $r_1 \leq r_2$, namely $C_1[{:}{-}k] \not\preceq C_2$.
 
+    % TODO: Change algorithm so that has r => adopts r + 1
+    \noindent
+    \textbf{Case $r_1 < r_2$.}
+    At round $r_2$, party $P_1$ has a chain $C$,
+    which it adopted at $r_2 - 1$ (not excluding the case
+    where $C = C_1$). It holds that $C_1[{:}{-k}] \preceq C$
+    due to the minimality of $r_2$ (otherwise, the Common Prefix virtue would
+    have been broken at $r_2 - 1$ by chains $C_1$ and $C$).
+    Furthermore, $|C| \geq |C_1|$ due to the longest chain
+    rule followed by $P_1$. Therefore $C_1[{:}{-k}] \preceq C[{:}{-k}]$.
+    By the Common Prefix lemma, we have $C[{:}{-k}] \preceq C_2$
+    (at $r_2$, party $P_1$ has $C$ and party $P_2$ adopts $C_2$).
+    By transitivity of $\preceq$, we have $C_1[{:}{-k}] \preceq C_2$,
+    which contradicts the violation of Common Prefix.
+
+    \noindent
+    \textbf{Case $r_1 = r_2$.}
+    Let $C$ be the chain that $P_1$ adopts at $r_1 + 1$ (not excluding the case
+    where $C = C_1$).
+    By the Common Prefix lemma, we have that
+    $C_1[{:}{-k}] \preceq C$ (at $r_1 + 1$, party $P_1$ adopts $C$ and has $C_1$).
+    Furthermore, $|C| \geq |C_1|$ due to the longest chain
+    rule followed by $P_1$.
+    Because $|C| \geq |C_1|$, therefore $C_1[{:}{-k}] \preceq C[{:}{-k}]$.
+    By the Common Prefix lemma, we have that
+    $C[{:}{-k}] \preceq C_2$ (at $r_1 + 1$, party $P_1$ adopts $C$ and party $P_2$ has $C_2$).
+    By transitivity of $\preceq$, we have $C_1[{:}{-k}] \preceq C_2$,
+    which contradicts the violation of Common Prefix.
+\end{proof}
 
 \section{Note about Tradeoffs with $\epsilon$ and $f$}
 
