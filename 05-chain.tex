@@ -1,4 +1,4 @@
-\chapter{The Chain}\label{chapter:chain}
+\chapter{The Chain}\label{chapter.chain}
 
 In the last chapter, we discussed the necessity for blocks as a mechanism to enforce \emph{periods of silence} so that double spends
 can be adequately separated in time.  We then linked blocks together into chains in order to ensure freshness so that an adversary cannot
@@ -14,9 +14,9 @@ that blocks are spaced $\Delta$ apart. Let us now calculate the correct value of
 $\Delta$ time apart. To do this, we need to first find out when the proof-of-work inequality holds. If we start
 with a freshly generated $\ctr$ and place it into $B = s \conc \overline{x} \conc \ctr$, what is the probability that $H(B) \leq T$?
 This question is not straightforward to answer, because the output of a hash function may not be uniformly distributed (see also
-Problem~\ref{problem:small-hash}).
+Problem~\ref{problem.small-hash}).
 
-In fact, not all collision resistant hash functions are suitable for proof-of-work. We want to demand that, whenever the hash is queried with a fresh input, the output is uniformly distributed in $\{0,1\}^\kappa$. This extra assumption is known as the \emph{random oracle model} and we will return to it in Chapter~\ref{chapter:earnest1}. Using the random oracle model, we can calculate the probability that a particular nonce trial is successful:
+In fact, not all collision resistant hash functions are suitable for proof-of-work. We want to demand that, whenever the hash is queried with a fresh input, the output is uniformly distributed in $\{0,1\}^\kappa$. This extra assumption is known as the \emph{random oracle model} and we will return to it in Chapter~\ref{chapter.earnest1}. Using the random oracle model, we can calculate the probability that a particular nonce trial is successful:
 
 \glsxtrnewsymbol[description={successful query probability}]{successful query probability}{$p$}\glsadd{successful query probability}
 \[
@@ -51,12 +51,12 @@ Also, the larger the network delay, the larger we must make the difficulty.
 We will use $f$ to denote the honest block production rate (expected blocks per unit of time),
 and $\eta = \frac{1}{f}$ the expected time between two blocks being generated.
 For now, we'll estimate that $f \simeq (n - t)qp$, but we will give a more
-formal definition for $f$ in Chapter~\ref{chapter:earnest1}.
+formal definition for $f$ in Chapter~\ref{chapter.earnest1}.
 
 As the designers of the protocol, we will make some reasonable estimations for $\Delta$, $n$, $t$ and $q$.
 Based on these, we will calculate the value $T$. For the time being, we will fix $T$ to be a constant
 that never changes. This model is called the \emph{static difficulty model}. We'll revisit this assumption
-in Chapter~\ref{chapter:economics}.
+in Chapter~\ref{chapter.economics}.
 
 \section{The Arrow of Time}
 
@@ -123,7 +123,7 @@ and mines block $7$ on top of block $5$.
     \centering
     \includegraphics[width=0.4 \columnwidth,keepaspectratio]{figures/regular-adv-honest-queries.pdf}
     \caption{A series of successful honest (black solid diamonds) and adversarial (red hollow circles) queries
-             regularly spaced apart more than $\delta$.}
+             regularly spaced apart more than $\Delta$.}
     \label{fig.regular-adv-honest-queries}
 \end{figure}
 
@@ -176,7 +176,7 @@ it to a different parent to make it appear newer than it is.
 
 A longer blockchain takes more time to generate, whereas a shorter blockchain takes less time
 to generate (we will prove this relationship between blockchains and time precisely in
-Chapter~\ref{chapter:earnest3}). Therefore, we can use the \emph{length} of a blockchain
+Chapter~\ref{chapter.earnest3}). Therefore, we can use the \emph{length} of a blockchain
 to estimate how much time it took to generate, and how fresh its tip is.
 
 This allows a more objective comparison about which chain to adopt. Since a longer chain takes
@@ -234,7 +234,7 @@ the transactions of the tip are appended.
 \import{./}{algorithms/alg.read-naive}
 
 As you can judge by the name of this rule, this is a rule which we plan to
-soon revise (in Chapter~\ref{chapter:virtues}).
+soon revise (in Chapter~\ref{chapter.virtues}).
 
 \section{The Stochastic Nature of Work}
 
@@ -268,7 +268,7 @@ though the adversary was not mining any blocks. This is a loss of safety.
 
 Are we back to square one? Not quite. We'll soon see that, with a few last modifications to
 our protocol, we can soon achieve security. We'll finish the protocol design in the next chapter,
-and prove its security in Chapters~\ref{chapter:earnest1}-\ref{chapter:earnest3}. For the moment,
+and prove its security in Chapters~\ref{chapter.earnest1}-\ref{chapter.earnest3}. For the moment,
 let us try to understand how the longest chain protocol works a little more precisely.
 
 % TODO: change this blocktree so that some temporary fork is 2 blocks long
@@ -355,8 +355,8 @@ However, if the adversary
 only has a minority of mining power, even though these attacks can start small, they cannot grow
 for much longer, as the adversary will be left behind in the dust by the honest parties who will
 be mining more quickly.
-We'll explore these attacks much more deeply in Chapter~\ref{chapter:attacks},
-and we'll formalize them in Chapter~\ref{chapter:earnest1}. However, it should already be clear
+We'll explore these attacks much more deeply in Chapter~\ref{chapter.attacks},
+and we'll formalize them in Chapter~\ref{chapter.earnest1}. However, it should already be clear
 that we must require that the adversary controls only a minority of the compute of the network.
 We will call this the \emph{honest majority assumption}.
 
@@ -414,7 +414,7 @@ During the validation of a coinbase transaction, each client checks that this
 amount is respected. In case the coinbase transaction deviates from this rule, the coinbase transaction
 is considered invalid, and so is the block it is contained in. The decision on how the block reward
 is algorithmically determined is called the \emph{macroeconomic policy} of the chain. We'll have
-more to say about this in Chapter~\ref{chapter:economics}. Let's observe what exactly is happening
+more to say about this in Chapter~\ref{chapter.economics}. Let's observe what exactly is happening
 with this construction. Instead of having an authority decide how much new money is created, this
 decision is fixed upfront and known to everyone beforehand. And instead of having an authority
 receive the newly created money and decide what to do with it, we \emph{randomly} allocate this
@@ -455,7 +455,7 @@ to anyone.
 
 To verify a coinbase transaction, we follow these steps:
 \begin{enumerate}
-    \item Check that is is the only one in that block.
+    \item Check that it is the only one in that block.
     \item Check that it is the first transaction in the block.
     \item Check that it has no input and exactly one output.
     \item Check that its output has a value which is less than or equal to the sum of the block reward and the difference between the input and output amounts of all \emph{other} transactions in the block.
@@ -496,24 +496,25 @@ $\overline{x}$ refers to any transactions that are unknown, these are downloaded
 to validate the block.
 
 The validation of transactions
-$\overline{x}$ in a block works as follows. For each block $B$, we remember a UTXO set which we
-associate with the state $\st(B)$ of the world \emph{after} the particular block has been adopted.
+$\overline{x}$ in a block works as follows.
+First, for each block $B$ we save the UTXO set after the particular block has been applied.
+We call this UTXO set the \emph{state}\index{State} $\st(B)$ of the block $B$.
 We also define a \emph{genesis state}\index{Genesis State} $\st_0$, the state of the world \emph{before}
 any transaction ever
 took place. The genesis state, which is where the UTXO set begins its lifetime, is defined to be the
 empty set.
 
-To validate the transactions in a block $B = s \conc \overline{x} \conc \ctr$, we take the state
+To proceed with the transaction validation in a block $B = s \conc \overline{x} \conc \ctr$, we take the state
 $\st_{B'}$ associated with
 its parent block $B'$ whose blockid is $s = H(B')$, or $\st_0$ if $B = \mathcal{G}$.
 We then attempt to apply each of the transactions in the block, in the order
 they are defined in $\overline{x}$, updating the UTXO set as we go along by consuming
 and producing elements in the set, and validating
-every transaction along the way, in the manner we already discussed in Chapter~\ref{chapter:transaction}.
+every transaction along the way, in the manner we already discussed in Chapter~\ref{chapter.transaction}.
 If at any point the transaction validation fails, the whole block is rejected,
 even if just one transaction was invalid. If all transaction validations succeeded,
-we assign the state $\st_B$ after our block to be the UTXO set we arrived at after
-this process is completed. This is illustrated in Figure~\ref{fig.fee}.
+we assign the state $\st_B$ (``the state after the block'') to be the UTXO set we arrived at after
+this process is completed. This is illustrated in Figure~\ref{fig.block-tx-validation}.
 In this example, $B.\overline{x} = (\tx_1, \tx_2, \tx_3, \tx_4)$.
 
 \begin{figure}[h]
@@ -522,7 +523,7 @@ In this example, $B.\overline{x} = (\tx_1, \tx_2, \tx_3, \tx_4)$.
     \caption{Validating the $\overline{x}$ part of block $B$. The intermediate states
              are shown as purple cylinders. The state $\st_{B'}$ comes from a block
              which has already been validated (shown partially on the left).}
-    \label{fig.fee}
+    \label{fig.block-tx-validation}
 \end{figure}
 
 While we will sometimes say that \emph{chains} are exchanged on the network, it is really
@@ -625,6 +626,17 @@ become confirmed in its stead.
 
 \section{Problems}
 
+\begin{enumerate}
+  \item It is not sufficient to assume a hash function is collision resistant in order
+  for it to be used in proof-of-work applications. That is why we make use of
+  the random oracle model. To see why, answer the following question:
+  Given a random oracle $H$ (which is collision resistant), define a different
+  collision resistant hash function $G$ which behaves similar to a random oracle
+  for honest parties, but is very beneficial for solving proof-of-work
+  to the adversary. Calculate the probability that the adversary obtains a
+  block with your hash function $G$ in one query, and the probability that
+  an honest party obtains a block with your hash function in one query.
+\end{enumerate}
 TBD
 
 \section{Further Reading}

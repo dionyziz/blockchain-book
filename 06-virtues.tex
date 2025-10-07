@@ -1,4 +1,4 @@
-\chapter{Chain Virtues}\label{chapter:virtues}
+\chapter{Chain Virtues}\label{chapter.virtues}
 
 Now that we have developed the longest chain protocol and understand
 what constitutes a chain, let's familiarize ourselves with executions
@@ -8,12 +8,12 @@ the combinatorial properties of chains.
 \section{Transactions -- Blocks}
 
 Before we get into the combinatorial properties of chains, let us spend a moment
-comparing \emph{transactions} (Chapter~\ref{chapter:transaction}) and \emph{blocks}
-(Chapters~\ref{chapter:blocks} and~\ref{chapter:chain}), to ensure
+comparing \emph{transactions} (Chapter~\ref{chapter.transaction}) and \emph{blocks}
+(Chapters~\ref{chapter.blocks} and~\ref{chapter.chain}), to ensure
 that we don't confuse the two and to built a high-level mental model of the
 previous couple of chapters.
 
-Recall from Chapter~\ref{chapter:transaction} that chain of transactions is what constitutes
+Recall from Chapter~\ref{chapter:transaction} that a chain of transactions is what constitutes
 a \emph{coin} (although this is not a formal notion, since coin provenance may not be uniquely
 determinable because coins can be joined and split through transactions).
 Anyone can create a transaction spending their own money instantaneously, because
@@ -27,7 +27,7 @@ conveys no information about time taken.
 As for blocks, creating them does not require producing any signatures, but does require
 having a lot of computational power, and cannot be performed on a laptop or mobile phone.
 
-A summary comparing blocks and transactions is shown in Table~\label{tbl:tx-block-compare}.
+A summary comparing blocks and transactions is shown in Table~\ref{tbl:tx-block-compare}.
 \emph{Time to create honest} describes the time needed to create a transaction spending my
 own money (including double spending it) and the time needed for an honest party to mine an honest block.
 \emph{Time to create adversarial} describes the time needed to create a transaction spending
@@ -61,6 +61,7 @@ involves checking the proof-of-work equation and validating the transactions wit
   \hline
 \end{tabular}
 \caption{A high-level comparison of the nature of transactions and blocks.}
+\label{tbl:tx-block-compare}
 \end{table}
 
 Given this table, we can observe what protects a transaction in transit from being
@@ -83,7 +84,7 @@ difficult.
 
 When we gave the first intuitive definition of ledger safety in Definition~\ref{def:safety-informal}, we mandated that all honest parties
 agree \emph{exactly} on their ledgers. Now that we've talked about network delays and arranged transactions into blocks, we see
-that this will be impossible to achieve. In the best case scenario, we have a chain that is growing without any forks. Still, in this
+that we have not actually achieved this goal. In the best case scenario, we have a chain that is growing without any forks. Still, in this
 case, if two honest parties $P_1, P_2$ both have a chain $\chain$, whenever $P_1$ mines a block $B$ on top of $\chain$, it will take
 $\Delta$ time until $P_2$ receives this block and updates his ledger. Remember that the reported ledger of a party only includes the
 transactions that have been confirmed into blocks.
@@ -135,7 +136,8 @@ Additionally, party $P_2$ at time $r_2$ has confirmed $\tx'$, a conflicting tran
 $\tx' = L^{P_2}_{r_2}[j]$. Now, if $i = j$, then this means that $\tx = \tx'$, which is a contradiction since these are conflicting.
 If $i < j$, then by safety this means that $L^{P_2}_{r_2}[i] = L^{P_1}_{r_1}[i] = \tx$. But then, party $P_2$ has included
 in his ledger \emph{both} $\tx$ at position $i$ \emph{and} $\tx'$ at position $j$. This is a contradiction, because the honest
-party validates $\tx'$ before accepting it. Therefore, the two parties cannot have accepted conflicting transactions.
+party validates $\tx'$ before accepting it. A symmetric argument holds if $j < i$.
+Therefore, the two parties cannot have accepted conflicting transactions.
 \end{proof}
 
 This is a good sanity check that our definition of safety makes sense. Is this revised and precise, yet weaker, notion of ledger
@@ -198,7 +200,7 @@ The idea is that, if we choose $T$ appropriately, then convergence opportunities
 Once a convergence opportunity happens, if there is no adversarial miner, the honest parties will converge into
 one chain.
 
-\begin{lemma}[Honest Convergence]\label{lem:honest-convergence}
+\begin{lemma}[Honest Convergence]\label{lem.honest-convergence}
     In a setting where only honest parties are mining, exactly $\Delta$ time after every convergence
     opportunity, all honest parties will hold the same chain.
 \end{lemma}
@@ -258,7 +260,7 @@ develop some length, but soon enough, a convergence opportunity will arise. At t
 all forks apart from one will be abandoned, and the honest parties will convergence on
 one chain. It takes time to mine a temporary fork of longer length.
 Because convergence opportunities will occur often (we will
-calculate precisely how often in Chapter~\ref{chapter:earnest2}),
+calculate precisely how often in Chapter~\ref{chapter.earnest2}),
 there is not enough time to build long temporary forks. Our blocktrees will look roughly
 like Figure~\ref{fig.honest-chain-common-prefix}.
 
@@ -305,7 +307,7 @@ the transactions that are within $\chain[{:}-k]$, our chain with the last $k$ bl
 off. If the Common Prefix virtue holds, we know that the blocks in $\chain[{:}-k]$ will never
 be abandoned in the future.
 
-Our new, and final, confirmation rule, is illustrated in
+Our new, and final, \emph{confirmation rule}\index{Confirmation Rule}, is illustrated in
 Algorithm~\ref{alg.read-stable}. Compare this rule to Algorithm~\ref{alg.read-naive} of
 the previous chapter. The only difference is that we have replaced $\chain$ with $\chain[{:}-k]$.
 The portion $\chain[{:}-k]$ is called the \emph{stable} part of the chain, because we
@@ -314,7 +316,7 @@ are assured it will not change.
 \import{./}{algorithms/alg.read-stable}
 
 We have finally achieved safety. This is captured in the following theorem, whose proof we will
-complete in Chapter~\ref{chapter:earnest2}.
+complete in Chapter~\ref{chapter.earnest2}.
 
 \glsxtrnewsymbol[description={common prefix}]{common prefix}{$k$}\glsadd{common prefix}
 \begin{theorem}[Common Prefix $\Rightarrow$ Safety (informal)]
@@ -470,7 +472,7 @@ of honest parties. Towards this, we will hope our chains will have two more virt
 On the one hand, we want honest chains to grow. If chains do not grow at all, then
 there is no hope of new transactions making it in. As long as our chain grows
 at a positive rate, however, we will have some liveness. The rate at which the
-chain of an honest party grows over a period of time if the chain velocity.
+chain of an honest party grows over a period of time is the chain velocity.
 
 \glsxtrnewsymbol[description={chain velocity}]{chain velocity}{$\tau$}\glsadd{chain velocity}
 \begin{definition}[Chain Velocity]
