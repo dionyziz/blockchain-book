@@ -571,14 +571,47 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
   \item Give a simpler proof of Theorem~\ref{thm.2preimage-preimage}.
   \item Combine Theorems~\ref{thm.collision-2preimage} and~\ref{thm.2preimage-preimage} to
         directly show that collision resistance implies preimage resistance.
-  \item Given a collision resistant hash function $H$, construct a preimage and 2nd preimage resistant hash
-        function $G$ which is not collision resistant. Prove these properties of $G$.
-  \item Given a collision resistant hash function $H$,
-        make a collision resistant hash function $G$ whose first bit is reliably predictable
-        and prove that it is collision resistant. Prove these properties of $G$.\label{problem.small-hash}
-  \item Construct a correct but insecure signature scheme.
-  \item Let $H:\{0,1\}^* \to \{0,1\}^{\kappa}$ be a collision-resistant hash function and define
-        $G(x) = H(H(x))$. Show that $G$ is a collision-resistant hash function.
+  \item Let $H:\{0,1\}^* \to \{0,1\}^{\kappa}$ be a collision-resistant hash
+        function and define $G(x) = H(H(x))$. Show that $G$ is a
+        collision-resistant hash function.
+  \item Given a collision resistant hash function
+        $H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$, create a hash function
+        $G: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$ with the following
+        properties:
+        \begin{enumerate}
+          \item $G$ is collision resistant.
+          \item The first two bits of $G$ are predictable (a bit is predictable
+                if it can be successfully ``guessed'' with probability
+                $\frac{1}{2}$ + non-negligible when the input is chosen
+                uniformly at random).
+        \end{enumerate}
+        Write out explicitly what this $G$ function is, then define and prove
+        the above two properties formally. For the first property, use a
+        reduction.
+  \item Given a collision resistant hash function $H$, construct a preimage and
+        2nd preimage resistant hash function $G$ which is not collision
+        resistant. Prove these properties of $G$.
+  \item Construct a correct but insecure signature scheme. Write the full
+        implementation of your signature scheme in pseudocode. Prove its
+        correctness and insecurity.
+  \item I was using the AI program ChatGPT to save some time while preparing the
+        lecture notes for this course. As I was working on them, ChatGPT
+        autocompleted my notes with the following text:
+        \begin{quote}
+          It seems that all three properties, collision resistance, preimage
+          resistance, and second preimage resistance, are desirable. However,
+          it is not possible to have all three at the same time. In fact, the
+          following theorem shows that it is impossible to have collision
+          resistance and second preimage resistance at the same time.
+        
+          \begin{theorem}[Krawczyk's Theorem]
+            Let $H: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$ be a hash
+            function. Then, $H$ is collision resistant if and only if it is not
+            second preimage resistant.
+          \end{theorem}
+        \end{quote}
+        Prove or disprove the above theorem. You may use ChatGPT and all the
+        theorems we have proven in class. Good luck!
 \end{problems}
 
 \section*{Further Reading}

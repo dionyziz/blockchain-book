@@ -1,4 +1,4 @@
-\chapter{The Transaction}\label{chapter.transaction}
+\chapter{The Transaction}\label{chapter:transaction}
 
 % \input{./commitments.tex} % TODO: restore this file to build Ouroboros Proof-of-Stake later?
 
@@ -545,7 +545,35 @@ This can lead to race conditions, which we tackle in the next chapter.
 
 \section*{Problems}
 
-TBD
+\begin{problems}
+  \item Consider the complete transaction graph \textbf{\emph{accepted and
+        stored in the}} \textbf{\emph{database of an honest node}} illustrated
+        in \Cref{fig.utxo-graph-2}. The circles represent transactions and
+        the numbers within them are the txids. The outgoing edges are outputs,
+        and the incoming edges are inputs. For each transaction, edges appear
+        ordered from top to bottom. For this graph:
+        \begin{enumerate}
+          \item Identify the coinbase transactions.
+          \item Identify the double spending transactions. For each double
+                spending transaction, identify the transaction it is conflicting
+                with.
+          \item Identify the UTXO set.
+          \item Identify the transactions for which the Weak Conservation Law
+                does not hold.
+          \item Identify the outputs of transactions that are partially, but not
+                fully, spent.
+        \end{enumerate}
+        To identify transactions, use their txids. To identify an output, use
+        outpoint notation. Note that transaction $6$ has four outputs.
+        \label{problem.utxo-graph-2}
+\end{problems}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7 \linewidth]{figures/utxo-tx-graph-2.pdf}
+  \caption{The transaction graph of \Cref{problem.utxo-graph-2}.}
+  \label{fig.utxo-graph-2}
+\end{figure}
 
 \section*{Further Reading}
 

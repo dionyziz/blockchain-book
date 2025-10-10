@@ -8,12 +8,12 @@ the combinatorial properties of chains.
 \section{Transactions -- Blocks}
 
 Before we get into the combinatorial properties of chains, let us spend a moment
-comparing \emph{transactions} (Chapter~\ref{chapter.transaction}) and \emph{blocks}
-(Chapters~\ref{chapter.blocks} and~\ref{chapter.chain}), to ensure
+comparing \emph{transactions} (\Cref{chapter:transaction}) and \emph{blocks}
+(\Cref{chapter.blocks} and~\Cref{chapter.chain}), to ensure
 that we don't confuse the two and to built a high-level mental model of the
 previous couple of chapters.
 
-Recall from Chapter~\ref{chapter:transaction} that a chain of transactions is what constitutes
+Recall from \Cref{chapter:transaction} that a chain of transactions is what constitutes
 a \emph{coin} (although this is not a formal notion, since coin provenance may not be uniquely
 determinable because coins can be joined and split through transactions).
 Anyone can create a transaction spending their own money instantaneously, because
@@ -27,7 +27,7 @@ conveys no information about time taken.
 As for blocks, creating them does not require producing any signatures, but does require
 having a lot of computational power, and cannot be performed on a laptop or mobile phone.
 
-A summary comparing blocks and transactions is shown in Table~\ref{tbl:tx-block-compare}.
+A summary comparing blocks and transactions is shown in \Cref{tbl:tx-block-compare}.
 \emph{Time to create honest} describes the time needed to create a transaction spending my
 own money (including double spending it) and the time needed for an honest party to mine an honest block.
 \emph{Time to create adversarial} describes the time needed to create a transaction spending
@@ -542,7 +542,90 @@ when we prove that our chains attain all three virtues.
 In summary, chain virtues give rise to ledger virtues. Safety follows from Common Prefix
 and liveness follows from Chain Growth and Chain Quality together.
 
-\section{Further Reading}
+\section*{Problems}
+
+\begin{problems}
+  \item Consider the blocktree of \Cref{fig.blocktree-problem-6}. Blue blocks are honestly
+        mined blocks, whereas red blocks are adversarially mined blocks.
+        Hypothetical blockids are shown within the squares. Let
+        $\chain_1, \chain_2$ indicate the chains whose tips are blocks $9$ and
+        $19$ respectively.
+        \begin{enumerate}
+          \item What is the chain quality of $\chain_1[-4{:}]$, $\chain_1[{:}4]$
+                and $\chain_2$ respectively?
+          \item Suppose an honest party had adopted $\chain_1$ at time $100$ and
+                $\chain_2$ at time $200$. What is the velocity $\tau$ of the
+                chain between those two times?
+        \end{enumerate}
+  \item Consider $\Delta = 1, n = 5, t = 2$. Draw a timeline of successful
+        queries that could have caused \Cref{fig.blocktree-problem-6} to appear.
+        For each successful query, indicate:
+        \begin{enumerate}
+          \item The time at which it took place.
+          \item Whether the query was honest or adversarial.
+          \item The time at which each honest party received the block produced
+                by the query.
+        \end{enumerate}
+        For the timeline you drew, what is the \emph{minimum} $k \in \mathbb{N}$
+        for which Common Prefix holds between \emph{all} honest parties and
+        across \emph{all} time?
+  \item Consider the UTXO transaction graph illustrated in \Cref{fig.tx-graph}.
+        Hypothetical txids are shown within the circles. The value of an output
+        is indicated above its respective arrow. \label{problem.tx-graph}
+        \begin{enumerate}
+          \item Honest party $P$ has adopted a chain containins genesis (which
+                has no transactions) and blocks $B_1$ (containing transaction 1
+                only) and $B_2$ (containing transaction $7$ only) and is
+                receiving the transactions from the network in this order: 2, 8,
+                9, 3, 4, 6, 5, 10, 11, 12. No other blocks beyond those three
+                are mined. Which transactions will the mempool of this party
+                contain?
+          \item The honest party managed to find a block $B$ containing no new
+                coinbase transactions and confirming its mempool on top of
+                $B_2$. The rest of the honest parties then mine another $k$
+                sequential blocks on top of $B$. No other blocks are mined in
+                the meantime. What is the ledger $L^P$ reported by the honest
+                party $P$ at the end of this process?
+          \item How much monetary value remains unspent in the system in the
+                view of party $P$?
+        \end{enumerate}
+  \item Consider the timeline of successful queries of \Cref{fig.timeline}. The
+        network delay is $\Delta = 1$, and we have $n = 3$ and $t = 0$.
+        \label{problem.timeline}
+        \begin{enumerate}
+          \item Indicate which among these successful queries are convergence
+                opportunities.
+          \item Draw a blocktree that could have resulted from this timeline.
+                For each block in the chain, indicate the successful query
+                during which it was produced.
+          \item What is the height of the tip of the longest chain? What is the
+                chain quality of the longest chain?
+        \end{enumerate}
+\end{problems}
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[width=0.7 \columnwidth,keepaspectratio]{figures/blocktree-problem-6.pdf}
+  \caption{The blocktree.}
+  \label{fig.blocktree-problem-6}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7 \columnwidth,keepaspectratio]{figures/tx-graph-problem-6.pdf}
+  \caption{The transaction graph \Cref{problem.tx-graph}.}
+  \label{fig.tx-graph}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7 \columnwidth,keepaspectratio]{figures/timeline-problem-6.pdf}
+  \caption{The timeline for \Cref{problem.timeline}.}
+  \label{fig.timeline}
+\end{figure}
+        
+
+\section*{Further Reading}
 The two chain virtues of Common Prefix and Chain Quality were first defined in the Bitcoin Backbone paper~\cite{backbone}
 by Juan Garay, Aggelos Kiayias and Nikos Leonardos. The Chain Growth virtue was identified in a later paper~\cite{speedsecurity}
 by Aggelos Kiayias and Giorgos Panagiotakos. The ledger virtues of safety and liveness have been adapted, with appropriate
@@ -551,7 +634,3 @@ Problem and the Byzantine Agreement Problem. These two problems are very related
 are trying to solve. The Byzantine Generals Problem was originally studied in a seminal 1982 paper~\cite{lamport} by Leslie Lamport,
 Robert Shostak, and Marshall Pease.
 % TODO: add citations to these
-
-\section{Problems}
-
-TBD

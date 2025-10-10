@@ -14,12 +14,13 @@
 \usepackage{color}
 \usepackage[most]{tcolorbox}
 \usepackage{xcolor}
-\usepackage{hyperref}
+\usepackage[pdfpagelabels]{hyperref}
 \usepackage{enumitem}
 \usepackage{colortbl}
 \usepackage{xcolor}
 \definecolor{lightgray}{rgb}{0.83, 0.83, 0.83}
 \usepackage{makecell}
+\usepackage{cleveref}
 
 % Footnotes
 \makeatletter
@@ -63,7 +64,14 @@
 \import{./}{macros.tex}
 
 \newlist{problems}{enumerate}{1}
-\setlist[problems]{leftmargin=*,label=\thechapter.\arabic*}
+\setlist[problems,1]{leftmargin=*,label=\thechapter.\arabic*, ref=\thechapter.\arabic*}
+\renewcommand{\theproblemsi}{\thechapter.\arabic{problemsi}}
 
 \newlist{subproblems}{enumerate}{1}
-\setlist[subproblems]{leftmargin=*,label=\alph*.}
+\setlist[subproblems,1]{leftmargin=*,label=\alph*., ref=\theproblemsi(\alph*)}
+\renewcommand{\thesubproblemsi}{\theproblemsi(\alph{subproblemsi})}
+
+\crefname{problemsi}{problem}{problems}
+\Crefname{problemsi}{Problem}{Problems}
+\crefname{subproblemsi}{subproblem}{subproblems}
+\Crefname{subproblemsi}{Subproblem}{Subproblems}
