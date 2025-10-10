@@ -499,9 +499,9 @@ The validation of transactions
 $\overline{x}$ in a block works as follows.
 First, for each block $B$ we save the UTXO set after the particular block has been applied.
 We call this UTXO set the \emph{state}\index{State} $\st(B)$ of the block $B$.
-We also define a \emph{genesis state}\index{Genesis State} $\st_0$, the state of the world \emph{before}
+We also define a \emph{initial state}\index{Initial State} $\st_0$, the state of the world \emph{before}
 any transaction ever
-took place. The genesis state, which is where the UTXO set begins its lifetime, is defined to be the
+took place. The initial state, which is where the UTXO set begins its lifetime, is defined to be the
 empty set.
 
 To proceed with the transaction validation in a block $B = s \conc \overline{x} \conc \ctr$, we take the state

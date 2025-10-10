@@ -1,11 +1,40 @@
 \chapter{Accounts \small{\textsf{DRAFT}}}\label{chapter.accounts}
 
-In our treatment so far, we have dealt with the UTXO model. There, the state
-that we maintained was the UTXO set, and transactions expressed a \emph{transition}
-from one UTXO set to the next by updating it appropriately (adding and removing elements from
-it). By ordering the transactions into a ledger using a blockchain, we achieved
-consensus on a mutually shared state between mistrustful participants, among
-which an honest majority assumption holds. The machinery
+It is time to take a step back and look at the construction we've built. A chain
+is used to order transactions into a ledger $L$. From this ledger of transactions we can deduce
+a state, which is a UTXO set. This state is obtained as follows. We start with the initial
+state $\st_0 = \emptyset$, the empty UTXO set. We then apply each transaction in the ledger
+one-by-one as illustrated in \Cref{fig.state-transition}.
+To apply a transaction $\tx_i$, we take the previous state $\st_{i-1}$ and modify
+it, according to what the transaction does, to obtain the next state $\st_i$. The way the
+transaction acts on the state is by consuming some UTXOs (which are removed from the state)
+and by producing some new UTXOs (which are added to the state). When all transactions have been
+applied, we arrive at the final state $\st_{|L|}$.
+
+There are two layers at play here. First, the chain protocol, namely producing blocks and
+picking the longest chain. Second, the transactions on top. The chain protocol is responsible
+for ordering transactions, but is agnostic to the transaction semantics. The transaction semantics
+are also agnostic to the chain protocol, relying on it only for ordering. The two layers interoperate
+with each other when the chain protocol needs to validate a block, which requires reaching out to
+transaction layer to validate the transactions in the block.
+We call the layer responsible for ordering transactions the \emph{consensus layer}\index{Consensus Layer},
+and the layer responsible for the transaction semantics the \emph{execution layer}\index{Execution Layer}.
+
+In our transaction semantics, we chose to use UTXOs and to have each state represent a UTXO set,
+because it was useful for representing ownership. We now observe that these semantics could be
+different. We just need to specify what state we start with, and how to transition from state to state.
+We call the state we start with the \emph{initial state} $\st_0$, and the way to transition from state
+to state the \emph{transition function} $\delta$.
+
+% * The format of the state is implicit (from $\delta$)
+% * All parties agree on st_0, \delta
+% * Write UTXO \delta / st_0 as pseudocode
+% * Write accounts \delta / st_0 as pseudocode
+
+% what the state format is, the initial state, and the
+% way each transaction acts on the state.
+
+The machinery
 we have created solves the \emph{State Machine Replication}\index{State Machine Replication}
 problem.
 
@@ -22,7 +51,7 @@ These checks pertain to the \emph{structural validation} of blocks.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\columnwidth,keepaspectratio]{figures/tx-state-transition.pdf}
+  \includegraphics[width=0.7 \columnwidth,keepaspectratio]{figures/tx-state-transition.pdf}
   \caption{Transitioning state by applying transactions.}
   \label{fig.state-transition}
 \end{figure}
@@ -207,7 +236,7 @@ A side by side comparison between the two models  of transactions is shown in Fi
          \hline
          Validation & {Signature, Law of Conservation, Inputs exist in $st$.} & {Signature, Sufficient balance, Nonce unique.} \\
          \hline
-         Genesis State & $\emptyset$ & $\{\}$ \\
+         Initial State & $\emptyset$ & $\{\}$ \\
          \hline
     \end{tabular}
     \caption{Side by Side Comparison of Two Models}
@@ -221,7 +250,7 @@ In SMR, multiple nodes in the network run a state machine in a distributed manne
 The term ``replication'' signifies that each node in the network maintains the state of the machine and runs its transition functions locally.
 The goal of SMR is that each node runs the same set of state transitions and in the same order so that there is agreement or consensus on the state of the machine.
 
-A blockchain can be considered as a distributed replicated database. A blockchain can help us run SMR. We have seen two examples of state machines that the blockchain can run --- the accounts model and the UTXO model. In both cases, there is a state $st$, state transition functions $\delta$, and inputs (which are transactions in this case). The initial state is specified by the genesis state.
+A blockchain can be considered as a distributed replicated database. A blockchain can help us run SMR. We have seen two examples of state machines that the blockchain can run --- the accounts model and the UTXO model. In both cases, there is a state $st$, state transition functions $\delta$, and inputs (which are transactions in this case). The initial state is specified.
 
 \section{Light Clients}
 

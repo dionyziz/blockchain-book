@@ -195,7 +195,7 @@ The first algorithm is a constructor.
 The second algorithm is used to simulate every honest party that mines during each round of the protocol. In this simulation, every honest party follows the longest chain rule, at the beginning of each round they adopt the longest, valid chain (line 8). If they learn about a new chain that is longer then their current one, they gossip it (line 9,10). The honest party then tries to mine a block using the transactions in their mempool (line 12, 13). If a block is successfully mined, the honest party will gossip it.
 \\
 \\
-The third algorithm is used to extract all transactions from a blockchain. This is useful when validating a new chain as we need to check all transactions starting from the genesis state to ensure that there are no invalid transactions and to maintain an up-to-date UTXO set.
+The third algorithm is used to extract all transactions from a blockchain. This is useful when validating a new chain as we need to check all transactions starting from the initial state to ensure that there are no invalid transactions and to maintain an up-to-date UTXO set.
 \begin{figure}[H]
 \begin{algorithm}[H]
     \caption{\label{alg.backbone} The honest party}
@@ -287,7 +287,7 @@ This algorithm is used to validate a block, it is called in line 4 of the longes
         \If{$C[0] \neq \mathcal{G}$} \Comment{Check that first block is Genesis}
             \State\Return$\false$
         \EndIf
-        \State st $\leftarrow$ st$_0$ \Comment{Start at Genesis state}
+        \State st $\leftarrow$ st$_0$ \Comment{Start at Initial state}
         \State $h \leftarrow H(C[0])$
         \State st $\leftarrow \delta^*(st, C[0].x)$
         \For{$B \in C[1{:}]$} \Comment{Iterate for every block in the chain}
