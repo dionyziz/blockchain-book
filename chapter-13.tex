@@ -275,3 +275,92 @@ In the next chapter, we will use the tools developed today to show that in typic
 \end{figure*}
 \end{landscape}
 
+\section*{Problems}
+
+\begin{problems}
+    \item Consider a \emph{bitcoin backbone execution} with $n = 10$, $t = 2$,
+          $q = 1000$, $\kappa = 256$ and $T = 2^{\kappa - 19}$. Numerically
+          calculate the following quantities:
+
+          \begin{enumerate}
+            \item The honest advantage $\delta$.
+            \item The probability $p$ of a successful query.
+            \item The probability $f$ that a round is successful.
+            \item The expectation $\Ex[Z_r]$ of the number of successful
+                  adversarial queries in a round.
+            \item The expectation $\Ex[Z(S)]$ of the number of successful
+                  adversarial queries in a set of consecutive rounds with
+                  $|S| = 256$.
+            \item Your best lower bound for $\Ex[Y_r]$, the expectation of a
+                  round being a convergence opportunity.
+          \end{enumerate}
+
+    \item Consider \emph{bitcoin backbone executions} with $n = 10$, $t = 2$,
+          $q = 1000$ and a hash function with $\kappa = 256$ bits. Suppose that
+          the probability of an execution of interest being typical is at least
+
+          \[
+          1 - 2^{-(\epsilon^2\lambda f/3 + \kappa - 30)}\,.
+          \]
+
+          Numerically calculate:
+
+          \begin{enumerate}
+            \item The honest advantage $\delta$.
+            \item Your choice of a secure parametrization for the probability
+                  $f$ of a successful round and the Chernoff error $\epsilon$
+                  that respects the balancing equation.
+            \item The probability of a successful query $p$.
+            \item A suitable target $T$ to achieve it.
+            \item A Chernoff interval parameter $\lambda$ that ensures typical
+                  executions occur with probability at least $1 - 2^{-256}$.
+            \item The chain growth parameters: The chain growth interval $s$ and
+                  the chain velocity $\tau$.
+            \item The common prefix parameter $k$.
+            \item The chain quality parameters: The chunk size $\ell$ and the
+                  chain quality $\mu$.
+          \end{enumerate}
+
+    \item When we implemented the Selfish Mining simulation in class using the
+          Monte Carlo method, we implicitly assumed that each block is instantly
+          received by the whole network before the next block is mined. This
+          allowed us to deduce that the probability of the next produced block
+          being adversarial was $\frac{t}{n}$. However, when we explored the
+          fan-out attack and formalized the bitcoin backbone model, we saw that
+          time discretization into rounds leads to situations in which multiple
+          successful queries can occur in a given round.
+
+          Consider a bitcoin backbone execution in the usual synchronous
+          lockstep model. We call a round \emph{adversarially superior} if the
+          round contains an adversarially successful query, but is not a
+          successful round (i.e., there is no honestly successful query). We are
+          interested in the following event $E$:
+
+          \begin{quote}
+            An adversarially superior round has occurred \emph{strictly prior}
+            to the first successful round.
+          \end{quote}
+
+          For example, if rounds $1$, $2$, and $3$ contain no successful
+          queries, round $4$ contains one adversarially successful query, round
+          $5$ contains no successful queries, and round $6$ contains one
+          honestly successful query, then the event $E$ has occurred. On the
+          contrary, if the rounds $1$, $2$, and $3$ contain no successful
+          queries, and round $4$ contains both an adversarial and an honestly
+          successful query, the event $E$ has not occurred, because the
+          adversarially superior round was the same as the first successful
+          round.
+
+          For simplicity, assume the execution continues for infinite, not just
+          polynomial, duration.
+
+          \begin{enumerate}
+            \item Analytically calculate the probability of the event $E$
+                  occurring. Simplify your calculation to closed form
+                  (containing no summations $\sum$).
+            \item Use Bernoulli's approximation $(1 - x)^a \approx 1 - ax$ for
+                  large $a$ and small $x$ to simplify your expression.
+            \item Find the limit of your probability for $p \to 0$, i.e.,
+                  successful queries become rarer and rarer.
+          \end{enumerate}
+\end{problems}

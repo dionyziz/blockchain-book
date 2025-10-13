@@ -114,3 +114,52 @@ Since light miners do not validate any transactions that were on the blockchain 
  Honest Majority& $\frac{n-t}{n}$  & &\\
  \hline
 \end{tabular}
+
+\section*{Problems}
+
+\begin{problems}
+    \item We studied \emph{binary} Merkle trees, but Merkle trees can have
+          higher dimensions. A $d$-dimensional Merkle tree is a \emph{complete}
+          tree in which every non-leaf node has exactly $d$ children. The value
+          of a leaf is the hash of its contents, as in a binary Merkle tree. The
+          value of an internal node is the hash of the concatenation of its
+          children's values. For example, in a ternary Merkle tree constructed
+          using the hash function $H$, an internal node with value $v$ which has
+          children with values $v_1$, $v_2$, and $v_3$ will take the value
+          $v = H(v_1 \concat v_2 \concat v_3)$.
+
+          Consider a ternary tree constructed using \texttt{blake2s}, a hash
+          function with an output of $\kappa = 256$ bits which has $3^7$ leaves.
+          Calculate the proof size, in bytes, for this Merkle tree. You can
+          assume the verifier already has the Merkle tree root and has received
+          the claimed contents and index of the leaf node in question, so you do
+          not need to include these in your proof size calculation.
+
+    \item In class, we studied Merkle trees where the leaves are relatively few.
+          Many modern blockchain applications make use of \emph{sparse} Merkle
+          trees. A \emph{sparse} Merkle tree is a complete binary Merkle tree
+          with exactly $2^\kappa$ leaves. Since the tree has an exponential
+          number of leaves, they cannot be processed by a polynomially bound
+          computer. However, the vast majority of these leaves have contents set
+          to the empty string, whereas only a polynomial number of leaves have
+          non-empty contents. This makes computing the root and proofs within
+          these trees efficiently possible.
+
+          Consider a \emph{sparse} Merkle tree with $2^\kappa$ leaves
+          constructed using \texttt{sha256}, a hash function with an output of
+          $\kappa = 256$ in which the \emph{first} leaf has contents equal to
+          the string \texttt{hello} and value equal to the hash
+
+          \texttt{2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824}.
+
+          All the other $2^{256} - 1$ leaves of this tree have their contents
+          set to the empty string and their value is equal to
+
+          \texttt{e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855}.
+
+          What is the value of the root of this tree?
+\end{problems}
+
+\section*{Further Reading}
+
+TBD
