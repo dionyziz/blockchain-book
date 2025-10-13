@@ -3,15 +3,15 @@
 \section{Recap of last lecture: Security in Earnest (II)}
 We proved several bounds in the previous lecture:
 \begin{align}
-(1-f)pq(n-t) < f &= \Ex[X_r] = 1 - (1-p)^{q(n-t)} < pq(n-t)\label{eq:bound1}\\
-\Ex[Y_r] \geq q(n-t)p(1-p)^{q(n-t-1)} &> pq(n-t)(1-pq(n-t)) \geq f(1-f) > \left(1-\frac{\delta}{3}\right)f \label{eq:bound2}\\
-(1-\epsilon)\Ex[X(S)] &< X(S) < (1+\epsilon)\Ex[X(S)]\label{eq:bound3}\\
- (1-\epsilon)\Ex[Y(S)] &< Y(S)\label{eq:bound4}\\
-Z(S) &< (1+\epsilon)\Ex[Z(S)]\label{eq:bound5}
+(1-f)pq(n-t) < f &= \Ex[X_r] = 1 - (1-p)^{q(n-t)} < pq(n-t)\label{eq.bound1}\\
+\Ex[Y_r] \geq q(n-t)p(1-p)^{q(n-t-1)} &> pq(n-t)(1-pq(n-t)) \geq f(1-f) > \left(1-\frac{\delta}{3}\right)f \label{eq.bound2}\\
+(1-\epsilon)\Ex[X(S)] &< X(S) < (1+\epsilon)\Ex[X(S)]\label{eq.bound3}\\
+ (1-\epsilon)\Ex[Y(S)] &< Y(S)\label{eq.bound4}\\
+Z(S) &< (1+\epsilon)\Ex[Z(S)]\label{eq.bound5}
 \end{align}
 
- First, $X_r$ indicates whether or not round $r$ was successful, i.e. had at least one successful honest query. Bound~\ref{eq:bound1} shows a lower and upper bound for $\E[X_r]$.
- Second, $Y_r$ indicates whether or not round $r$ was a convergence opportunity. Bound~\ref{eq:bound2} gives us a lower bound on $\E[Y_r]$. Bounds~\ref{eq:bound3}, ~\ref{eq:bound4}, and ~\ref{eq:bound5} are Chernoff bounds on $X(S)$, $Y(S)$, and $Z(S)$, respectively where $S$ is a set of consecutive rounds.
+ First, $X_r$ indicates whether or not round $r$ was successful, i.e. had at least one successful honest query. Bound~\ref{eq.bound1} shows a lower and upper bound for $\E[X_r]$.
+ Second, $Y_r$ indicates whether or not round $r$ was a convergence opportunity. Bound~\ref{eq.bound2} gives us a lower bound on $\E[Y_r]$. Bounds~\ref{eq.bound3}, ~\ref{eq.bound4}, and ~\ref{eq.bound5} are Chernoff bounds on $X(S)$, $Y(S)$, and $Z(S)$, respectively where $S$ is a set of consecutive rounds.
 
  Today, we will be covering Security in Earnest (III). It is highly recommended to read the Bitcoin Backbone paper.
 
@@ -20,10 +20,10 @@ We want to prove that in a typical execution, we have the property that $Z(S) < 
 
 \subsection{Derivation of Upper Bound of $\E[Z(S)]$}
 First, we want to derive an upper bound of $\E[Z(S)]$, which will help us achieve our result.
-$Z_r$ counts the number of successful queries for the adversary in round $r$. It is a sum of $qt$ repeated independent Bernoulli trials, each with a $p$ chance of succeeding, so $\Ex[Z_r] = pqt$. We can rewrite $pqt$ as $\frac{t}{n-t} pq(n-t)$. Now, if we apply bound~\ref{eq:bound1} we derived from last class and the fact that $\frac{1}{1-f} < 1 + \delta/2$ with $f = \delta/6$ we have that
+$Z_r$ counts the number of successful queries for the adversary in round $r$. It is a sum of $qt$ repeated independent Bernoulli trials, each with a $p$ chance of succeeding, so $\Ex[Z_r] = pqt$. We can rewrite $pqt$ as $\frac{t}{n-t} pq(n-t)$. Now, if we apply bound~\ref{eq.bound1} we derived from last class and the fact that $\frac{1}{1-f} < 1 + \delta/2$ with $f = \delta/6$ we have that
 \begin{align}\Ex[Z_r] &= \frac{t}{n-t} pq(n-t) \\
 &< \frac{t}{n-t} \cdot \frac{f}{1-f}\\
-&< \left(1 + \frac{\delta}{2}\right)f \frac{t}{n-t}.\label{eq:zexpupper}
+&< \left(1 + \frac{\delta}{2}\right)f \frac{t}{n-t}.\label{eq.zexpupper}
 \end{align}
 
 % \begin{align*}
@@ -34,13 +34,13 @@ $Z_r$ counts the number of successful queries for the adversary in round $r$. It
 % \end{align*}
 
 \subsection{Combining it to get $Z(S) < Y(S)$}
-We can use bound~\ref{eq:bound2}, which gives a lower bound on $\E[Y_r]$.
+We can use bound~\ref{eq.bound2}, which gives a lower bound on $\E[Y_r]$.
 We have that:
 \begin{align}
 Y(S) & \geq (1-\epsilon)\Ex[Y(S)] \\
 & = (1-\epsilon)\Ex[Y_r] |S| \\
 &> (1-\epsilon)f(1-f)|S|\\
-&>  \left(1 - \frac{\delta}{3}\right)f|S| \label{eq:ylower}
+&>  \left(1 - \frac{\delta}{3}\right)f|S| \label{eq.ylower}
 \end{align}\\
 The last inequality is derived as follows by setting $f = \epsilon = \frac{\delta}{6}$:
 \begin{align}
@@ -50,24 +50,24 @@ The last inequality is derived as follows by setting $f = \epsilon = \frac{\delt
  \Leftarrow \frac{\delta^2}{36} &> 0\\
  \Leftarrow \delta &> 0.
 \end{align}
-From the Chernoff bound~\ref{eq:bound5} and upper bound~\ref{eq:zexpupper}, we also have that:
+From the Chernoff bound~\ref{eq.bound5} and upper bound~\ref{eq.zexpupper}, we also have that:
 \begin{align}
 Z(S) &< (1+\epsilon)\Ex[Z(S)]\\
 &=(1+\epsilon)\Ex[Z_r]|S|\\
 &<(1+\epsilon)\frac{t}{n-t} \cdot \frac{f}{1-f} |S|\\
 &<\frac{t}{n-t} \cdot \frac{f}{1-f} |S|+\epsilon\frac{t}{n-t} \cdot \frac{1}{1-f} f|S|\\
-&< \frac{t}{n-t} \cdot \frac{f}{1-f} |S| + \epsilon f|S|\label{eq:balance}\\
-&\leq \left(1 - \frac{2\delta}{3}\right)f|S|\label{eq:zupper}.
+&< \frac{t}{n-t} \cdot \frac{f}{1-f} |S| + \epsilon f|S|\label{eq.balance}\\
+&\leq \left(1 - \frac{2\delta}{3}\right)f|S|\label{eq.zupper}.
 \end{align}\\
 
 {\color{red} actually this can be proven by invoking $\Ex[Z] < \Ex[X]$ directly}
-To prove inequality~\ref{eq:balance}, note that from the balancing equation we have $f \leq \frac{\delta}{3}$. It suffices to show that $\frac{t}{n-t}\cdot\frac{1}{1-f} < 1$:
+To prove inequality~\ref{eq.balance}, note that from the balancing equation we have $f \leq \frac{\delta}{3}$. It suffices to show that $\frac{t}{n-t}\cdot\frac{1}{1-f} < 1$:
 \begin{align}
 \frac{t}{n-t}\cdot\frac{1}{1-f} &< 1\\
 \Leftarrow \frac{1-\delta}{1-f} &< 1\\
 \Leftarrow 1-\delta &< 1 -\frac{\delta}{3}.
 \end{align}
-To prove inequality~\ref{eq:zupper}, we again use our choice of values $f = \epsilon = \frac{\delta}{6}$. Then,
+To prove inequality~\ref{eq.zupper}, we again use our choice of values $f = \epsilon = \frac{\delta}{6}$. Then,
 \begin{align}
     \frac{t}{n-t}\cdot\frac{1}{1-f} + \epsilon &< 1 - \frac{2\delta}{3}\\
     \Leftarrow \frac{1-\delta}{1-f} + \epsilon &< 1-\frac{2\delta}{3}\\
@@ -76,7 +76,7 @@ To prove inequality~\ref{eq:zupper}, we again use our choice of values $f = \eps
     \Leftarrow -\frac{5\delta}{6}-\frac{\delta^2}{36} &< -\frac{5\delta}{6} + \frac{\delta^2}{9}\\
     \Leftarrow -\frac{\delta^2}{36} < \frac{\delta^2}{9}
 \end{align}
-Combining results~\ref{eq:zupper} and~\ref{eq:ylower} together gives us:
+Combining results~\ref{eq.zupper} and~\ref{eq.ylower} together gives us:
 \begin{align}
 Z(S) < \left(1 - \frac{2\delta}{3}\right)f|S| <  \left(1 - \frac{\delta}{3}\right)f|S| <
 Y(S).
@@ -90,7 +90,7 @@ Recall chain growth lemma from the previous lecture.
 \end {lemma}
 Now we are equipped with all the necessary tools to prove our first chain virtue.
 
-\begin{theorem}[Chain Growth]\label{thm:chain-growth}
+\begin{theorem}[Chain Growth]\label{thm.chain-growth}
 In a typical execution, Chain Growth is attained with $\tau = (1-\epsilon)f, s \geq \lambda$.
 \end{theorem}
 \begin{proof}
@@ -122,20 +122,20 @@ We have that
     X(S) + Z(S) &< (1+\epsilon)\Ex[X(S)] + \left(1 - \frac{2\delta}{3}\right)f|S|\\
     &=(1+\epsilon)f|S|+ \left(1 - \frac{2\delta}{3}\right)f|S|\\
     &= \left(2 + \epsilon - \frac{2\delta}{3}\right)f|S|\\
-    &\leq (2-2f)f|S|\label{eq:patiencebal}\\
+    &\leq (2-2f)f|S|\label{eq.patiencebal}\\
     & \leq (2-2f)f \cdot \left(\frac{k}{2f} + 2\right)\\
     & = (1-f)(k+4f) \\
-    & < k\label{eq:patience-ubound}
+    & < k\label{eq.patience-ubound}
 \end{align}
 The last inequality holds for $k \geq 4$ (this follows from $\lambda \geq 2/f$).
-To prove inequality~\ref{eq:patiencebal}, we use the balancing equation $3f + 3\epsilon < \delta$ as follows:
+To prove inequality~\ref{eq.patiencebal}, we use the balancing equation $3f + 3\epsilon < \delta$ as follows:
 \begin{align}
   2 + \epsilon - \frac{2\delta}{3} &\leq 2-2f\\
   \Leftarrow 3\epsilon - 2\delta &\leq -6f\\
   \Leftarrow 3f + \frac{3}{2}\epsilon &\leq \delta\\
   \Leftarrow 3f + \frac{3}{2}\epsilon &\leq 3f + 3\epsilon
 \end{align}
-Since we wanted at least $k$ blocks, inequality~\ref{eq:patience-ubound} is a contradiction.
+Since we wanted at least $k$ blocks, inequality~\ref{eq.patience-ubound} is a contradiction.
 \end{proof}
 
 Recall also the Pairing Lemma from the last lecture.
