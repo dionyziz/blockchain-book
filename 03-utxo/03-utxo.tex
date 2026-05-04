@@ -228,7 +228,7 @@ ways to order transactions in this manner, but there will always be one way to d
 are \emph{consistent}: each transaction
 that spends from another transaction is placed in the sequence \emph{after} the transaction that it spends
 from. This sequence of transactions, ordered in this consistent manner, is known as a
-\emph{transaction ledger}\index{Ledger}. In Figure~\ref{fig.utxo-tx-graph}, transactions are labelled
+\emph{transaction ledger}\index{Ledger}. In Figure~\ref{fig.utxo-tx-graph}, transactions are labeled
 in one possible consistent order. As new transactions are added to our graph, they can also be appended
 to the transaction ledger while maintaining consistency.
 
@@ -244,7 +244,7 @@ to the transaction ledger while maintaining consistency.
 \end{figure}
 
 Each node in our network stores the \emph{whole} transaction graph. When a party wishes to make
-a payment, they create a new tranasction and broadcast it to the network. This transaction is
+a payment, they create a new transaction and broadcast it to the network. This transaction is
 received by the other peers, who add it to their local transaction graph. Now everyone
 knows \emph{who owns what} by looking at their local UTXO set. The sum of all the values
 in the UTXO set is equal to the total amount of money in the system.
