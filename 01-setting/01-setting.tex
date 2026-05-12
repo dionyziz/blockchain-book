@@ -52,7 +52,7 @@ according to its rules. In a good monetary system, parties of the economic
 community must globally agree on the conclusions of such deductions. In simple
 words, when someone pays me, I must know that they have sufficient money to do
 so, and that this money given to me will be accepted by the economic community
-when I later decide to spend it. This judgement of validity consists of two
+when I later decide to spend it. This judgment of validity consists of two
 parts: First, that the money in use has been \emph{minted} legitimately in the first
 place.
 Secondly, that this money rightfully belongs to the party who is about to
@@ -77,10 +77,10 @@ corresponding debit card cannot spend more money than it has. In this case, a
 vendor's terminal connects to the bank's servers to check the validity of the
 payment (and security can only be ensured while the terminal is online). These
 cases involve a \emph{trusted third party}\index{Trusted Third Party}, the
-bank or the payment processor, to maintain a balance and make a judgement on
+bank or the payment processor, to maintain a balance and make a judgment on
 whether a transaction is valid. The central bank is relied upon for the
 legitimacy of minting. Payment processors and banks who maintain account
-balances and make a judgement on whether a transaction is valid are relied upon
+balances and make a judgment on whether a transaction is valid are relied upon
 to prevent double spending. The economic community depends on these third
 parties and trusts them for availability and truthfulness.
 
@@ -119,7 +119,7 @@ bank account, they can sue the bank. This is a \emph{treatment} of adversarial
 behavior. In the systems we will design, our goal will be to create systems that
 \emph{prevent} adversarial behavior by making it impossible in the first place;
 not by detecting it and \emph{treating} it when it emerges.
-These systems will be \emph{self-enforcable}.
+These systems will be \emph{self-enforceable}.
 Prevention is preferable to treatment.
 
 The question we try to answer is whether we can \emph{decentralize} money
@@ -236,7 +236,7 @@ our protocols are structured upon three pillars~\cite{katz}:
 \end{enumerate}
 
 We will model the adversary as a Turing Machine interacting
-with the honest parties, each of which will also be modelled as a Turing Machine. For the
+with the honest parties, each of which will also be modeled as a Turing Machine. For the
 time being, the Turing Machine formalism is unimportant: Intuitively, we will simply imagine
 our adversary as a computer running an adversarial computer program which we will denote $\mathcal{A}$.
 Similarly, we will imagine the honest parties as separate computers all running the same program,
@@ -251,7 +251,7 @@ is that we will limit the power of the adversary: We will require that the adver
 in \emph{polynomial time} with respect to its input size. We will also allow the adversary
 access to randomness. The same constraints are applied to the honest parties. We will
 denote such parties \emph{PPT}\index{PPT}, probabilistic polynomial-time, parties. Formally speaking,
-these are modelled as Turing Machines~\cite{turing} with additional access to a random tape.
+these are modeled as Turing Machines~\cite{turing} with additional access to a random tape.
 In practice, when thinking about these machines, we simply think of them as regular computer
 programs (in, say, Python, C++ or TypeScript) in which we have access to a random number
 generator, which we assume produces fresh, uniform and completely fair randomness every time
@@ -297,7 +297,7 @@ The game will
 simulate some interaction between the adversary and the honest parties. The game executes
 the adversary and the honest parties and facilitates some data exchange between them. It
 then takes the output of the adversary and decides whether the adversary has been successful
-in her endeavour to break the protocol. The game outputs a boolean output: \emph{true}
+in her endeavor to break the protocol. The game outputs a boolean output: \emph{true}
 if the adversary was successful in breaking the protocol, and \emph{false} if the adversary
 was unsuccessful. It is bad for us, the designers of the protocol, if there exists some
 adversary such that the game outputs \emph{true}. That's why we call this a \emph{bad event}\index{Bad Event}.
@@ -348,7 +348,7 @@ It invokes the honest party, giving him polynomial time in $\kappa$ to run, as w
 additional arguments that will be defined by the particular protocol. It then runs the adversary,
 giving
 her
-polymomial time in $\kappa$ to run, as well as some additional arguments which may
+polynomial time in $\kappa$ to run, as well as some additional arguments which may
 depend on the honest party's behavior. Depending on the game, the challenger may invoke the honest party
 and adversary multiple times, creating some interaction between them. Lastly, the challenger evaluates the output of the
 adversary to ascertain whether she has been successful in breaking the protocol, and outputs a boolean value:
@@ -651,7 +651,7 @@ as clients and as servers of requests.
 \subsection*{The Non-Eclipsing Assumption}
 
 In this network, not everyone is connected to everyone else, but messages can reach from
-one side of the network to the other by travelling through intermediaries. This is achieved
+one side of the network to the other by traveling through intermediaries. This is achieved
 through the \emph{gossiping}\index{Gossip} protocol: When a node receives a message it hasn't seen before,
 it forwards it to its peers. That way, everyone eventually learns about the message. In order
 to avoid denial-of-service attacks, messages may be validated in a basic manner before they

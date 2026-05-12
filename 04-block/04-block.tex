@@ -460,7 +460,7 @@ when we talk about Light Clients in Chapter~\ref{chapter.light}.
 From now on, we will no longer speak of tickets, but will speak of blocks,
 even if a block contains just one transaction.
 
-A natural question now arises: If we've bundled multiple transations together into one block,
+A natural question now arises: If we've bundled multiple transactions together into one block,
 hasn't the double spending problem resurfaced? The answer is \emph{no}, because, in order to
 verify a block, all the transactions must be sent together in the bundle. As part of our block
 validation rule, we will require that there are no conflicting transactions within the payload
@@ -556,7 +556,7 @@ Our modified block format is now $B = s \concat \overline{x} \concat \ctr$. Note
 similarly to before, the adversary cannot retroactively change $s$ after mining a block,
 because this will invalidate the proof-of-work. This helps with freshness: If a block $B$ is
 old and includes a pointer $s$ to an even older block, this $s$ cannot be retroactively
-chnaged to point to a newer block to make $B$ appear fresh. The final proof-of-work algorithm
+changed to point to a newer block to make $B$ appear fresh. The final proof-of-work algorithm
 illustrated in Algorithm~\ref{alg.mine-block}
 accepts both $s$ and $\overline{x}$ as parameters and tries to find a $\ctr$ that
 satisfies the proof-of-work equation.

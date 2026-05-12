@@ -377,9 +377,9 @@ Because blockchains take time to produce, it will take time to mine these $k$ bl
 Eve to win she must have mined more blocks than the honest parties within that time window. Whether
 she is successful in doing this depends on whether she has more mining power than the honest
 parties or not. If Eve has less mining power than the honest parties ($t < n - t$), then the picture looks somewhat
-like Figure~\ref{fig.x-vs-z}. Eve has some successful queries (labelled $Z$ at the bottom), but the density
+like Figure~\ref{fig.x-vs-z}. Eve has some successful queries (labeled $Z$ at the bottom), but the density
 of these successful queries in time is smaller than the density of the honest parties' successful
-queries (labelled $X$ at the top). While Eve can get lucky for a couple of blocks (in the picture, she gets
+queries (labeled $X$ at the top). While Eve can get lucky for a couple of blocks (in the picture, she gets
 two successful queries before the honest parties have mined anything at all), given enough time,
 the honest parties will get more blocks than Eve. If we choose $k$ to be large enough, we can
 make this time window long enough so that the honest parties will have more successful queries
@@ -411,9 +411,9 @@ lead to one consistent chain without forks. Therefore, it is not the honest succ
 we should be comparing against the adversarially successful queries. Instead, we should be comparing
 the \emph{convergence opportunities} against the adversarially successful queries. The full
 picture is illustrated in Figure~\ref{fig.x-vs-y-vs-z}. As you can see, even though the honestly
-successful queries (labelled $X$ at the top) might be more dense than the adversarially successful queries
-(labelled $Z$ at the bottom) due to honest majority ($t < n - t$), it is still possible that
-the convergence opportunities (labelled $Y$ in the middle) are fewer than the adversarially successful
+successful queries (labeled $X$ at the top) might be more dense than the adversarially successful queries
+(labeled $Z$ at the bottom) due to honest majority ($t < n - t$), it is still possible that
+the convergence opportunities (labeled $Y$ in the middle) are fewer than the adversarially successful
 queries. In order for the honest parties to win the Nakamoto Race, honest majority is not enough!
 In addition to honest majority, the blockchain must be correctly configured (with an appropriately
 chosen $T$) so that the convergence opportunities are denser than the adversarial successes.
@@ -491,7 +491,7 @@ Given enough time, the chain grows with a minimum velocity $\tau$.
 On the other hand, just because the chain has grown does not mean that any honest
 transactions are getting confirmed: If the chain has only grown by adversarially mined
 blocks, it is possible that the adversary has simply been ignoring the honestly generated
-transactions. In order to get ledger liveness, we hope to occassionally see an honestly
+transactions. In order to get ledger liveness, we hope to occasionally see an honestly
 mined block in every sufficiently long chain. We call this \emph{chain quality}.
 
 \glsxtrnewsymbol[description={chain quality}]{chain quality}{$\mu$}\glsadd{chain quality}

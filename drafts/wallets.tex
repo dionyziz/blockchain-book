@@ -13,10 +13,10 @@ The wallet has several jobs. It displays to the user how much money they
 currently own. Sometimes it will also show the history of transactions that the user
 has issued in the past. It monitors the blockchain for incoming payments and displays
 them to the user, first as unconfirmed when they enter the mempool, and later as confirmed
-when they are burried sufficiently deeply within the chain. When the user issues
+when they are buried sufficiently deeply within the chain. When the user issues
 a payment, the wallet builds a new transaction by choosing the appropriate unspent transaction
 outputs to consume, signs it using the respective private keys, and broadcasts it to the
-network so that it can be included in the blockchain and eventually verified by the receipient
+network so that it can be included in the blockchain and eventually verified by the recipient
 as confirmed. The wallet will also create new private keys as needed, for example for
 use as change addresses, or for receiving new payments. The major responsibility
 of the wallet is to safeguard the private keys of the user.
@@ -79,7 +79,7 @@ can follow them and be interoperable.
 \end{figure}
 
 Typically a wallet will be responsible for multiple
-such pairs. In fact, the wallet may decide to generate a new private and public key pair occassionally,
+such pairs. In fact, the wallet may decide to generate a new private and public key pair occasionally,
 and add it to its set of keys.
 
 A primary job of the wallet is to know how much money it holds.

@@ -4,7 +4,7 @@ For this course, we will develop our own blockchain. Each student will write the
 independent implementation of a node for our network in their programming language of
 choice. This document outlines how the system will work and how nodes will communicate.
 
-During your implementation, be aware that neighbouring nodes can be malicious. Your
+During your implementation, be aware that neighboring nodes can be malicious. Your
 implementation must be resilient to simple and complex attacks. Simple attacks can be
 the supply of invalid data. Complex attacks can involve signatures, proof-of-work,
 double spending, and blocks, all of which must be validated carefully.
@@ -34,7 +34,7 @@ to help us with debugging.
 
 ## Hashes
 
-We use SHA-256 as our hash for everything. This is used both for content-addressible application
+We use SHA-256 as our hash for everything. This is used both for content-addressable application
 objects as well as proof-of-work. When hashes appear in our JSON, they should be in hexadecimal
 format.
 
@@ -89,7 +89,7 @@ This is necessary because a signature cannot sign itself.
 
 An output is a dictionary with keys `value` and `pubkey`. The `value` is a non-negative integer indicating
 how much value is carried by the output. The `pubkey` is a (uncompressed SEC encoded) public key, the
-receipient of the money.
+recipient of the money.
 
 ```json
 {

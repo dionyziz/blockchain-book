@@ -55,7 +55,7 @@ switching from one chain to another, the chain they are switching to is still lo
 than what they have, and so Chain Growth is happening.
 
 \subsection*{Chain Quality}
-For a minor adversary to harm Chain Quality, she would have to try and supress as many
+For a minor adversary to harm Chain Quality, she would have to try and suppress as many
 honestly generated blocks as possible from becoming adopted by honest parties. Ideally,
 she wants honest parties to adopt chains that only consist of adversarially generated blocks.
 
@@ -315,7 +315,7 @@ For the same reasons that a minor adversary fails to completely eliminate Chain 
 major adversary also fails to eliminate Chain Growth. The best attack the adversary can perform
 is to remain idle. Then velocity $\tau$ then drops to roughly a proportion $\frac{n - t}{n}$ of the rate
 it would have if the adversary were honest. Nevertheless, if $n - t > 0$, the chain continues
-to grow. The fact that the adversary cannot significanty harm Chain Growth is a consequence of
+to grow. The fact that the adversary cannot significantly harm Chain Growth is a consequence of
 the longest chain rule of our protocol.
 
 \subsection*{Safety}
@@ -358,7 +358,7 @@ transaction in question in their mempool. Contrary to a Nakamoto Race, she does 
 her fork secret, and she can allow it to be extended by the honest parties at any time.
 
 Such a situation is depicted in Figure~\ref{fig.censorship-attack}. The white circle represents
-a transation that the adversary wishes to censor. Whereas the honest parties are continuously
+a transaction that the adversary wishes to censor. Whereas the honest parties are continuously
 attempting to include it into their blocks, the adversary keeps displacing their blocks by
 mining on top of the parent block. The honest blocks with the transaction in question never
 makes it into the ultimate honestly adopted longest chain.
@@ -450,7 +450,7 @@ generated blocks as well. Liveness heals, because Chain Quality heals.
 \section*{Problems}
 
 \begin{problems}
-  \item Implement Algorithm~\ref{alg.selfish-simulation} in your favourite programming language,
+  \item Implement Algorithm~\ref{alg.selfish-simulation} in your favorite programming language,
         and run it for values $t, n, c, m$ of your choice. Can you reproduce the results described
         in the text?\label{problem.selfish-simulation}
   \item Use the Monte Carlo method to implement a simulation to calculate the density of

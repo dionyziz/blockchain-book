@@ -36,7 +36,7 @@ and the adversary controls
 $t \in \mathbb{N}$
 of them. Here, we are assuming that all computers have equal processing power, but if there is some computer on the network that has more processing power, we can just think about that powerful computer as a collection of smaller, less powerful computers, each of which has $q$ computational power. We will call each of these computers a
 \emph{party}\index{Party}.
-Each mining party will roughly correspond to a node on the network, but in practice these are not necessarily the same: A single network node can correspond to multiple parties if it is a powerful computer. On the other hand, because our system is permissionless, a party may spawn multiple nodes that all share the same computational power. Additionally, even though we are saying that the adversary is in control of $t$ adversarial parties, we are still considering the situation where the adversary is a ``puppet master'' who controls every adversarial party of the network by a central ``master plan'' $\mathcal{A}$. We say that such a party controlled by the adversary is \emph{adversarial}, \emph{corrupt}, or \emph{malicious}, and we will use these terms interchangably.
+Each mining party will roughly correspond to a node on the network, but in practice these are not necessarily the same: A single network node can correspond to multiple parties if it is a powerful computer. On the other hand, because our system is permissionless, a party may spawn multiple nodes that all share the same computational power. Additionally, even though we are saying that the adversary is in control of $t$ adversarial parties, we are still considering the situation where the adversary is a ``puppet master'' who controls every adversarial party of the network by a central ``master plan'' $\mathcal{A}$. We say that such a party controlled by the adversary is \emph{adversarial}, \emph{corrupt}, or \emph{malicious}, and we will use these terms interchangeably.
 
 The total number of hash queries that can be executed in the unit of time is $nq$.
 Since all parties are simultaneously trying to get a block all the time, the expected block generation
@@ -290,7 +290,7 @@ temporary forks will be quite short. We'll explore the reason for this in the ne
 Our chain's lifecycle begins at genesis, with every honest party mining on top of it.
 When there is a single block mined by just one honest party, and that block makes it to
 the doorstep of every other honest party before they've had the opportunity to mine their
-own block, the chain grows for everyone. This is the usual case. In rare occassions, two
+own block, the chain grows for everyone. This is the usual case. In rare occasions, two
 different honest parties will mine two different blocks at approximately the same time.
 Because the one honest party has not received the block of the other honest party while
 he is mining his own, both of these blocks will extend the same parent, so we will have a
@@ -603,7 +603,7 @@ transactions in $B_2'.\overline{x}$ are trialed for placement into the new mempo
 Lastly, the transactions in the old mempool $\overline{x}'$ are trialed for placement
 into $\overline{x}$. Every time a transaction can be applied successfully, it is
 added to the new mempool, and the mempool state is updated. In case a transaction
-is unapplicable, the transaction is thrown away and the mempool state remains unaffected.
+is inapplicable, the transaction is thrown away and the mempool state remains unaffected.
 
 \begin{figure}[h]
     \centering
