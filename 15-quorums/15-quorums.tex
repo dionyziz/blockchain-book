@@ -1,6 +1,161 @@
 \chapter{Quorums \small{\textsf{DRAFT}}}\label{chapter.quorums}
 
 \section*{Problems}
+\begin{problems}
+    \item Recall the longest chain PoS protocol, Ouroboros Praos, we studied in class.
+        Ouroboros Praos is \emph{available} but not \emph{accountable}. We modify Ouroboros Praos to
+        include a slashing mechanism: if the same key is used to create two blocks for
+        the same height, we slash the key. Is the modified protocol $t$-accountably
+        safe? If yes, prove it and find $t$. If not, is there another slashing mechanism
+        that could make the protocol $t$-accountably safe?
+    
+    \item In this problem, we will consider the Simplex protocol run by $n$ permissioned
+        nodes, with a tunable quorum size $q$ for notarization.
+        \begin{enumerate}
+            \item Suppose we want to maximize the resilience of the protocol, i.e.,
+            maximize the number of adversarial nodes $f$ that can be tolerated such
+            that the protocol is both safe and live. Derive the optimal quorum size
+            $q$ and show that the resulting optimal resilience is $f = n/3$.
+            \item Suppose you believe that an attack against safety is more likely than
+            an attack against liveness (since a double-spend can provide significant
+            rewards to the attacker). Hence, you want to tune Simplex to increase the
+            resilience against safety attacks, even at the expense of decreasing the
+            resilience against a liveness attack. Can this be done? If so, exhibit and
+            plot the tradeoff between the two resiliences. If not, explain why not.
+        \end{enumerate}
+    
+    \item Consider the Simplex protocol we presented in class. Consider the following
+        variations of the protocol and in each case explain if the security (safety and
+        liveness) of the protocol is preserved. In each case, provide a proof that the
+        protocol retains each virtue or a show a counterexample in which it fails.
+        \begin{enumerate}
+            \item We completely remove the timer of the protocol.
+            \item We change the timer from $3\Delta$ to $2\Delta$.
+            \item We change the timer from $3\Delta$ to $4\Delta$.
+        \end{enumerate}
+
+    \item We modify the Simplex protocol to include a timestamp $r$ in each non-dummy
+        block. When an honest party creates a block, they put their clock's time as the
+        timestamp $r$. In a valid chain, consecutive blocks have non-decreasing
+        timestamps and no timestamp is in the future. We assume that honest parties have
+        sychronized clocks and the network is synchronous.
+        We are interested in how much the timestamp of the finalized tip of an
+        honest party can deviate from their clock's time. Compute an upper bound $v$ such
+        that any honest party's tip will not deviate from their clock more than $v$
+        except with negligible probability. Your bound does not need to be tight.
+    
+    \item Consider the Simplex protocol we studied in class.
+        \begin{enumerate}
+            \item Simplex is said to have finality whenever the number of honest
+                nodes exceeds $2n/3$, where $n$ is the total number of nodes. Explain
+                what that means.
+            \item Simplex is said to be {\em $1/3$-accountable}. Explain what
+                that means.
+            \item Now suppose a synchronous network with $\Delta = 1$ second and
+                $n = 100$ nodes and the nodes are all honest.
+                \begin{enumerate}
+                    \item Compute the expected growth rate of the notarized
+                        chain (in blocks per second).
+                    \item Compute the expected growth rate of the finalized
+                        chain (in blocks per second).
+                \end{enumerate}
+            \item Now suppose $20$ nodes are still adversary, but instead of having the
+                full $80$ honest nodes online, $30$ of them decide not to participate in
+                the protocol and went on vacation to Ikaria. However, the protocol
+                designer does not know this and the protocol parameters are not
+                adjusted.
+                \begin{enumerate}
+                \item Compute a tight lower bound on the expected growth
+                        rate of the longest notarized chain.
+                \item Compute a lower bound on the expected growth rate of
+                        the finalized chain. (Your lower bound does not need to be tight.
+                        However if the lower bound is not tight, it must be positive.)
+                \item Is the protocol safe? Is the protocol live?
+                \end{enumerate}
+            \item A quorum-based protocol is said to be {\em available} if it
+                is safe \emph{and} live whenever the number of honest nodes online is
+                greater than twice the number of adversary nodes. Is Simplex available?
+        \end{enumerate}
+    
+        \item Consider the safety violation of Simplex as shown in the figure below (the
+            subscript of each block denotes its height). The upper fork has notarized blocks
+            at heights $5,6,7$, and the block $b_6$ at height $6$ is finalized. The lower
+            fork has a second block $b_6'$ at height $6$ that is also notarized, conflicting
+            with the finalized block $b_6$. Recall that in Simplex a quorum of $2n/3$ votes
+            on a block makes it notarized and a quorum of $2n/3$ finalize messages on a
+            height makes it finalized. We change Simplex to have a quorum of $3n/4$ for
+            both rules. Assume that all blocks are non-dummy blocks.
+            \begin{enumerate}
+                \item Find the maximum $t$ for which the safety violation cannot occur and
+                    argue why.
+                \item Argue that if the safety violation occurs, then the number of
+                    adversary parties that can be provably found to violate the protocol has
+                    to be at least $t$, and find the largest possible $t$.
+                \item What is the largest number of adversary parties for which liveness of
+                    the protocol can be guaranteed? Explain.
+            \end{enumerate}
+
+            \begin{figure}[h]
+                \centering
+                \begin{tikzpicture}[
+                    >={Stealth[round]},
+                    block/.style={draw, thick, rounded corners, minimum width=1.3cm,
+                                minimum height=0.95cm, align=center, font=\small, fill=white},
+                    genesis/.style={block, fill=black!8},
+                    final/.style={block, fill=yellow!40, line width=1.1pt},
+                    conflict/.style={block, draw=red!80!black, line width=1.1pt, fill=red!12},
+                    lbl/.style={font=\scriptsize\itshape},
+                    link/.style={->, thick}
+                ]
+                    \node[genesis]  (b0)  at (0,0)      {$b_0$};
+                    \node[block]    (b5)  at (3.0,0)    {$b_5$};
+                    \node[final]    (b6)  at (5.6,1.0)  {$b_6$};
+                    \node[block]    (b7)  at (8.2,1.0)  {$b_7$};
+                    \node[conflict] (b6p) at (5.6,-1.0) {$b_6'$};
+
+                    \draw[link, dashed] (b5)  -- node[midway, fill=white, inner sep=1pt]{$\cdots$} (b0);
+                    \draw[link] (b6)  -- (b5);
+                    \draw[link] (b7)  -- (b6);
+                    \draw[link] (b6p) -- (b5);
+
+                    \node[lbl] at (5.6,1.75)  {finalized};
+                    \node[lbl] at (5.6,-1.75) {notarized};
+
+                    \draw[<->, red!80!black, dashed, thick] (b6.south) -- (b6p.north)
+                        node[midway, right=1pt, font=\scriptsize, red!80!black] {same height};
+                \end{tikzpicture}
+                \caption{Safety violation in Simplex. The upper fork consists of notarized
+                blocks $b_5,b_6,b_7$ at heights $5,6,7$, with $b_6$ finalized (notarized and
+                carrying a finalization certificate for height $6$). The lower fork contains a
+                second notarized block $b_6'$ at height $6$, conflicting with the finalized
+                block $b_6$.}
+                % \label{fig.utxo}
+            \end{figure}
+
+    \item We studied three blockchain protocols: (i) proof-of-work longest
+        chain, (ii) proof-of-stake longest chain, (iii) quorum-based. We have also
+        introduced three protocol properties: (i) finality, (ii) availability, (iii)
+        accountability.
+
+        \begin{enumerate}
+            \item Define the three protocol properties in terms of the basic properties
+                of safety and liveness.
+            \item Explain which of the three protocols satisfies which properties.
+            \item Consider all the pairings of the three properties
+            \begin{enumerate}
+                \item finality and availability,
+                \item finality and accountability,
+                \item availability and accountability.
+            \end{enumerate}
+            For each pairing of the properties, argue either why it is impossible to
+            have {\em any} protocol (not only the three we studied) that satisfies both
+            properties, or give an example of a protocol that simultaneously achieves
+            both properties.
+        \end{enumerate}
+
+
+
+\end{problems}
 
 \section*{Further Reading}
 

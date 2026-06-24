@@ -589,6 +589,16 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
         Write out explicitly what this $G$ function is, then define and prove
         the above two properties formally. For the first property, use a
         reduction.
+  \item Let $H_\kappa: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$ be a family of
+        collision-resistant hash functions. Define $G_\kappa: \{0, 1\}^* \longrightarrow
+        \{0, 1\}^\kappa$ to be the family of hash functions obtained by invoking
+        $H_\kappa(x)$, flipping the last bit of $H_\kappa(x)$, and then returning the
+        result. Namely, $G_\kappa(x) = H_\kappa(x)[{:}{-1}] \conc (H_\kappa(x)[-1]
+        \oplus 1)$. Examine whether the function family $G_\kappa$ is collision-resistant.
+  \item Let $H_\kappa^1, H_\kappa^2: \{0, 1\}^* \longrightarrow \{0, 1\}^\kappa$ be families of hash functions. 
+        Define $G_{2\kappa}(x) : \{0, 1\}^* \longrightarrow \{0,1\}^{2\kappa}$ as $G_{2\kappa}(x) = H_\kappa^1(x)||H_\kappa^2(x)$. 
+        Use a reduction to show that $G_{2\kappa}$ is a family of collision-resistant hash functions if at least one of $H_\kappa^1, H_\kappa^2$ 
+        is collision-resistant.
   \item Given a collision resistant hash function $H$, construct a preimage and
         2nd preimage resistant hash function $G$ which is not collision
         resistant. Prove these properties of $G$.
@@ -601,6 +611,14 @@ else. Lastly, Alice's payment can be verified by invoking \emph{Ver} using $pk$ 
           function. Then, $H$ is collision resistant if and only if it is not
           second preimage resistant.
         \end{quote}
+  \item Assume there exists an adversary $\mathcal{A}$ that breaks unforgeability with probability
+        \[
+          \Pr[\textsf{existential-forgery-game}_{(\textsf{Gen,Sig,Ver}),\mathcal{A}}(\kappa) = 1] = p
+        \]
+        We construct an adversary $\mathcal{A}^\prime$ that runs $\mathcal{A}$ independently \(q(\kappa)\) times, where
+        \(q(\kappa)\) is a polynomial in the security parameter \(\kappa\), and outputs success
+        if at least one execution of $\mathcal{A}$ succeeds.
+        Find the probability of success of the adversary $\mathcal{A}^\prime$.
 \end{problems}
 
 \section*{Further Reading}

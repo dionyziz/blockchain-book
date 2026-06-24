@@ -366,6 +366,61 @@ Namely the probability of succeeding in a given slot must be the same for the tw
 }
 
 \section*{Problems}
+\begin{problems}
+  \item Consider the longest chain proof-of-stake protocol we studied in class. We will
+    look at an instantiation where $\Delta = 1$ second, $n = 100$, $\kappa = 128$,
+    $T = 2^{118}$. For answering the questions below, fix one constant $k$ of Your
+    choice for the confirmation rule.
+
+    \begin{enumerate}
+        \item First suppose all $100$ nodes are honest.
+            \begin{enumerate}
+                \item Compute the expected growth rate of the longest
+                    chain, in blocks per second.
+                \item Compute the expected growth rate of the
+                    $k$-confirmed chain, in blocks per second. (The $k$-confirmed
+                    chain is the portion $C[{:}{-}k]$.)
+                \item If we double $T$, does the expected growth rate of
+                    the longest chain double, more than double, or less than double?
+                    What about the growth rate of the $k$-confirmed chain?
+            \end{enumerate}
+        \item Now suppose $20$ of the $100$ nodes are adversary, the other $80$ are
+            honest.
+            \begin{enumerate}
+                \item Compute a tight lower bound on the expected growth
+                    rate of the longest chain. (A ``lower bound'' means that it is a
+                    lower bound irrespective of the adversary's attack strategy;
+                    ``tight'' means that the lower bound is attainable for some
+                    adversary's attack strategy.)
+                \item Compute a tight lower bound on the expected growth
+                    rate of the $k$-confirmed chain.
+                \item Is the protocol safe? Is the protocol live?
+            \end{enumerate}
+        \item Now suppose $20$ nodes are still adversary, but instead of having the
+            full $80$ honest nodes online, $30$ of them decide not to participate in
+            the protocol and went on vacation to Ikaria. However, the protocol
+            designer does not know this and the protocol parameters are not
+            adjusted.
+            \begin{enumerate}
+                \item Compute a tight lower bound on the expected growth
+                    rate of the longest chain.
+                \item Compute a tight lower bound on the growth rate of
+                    the $k$-confirmed chain.
+                \item Is the protocol safe? Is the protocol live?
+            \end{enumerate}
+        \item Now suppose a further $35$ honest nodes went on vacation.
+            \begin{enumerate}
+                \item Compute a tight lower bound on the expected growth
+                    rate of the longest chain.
+                \item Compute a tight lower bound on the expected growth
+                    rate of the $k$-confirmed chain.
+                \item Is the protocol safe? Is the protocol live?
+            \end{enumerate}
+        \item A protocol is said to be {\em available} if it is safe and
+            live whenever the number of honest nodes online is greater than the
+            number of adversary nodes. Is the longest chain PoS protocol available?
+    \end{enumerate}
+\end{problems}
 
 \section*{Further Reading}
 

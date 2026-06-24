@@ -160,6 +160,53 @@ Since light miners do not validate any transactions that were on the blockchain 
           \texttt{e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855}.
 
           What is the value of the root of this tree?
+
+          \item In class, we studied Merkle trees, which let us prove inclusion of a single leaf
+                with a logarithmic-sized proof. In many applications, however, we are not
+                interested in a single leaf but rather in an \emph{aggregate statement} over a
+                contiguous range of leaves. For instance, given a block containing a vector of
+                $n$ transactions $\bar{x} = (x_0, x_1, \dots, x_{n-1})$ with associated fees
+                $f_0, f_1, \dots, f_{n-1}$, a light client might want a succinct proof that the
+                total fees collected from transactions $\bar{x}[a{:}b]$ equals some claimed
+                value $s$, i.e. that $\sum_{i=a}^{b-1} f_i = s$. A naive solution would be to
+                provide a separate Merkle inclusion proof for each transaction in the range and
+                let the verifier sum the fees themselves; this requires $\Theta((b-a) \log n)$
+                hashes in the worst case, which is linear in the size of the range.
+
+                A better solution is to use a \emph{Merkle Segment Tree}. A segment tree is a
+                complete binary tree built on top of an array (here, the array of transactions)
+                in which every internal node represents the contiguous range of leaves in its
+                subtree. In a classical (non-cryptographic) segment tree, each node stores a
+                value obtained by applying an associative \emph{aggregation function} (the sum,
+                the maximum, the minimum, etc.) to the values of its two children; this allows
+                answering range queries over any interval $[a{:}b]$ in $O(\log n)$ time by
+                decomposing the interval into $O(\log n)$ \emph{canonical} subtree ranges whose
+                union is exactly $[a{:}b]$.
+
+                A Merkle Segment Tree combines this idea with the authentication mechanism of a
+                Merkle tree: each node stores \emph{both} the aggregate of its subtree
+                \emph{and} a hash that cryptographically commits to the entire subtree (its
+                structure, its leaves, and its aggregates). Concretely, for the sum aggregation:
+                \begin{itemize}
+                \item Each leaf $i$ stores the pair $(s_i, v_i)$ where $s_i = f_i$ is the
+                    aggregate (here, just the fee itself) and $v_i = H(f_i \| H(x_i))$ is
+                    the leaf's hash commitment.
+                \item Each internal node $u$ with left child $l$ and right child $r$ stores
+                    the pair $(s_u, v_u)$ where $s_u = s_l + s_r$ and
+                    $v_u = H(s_l \| v_l \| s_r \| v_r)$.
+                \end{itemize}
+                The root value $v_\text{root}$, together with the root aggregate
+                $s_\text{root}$, are published as the commitment to the whole block (analogous
+                to the Merkle root).
+
+                Describe a proof-of-inclusion scheme that allows a prover to convince a verifier
+                (who only knows $v_\text{root}$ and $s_\text{root}$) that the sum of fees of
+                transactions $\bar{x}[a{:}b]$ equals a claimed value $s$. Specify exactly:
+                \begin{enumerate}
+                \item what data the prover sends to the verifier,
+                \item the verification algorithm, and
+                \item the asymptotic size of the proof as a function of $n$ and $b - a$.
+                \end{enumerate}
 \end{problems}
 
 \section*{Further Reading}

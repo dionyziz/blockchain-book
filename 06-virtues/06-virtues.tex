@@ -617,6 +617,104 @@ and liveness follows from Chain Growth and Chain Quality together.
         in each block.
         Is each protocol still secure in each of these cases?
         If yes, give an intuition of why. If not, give an attack.
+
+  \item We are working in a UTXO longest chain system with a block reward of 50 units and a confirmation rule of $k = 6$.
+        Consider the transaction graph illustrated in \Cref{fig.tx-graph-2}.
+        The party $Q$ has adopted a chain $C_Q$ such that $\mathbb{L}_Q = (\tx_0, \tx_1, \tx_2)$,
+        while the transactions recorded in $C_Q$ are $(\tx_0, \tx_1, \tx_2, \tx_3, \tx_4)$. 
+        The party $Q$ is a miner who collects transactions into a mempool to create a template block to mine on.
+        \label{problem.tx-graph-2}
+        \begin{enumerate}
+          \item In what order should the rest of the transactions ($\tx_5$ through $\tx_{10}$) be arranged into a block by $Q$
+                so that $Q$'s coinbase proceeds are maximized?
+          \item What is the output value in $Q$'s new coinbase transaction?
+          \item If $Q$ successfully mined a block in part (a) and the block is buried under $k = 6$ other blocks,
+                what does the new ledger $\mathbb{L}_Q$ report?
+          \item Which transactions (among $\tx_5$ through $\tx_{10}$) are missing from $Q$'s ledger and why?
+          \item How much unspent money does $Q$ have in the system, if we also include his mining proceeds?
+          \item How much money do the parties $A$, $B$, and $P$ have, in $Q$'s view, provided they are not mining any blocks?
+        \end{enumerate}
+      
+    \item Consider the sequence of successful \emph{honest} party queries in \Cref{fig.timeline-2}.
+          Recall that a successful query satisfies the proof-of-work inequality $H(B) < T$.
+          Consider executions with \emph{maximum} network delay $\Delta = 1$.
+          You are a powerful rushing adversary and you have $7$ successful queries at your disposal.
+          You are given the (fictitious) ability to place your successful queries at whichever points on the timeline you prefer.
+          Honest parties gossip blocks, but you can schedule the delay of each honest message freely, as long as it is within a maximum of $\Delta$.
+          As the adversary, you are also allowed to choose how each honest party will choose to break ties among competing chains of the same length.
+
+          Describe the following executions, consistent with the above timeline.
+          For each of the below executions, draw the block tree. For each block in the block tree,
+          indicate whether it was honestly or adversarially mined, and what time it was mined at.
+          You can use just the integer part of the time (for example, you can write ``1'' for a block
+          that was mined at time ``1.4''). Your three executions do not all have to be different.
+          \label{problem.timeline-2}
+          \begin{enumerate}
+              \item An execution in which Common Prefix with $k = 7$ is violated. What is the adopted chain tip of each honest party in your execution?
+              \item An execution in which three different honest parties adopt chains $C_1$, $C_2$ and $C_3$ such that
+                    $C_1[{:}{-k}]$, $C_2[{:}{-k}]$, $C_3[{:}{-k}]$ are different from each other for $k = 4$.
+                    ($C[{:}{-k}]$ means the chain resulting from removing the last $k$ blocks in a chain $C$.)
+              \item An execution \emph{minimizing} Chain Quality (across all executions) of the whole chain for \emph{some}
+                    honest party. What is the Chain Quality of the chain adopted by your chosen honest party?
+              \newpage
+          \end{enumerate}
+      
+          \item Consider a proof-of-work longest chain blockchain in the UTXO model. The
+            protocol follows a confirmation rule with $k = 1$ (a transaction is considered
+            \emph{confirmed} if it is included in $\chain[{:}{-1}]$). Consider the
+            transaction graph in Figure~\ref{fig.utxo}. The coinbase reward is $50$ units.
+            The amount of each transaction's output is denoted as a number above it.
+            Imaginary txids are denoted within each transaction circle. Note that
+            transaction $7$ has two outputs, transaction $10$ has one input, transaction
+            $10$ has two outputs, transaction $11$ has two inputs, and transaction $8$ has
+            one input.
+
+            \begin{figure}[h]
+            \centering
+            \includegraphics[width=0.7 \columnwidth,keepaspectratio]{06-virtues/figures/utxo-problem-8.pdf}
+            \caption{The transaction graph for Problem~2.}
+            \label{fig.utxo}
+            \end{figure}
+
+            \begin{figure}[h]
+            \centering
+            \includegraphics[width=0.6 \columnwidth,keepaspectratio]{06-virtues/figures/tree-problem-8.pdf}
+            \caption{The block tree for Problem~2.}
+            \label{fig.tree}
+            \end{figure}
+
+            Consider the blocktree in Figure~\ref{fig.tree}. In this system, blocks can be
+            completely empty and coinbase transactions are not mandatory. The block contents
+            are exactly the following:
+
+            \begin{itemize}
+            \item The genesis block $0$ contains no transactions.
+            \item Block $1$ contains transaction $1$.
+            \item Block $2$ contains transaction $6$.
+            \item Block $3$ contains transactions $2, 3$.
+            \item Block $4$ contains transactions $4, 5$.
+            \item Block $5$ contains transactions $7, 8$.
+            \item Block $4'$ contains transaction $7$.
+            \item Block $5'$ is empty.
+            \item Block $6'$ contains transactions $10, 11$.
+            \item Block $7'$ contains transactions $8, 5$.
+            \end{itemize}
+
+            Answer the following questions with regard to the timeline of a full node honest
+            party $P$:
+
+            \begin{enumerate}
+            \item $P$ has adopted the chain $[0, 1, 2]$ and has received transactions $1$ and $6$ by round $1$. Subsequently, during round $1$, he receives all transactions in the following order: $2, 3, 4, 5, 7, 8, 9, 10, 11$. What is his mempool at the end of round $1$?
+            \item What is his UTXO set (according to the mempool) at the end of round $1$?
+            \item In round $2$, he receives blocks $3$, $4$ and $5$. What is his mempool at the end of round $2$?
+            \item What is his UTXO set (according to the mempool) at the end of round $2$?
+            \item In round $3$ he receives blocks $4'$, $5'$, $6'$ and $7'$. What is his chain at the end of round $3$?
+            \item What is his mempool at the end of round $3$?
+            \item What is his UTXO set (according to the mempool) at the end of round $3$?
+            \item What is his ledger at the end of round $3$?
+            \end{enumerate}
+
+            Use outpoints to designate the items in your UTXO set.
 \end{problems}
 
 \begin{figure}[htbp!]
@@ -638,6 +736,78 @@ and liveness follows from Chain Growth and Chain Quality together.
   \includegraphics[width=0.7 \columnwidth,keepaspectratio]{06-virtues/figures/timeline-problem-6.pdf}
   \caption{The timeline for \Cref{problem.timeline}.}
   \label{fig.timeline}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7 \columnwidth, keepaspectratio]{06-virtues/figures/tx-graph-2-problem-6.pdf}
+  \caption{The transaction graph \Cref{problem.tx-graph-2}}
+  \label{fig.tx-graph-2}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \resizebox{0.7\columnwidth}{!}{%
+  \begin{tikzpicture}
+
+  \draw (0,0) -- (17,0);
+  \filldraw [gray] (0,0) circle (2pt);
+  \filldraw [gray] (1,0) circle (2pt);
+  \filldraw [gray] (2,0) circle (2pt);
+  \filldraw [gray] (3,0) circle (2pt);
+  \filldraw [gray] (4,0) circle (2pt);
+  \filldraw [gray] (5,0) circle (2pt);
+  \filldraw [gray] (6,0) circle (2pt);
+  \filldraw [gray] (7,0) circle (2pt);
+  \filldraw [gray] (8,0) circle (2pt);
+  \filldraw [gray] (9,0) circle (2pt);
+  \filldraw [gray] (10,0) circle (2pt);
+  \filldraw [gray] (11,0) circle (2pt);
+  \filldraw [gray] (12,0) circle (2pt);
+  \filldraw [gray] (13,0) circle (2pt);
+  \filldraw [gray] (14,0) circle (2pt);
+  \filldraw [gray] (15,0) circle (2pt);
+
+  \draw (0,0) .. controls (0,0) .. (15,0);
+
+  \draw[thick] (0,0) -- ++ (0,0) node[below] {0};
+  \draw[thick] (1,0) -- ++ (0,0) node[below] {1};
+  \draw[thick] (2,0) -- ++ (0,0) node[below] {2};
+  \draw[thick] (3,0) -- ++ (0,0) node[below] {3};
+  \draw[thick] (4,0) -- ++ (0,0) node[below] {4};
+  \draw[thick] (5,0) -- ++ (0,0) node[below] {5};
+  \draw[thick] (6,0) -- ++ (0,0) node[below] {6};
+  \draw[thick] (7,0) -- ++ (0,0) node[below] {7};
+  \draw[thick] (8,0) -- ++ (0,0) node[below] {8};
+  \draw[thick] (9,0) -- ++ (0,0) node[below] {9};
+  \draw[thick] (10,0) -- ++ (0,0) node[below] {10};
+  \draw[thick] (11,0) -- ++ (0,0) node[below] {11};
+  \draw[thick] (12,0) -- ++ (0,0) node[below] {12};
+  \draw[thick] (13,0) -- ++ (0,0) node[below] {13};
+  \draw[thick] (14,0) -- ++ (0,0) node[below] {14};
+  \draw[thick] (15,0) -- ++ (0,0) node[below] {15};
+
+  \draw[thick] (0.4,1) -- ++ (0,-1);
+  \draw[thick] (0.6,1) -- ++ (0,-1);
+  \draw[thick] (2.2,1) -- ++ (0,-1);
+  \draw[thick] (2.3,1) -- ++ (0,-1);
+  \draw[thick] (4.5,1) -- ++ (0,-1);
+  \draw[thick] (6.2,1) -- ++ (0,-1);
+  \draw[thick] (6.4,1) -- ++ (0,-1);
+  \draw[thick] (6.6,1) -- ++ (0,-1);
+  \draw[thick] (8.3,1) -- ++ (0,-1);
+  \draw[thick] (11.4,1) -- ++ (0,-1);
+  \draw[thick] (11.7,1) -- ++ (0,-1);
+  \draw[thick] (13.2,1) -- ++ (0,-1);
+  \draw[thick] (13.4,1) -- ++ (0,-1);
+  \draw[thick] (14.8,1) -- ++ (0,-1);
+
+  \node[text width=0cm] at (0,-1) {time};
+
+  \end{tikzpicture}%
+  }
+  \caption{A sequence of honest successful query events \Cref{problem.timeline-2}.}
+  \label{fig.timeline-2}
 \end{figure}
 
 

@@ -299,10 +299,11 @@ In the next chapter, we will use the tools developed today to show that in typic
 
     \item Consider \emph{bitcoin backbone executions} with $n = 10$, $t = 2$,
           $q = 1000$ and a hash function with $\kappa = 256$ bits. Suppose that
-          the probability of an execution of interest being typical is at least
+          the probability of an execution of interest \emph{not} being typical is at most
 
           \[
-          1 - 2^{-(\epsilon^2\lambda f/3 + \kappa - 30)}\,.
+            4 \cdot 10^{12} \cdot e^{- \epsilon ^ 2 \cdot \lambda \cdot f / 3}
+            + 4 \cdot 10^{20} \cdot 2^{-\kappa}
           \]
 
           Numerically calculate:
@@ -315,13 +316,27 @@ In the next chapter, we will use the tools developed today to show that in typic
             \item The probability of a successful query $p$.
             \item A suitable target $T$ to achieve it.
             \item A Chernoff interval parameter $\lambda$ that ensures typical
-                  executions occur with probability at least $1 - 2^{-256}$.
+                  executions occur with probability at least $1 - 2^{-128}$.
             \item The chain growth parameters: The chain growth interval $s$ and
                   the chain velocity $\tau$.
             \item The common prefix parameter $k$.
             \item The chain quality parameters: The chunk size $\ell$ and the
                   chain quality $\mu$.
           \end{enumerate}
+    
+    \item Consider a proof-of-work longest chain protocol with a $1/3$ adversary
+        in a population of $n = 3$ nodes with a hash rate of $q = 3$.
+        The security parameter is $\kappa = 256$.
+
+        \begin{enumerate}
+            \item What is a valid value of the honest advantage $\delta$?
+            \item Choose numeric parameters $\epsilon$ and $f$ to ensure
+                safety and liveness.
+            \item Calculate the exact numeric probability $p$ of a successful
+                query.
+            \item Calculate a numeric value for the mining target $T$ to
+                match the above.
+        \end{enumerate}
 
     \item When we implemented the Selfish Mining simulation in class using the
           Monte Carlo method, we implicitly assumed that each block is instantly
@@ -365,4 +380,119 @@ In the next chapter, we will use the tools developed today to show that in typic
             \item Find the limit of your probability for $p \to 0$, i.e.,
                   successful queries become rarer and rarer.
           \end{enumerate}
+
+          \item Consider a bitcoin backbone execution in the usual synchronous lockstep model.
+                Suppose that, at the beginning of the execution, the genesis block $G$ already
+                has two children $B_1$ and $B_2$ forming a fork of length $1$. From this point
+                onwards, the honest parties mine exclusively on top of $B_1$ while the adversary
+                mines exclusively on top of $B_2$. The adversary withholds every block it
+                produces and only intends to release them once it has built a private chain of
+                $k$ blocks extending $B_2$.
+
+                We are interested in the following event $E_k$:
+                \begin{quote}
+                \itshape Consider the rounds $R_H$ and $R_{\mathcal{A}}$ at which the honest
+                parties and the adversary mine a chain of $k$ blocks, respectively. The event
+                $E_k$ occurs if $R_H \leq R_{\mathcal{A}}$, i.e. the adversary mined $k$
+                blocks before or at the same round as the honest parties mined a chain of $k$
+                blocks.
+                \end{quote}
+                \begin{enumerate}
+                \item Calculate the probability $\Pr[E_k]$.
+                \item Find the limit of $\Pr[\lim_{k \to \infty} E_k = 1]$, assuming honest
+                    majority.
+                \end{enumerate}
+
+                Note: Honest parties extend their longest chain by one block every successful
+                round, while the adversary just need $k$ succesful queries in order to mine $k$
+                blocks.
+
+
+    \item Answer the following questions in the Backbone model with static difficulty.
+
+        \begin{enumerate}
+        \item Consider executions with parameters
+        ($n, q, t, f, \epsilon, T, \mu, \ell, s, \tau, u, k$) of your choice,
+        \emph{without} honest majority, but with $n - t > 0$.
+
+        \begin{enumerate}
+            \item Describe an execution where Safety is violated.
+            \item Describe an execution where Liveness is violated.
+            \item Is it possible to have an execution with a Safety
+                violation if chain quality is \emph{not} violated?
+            \item Is it possible to have an execution with a Liveness
+                violation if chain quality is \emph{not} violated?
+        \end{enumerate}
+
+        For questions (a) and (b) above: What is the strategy of the adversary? What
+        blocks and what transactions must the adversary produce to cause this ledger
+        virtue violation? Draw a block tree and a timeline of the execution
+        illustrating which round each block was mined in, which transactions are
+        included in which block, whether a block was computed by an honest or an
+        adversarial party, and which honest parties have adopted which chain.
+        You do not need to calculate values of parameters that are not necessary
+        to support the respective statement or concrete probabilities.
+
+        \item Consider an execution with $n = 3$ parties of which $t = 1$ is
+            adversarial, target $T = 2^{226}$, security parameter $\kappa = 256$ and
+            hash rate $q = 1$, and $k = 6$.
+
+            \begin{enumerate}
+                \item Calculate the numeric probability of a successful round.
+                \item Calculate the numeric probability of a convergence
+                    opportunity.
+                \item What is the numeric probability that the first 10 rounds
+                    are all successful?
+            \end{enumerate}
+
+            You do not need to concretely calculate the numerical values.
+
+        \item In the above scenario, we give the adversary the fictitious
+            ability to ``snoop'' all the queries to the Random Oracle and to choose
+            whatever $\kappa$-bit answer she wishes to one (honest or adversarial) fresh
+            query \emph{per round}. The Random Oracle continues to use its cache to
+            respond consistently. Can this adversary break common prefix? What strategy
+            should she follow?
+
+        \item In the above scenario, we give the adversary the
+            fictitious ability to ``snoop'' all the queries to the Random Oracle and to
+            choose whatever $\kappa$-bit answer she wishes to one (honest or
+            adversarial) fresh query \emph{per execution}. The Random Oracle continues
+            to use its cache to respond consistently. Can this adversary break common
+            prefix? What strategy should she follow?
+        \end{enumerate}
+
+        \item Consider a \emph{typical} Bitcoin Backbone execution correctly parameterized
+            under honest majority in the static proof-of-work model.
+
+            \begin{enumerate}
+            \item An honest party $P_1$ broadcasts a new transaction $\tx_1$ at round $r_1$
+                and another honest party $P_2$ broadcasts a new transaction $\tx_2$ at round
+                $r_2 \geq r_1$. Both transactions are included in the \emph{same} block $B$,
+                which eventually becomes stable and adopted by all honest parties. You
+                correctly reason that, since the two transactions were both confirmed in the
+                \emph{same} block, they must have been broadcast closely together in time.
+
+                Calculate an upper bound $d \in \mathbb{N}$ for the interval $r_2 - r_1$
+                such that we can rest assured that $r_2 - r_1 \leq d$. Your bound does not
+                need to be tight, but needs to hold always for typical executions. Your
+                bound can be a function of all the execution parameters ($\epsilon, \lambda,
+                f, p, T, n, t, k, u, \mu, \ell, s, \tau$). Prove that your bound holds.
+
+            \item An honest party $P_1$ broadcasts a new transaction $\tx_1$ at round $r$
+                and an honest party $P_2$ broadcasts a new transaction $\tx_2$ at the
+                \emph{same} round $r$. However, the transactions make it on different blocks
+                $B_1$ with height $h_1$ and $B_2$ with height $h_2 > h_1$ of the same chain
+                that eventually becomes stable and adopted by all honest parties. You
+                correctly reason that, since the two transactions were both broadcast at the
+                \emph{same} time, they must be included close together on the chain.
+
+                Calculate an upper bound $d \in \mathbb{N}$ for the distance $h_2 - h_1$
+                such that we can rest assured that $h_2 - h_1 \leq d$. Your bound does not
+                need to be tight, but needs to hold always for typical executions. Your
+                bound can be a function of all the execution parameters ($\epsilon, \lambda,
+                f, p, T, n, t, k, u, \mu, \ell, s, \tau$). Prove that your bound holds.
+            \end{enumerate}
+
+
 \end{problems}
